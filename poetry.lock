@@ -190,6 +190,17 @@ python-versions = ">=3.7"
 gitdb = ">=4.0.1,<5"
 
 [[package]]
+name = "googlemaps"
+version = "4.7.3"
+description = "Python client library for Google Maps Platform"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+
+[package.dependencies]
+requests = ">=2.20.0,<3.0"
+
+[[package]]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -719,7 +730,7 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "bba58101bd448af4d7c6cedd9609a60ce34feadb9c0d3e7d1d381efbb456c16d"
+content-hash = "9e7056ad8c50ed2dcaca27a5e4a27b2701d41743b215537445bc59f9304c27b4"
 
 [metadata.files]
 altair = [
@@ -808,6 +819,9 @@ gitdb = [
 GitPython = [
     {file = "GitPython-3.1.29-py3-none-any.whl", hash = "sha256:41eea0deec2deea139b459ac03656f0dd28fc4a3387240ec1d3c259a2c47850f"},
     {file = "GitPython-3.1.29.tar.gz", hash = "sha256:cc36bfc4a3f913e66805a28e84703e419d9c264c1077e537b54f0e1af85dbefd"},
+]
+googlemaps = [
+    {file = "googlemaps-4.7.3.tar.gz", hash = "sha256:da6d29e406d13c9e9c78bc7c4c2b4e96d0b034cf4031d8afadf6e5b54e73ffde"},
 ]
 idna = [
     {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},

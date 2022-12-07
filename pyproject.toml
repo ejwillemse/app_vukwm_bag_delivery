@@ -13,6 +13,7 @@ watchdog = "^2.2.0"
 pylint = "^2.15.8"
 black = "^22.10.0"
 openpyxl = "^3.0.10"
+googlemaps = "^4.7.3"
 
 
 [build-system]
