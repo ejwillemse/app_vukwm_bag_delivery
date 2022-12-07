@@ -1,7 +1,6 @@
-import datetime
 import logging
 from typing import AnyStr, Dict, List
-
+import re
 import googlemaps
 import numpy as np
 import pandas as pd
@@ -206,12 +205,10 @@ def transform_geocode_results(
     return data
 
 
-def find_geocoded_addresses(df, stored_results, address_column="address"):
+def find_geocoded_addresses(df, address_column="address"):
     df = df[[address_column]].drop_duplicates()
     n = df.shape[0]
     logger.info(f"Addresses to geocode: {n}")
-    df = df.loc[~df["address"].isin(stored_results["search_address"])]
-    logger.info(f"Addresses already geocoded: {n - df.shape[0]}")
     return df[address_column].values
 
 
@@ -245,31 +242,80 @@ def merge_addresses(df, google_results):
     return new_address_info
 
 
-def geocode_unknown_addresses(df, stored_google_results, google_api):
+def geocode_unknown_addresses(df, google_api):
     df = df.copy()
-    addresses_to_geocode = find_geocoded_addresses(df, stored_google_results)
+    addresses_to_geocode = find_geocoded_addresses(df)
     if len(addresses_to_geocode) > 0:
         geocoded_addresses = geocode_addresses_via_google_maps(
             addresses_to_geocode, google_api
         )
         geocode_results = transform_geocode_results(geocoded_addresses)
-        time_str = datetime.datetime.utcnow().isoformat() + "Z"
-        new_cached_geocode_results = {time_str: geocode_results}
-        if stored_google_results is not None:
-            google_results = pd.concat([stored_google_results, geocode_results])
-        else:
-            google_results = geocode_results
-    else:
-        google_results = stored_google_results
-        new_cached_geocode_results = None
-    df = merge_addresses(df, google_results)
-    return df, new_cached_geocode_results
+        google_results = geocode_results
+        df_geocoded = merge_addresses(df, google_results)
+        df_geocoded["geocoded"] = True
+    return df_geocoded
 
 
 def add_geocoded_features(df):
-    df["lat_lon__not_empty"] = ~df["lat"].isna()
-    return df
+    df_feature = df.assign(
+        address=df[
+            [
+                "Site Address1",
+                "Site Address2",
+                "Site Address3",
+                "Site Address4",
+                "Site Address5",
+                "Site Post Town",
+                "Site Post Code",
+            ]
+        ]
+        .fillna("")
+        .astype(str)
+        .agg(",".join, axis=1)
+        .apply(lambda x: re.sub(r"(\W)(?=\1)", "", x))
+    )
+    return df_feature
 
 
-def geocode_addresses():
+def return_missing_coordinate_addresses(df):
+    unknown_address = df.loc[df["latitude"].isna() | df["longitude"].isna()].copy()
+    return unknown_address
+
+
+def geocode_addresses(
+    df, api_key, test=False, test_file="data/test/elias_test_geocoded.csv"
+):
+    if test is True:
+        return pd.read_csv(test_file)
+    df = df.assign(latitude=df["Site Latitude"], longitude=df["Site Longitude"])
+    df["index"] = df.index
+    df["geocoded"] = False
+    df_missing_coordinate = return_missing_coordinate_addresses(df)
+    df_missing_coordinate = add_geocoded_features(df_missing_coordinate)
+    df_geocoded = geocode_unknown_addresses(df_missing_coordinate, api_key)
+    df_geocoded = df_geocoded.assign(
+        latitude=df_geocoded["google_lat"],
+        longitude=df_geocoded["google_long"],
+    )
+    known_addresses = df.dropna(subset=["latitude"]).dropna(subset=["longitude"])
+    df_full_geocoded = (
+        pd.concat([known_addresses, df_geocoded[known_addresses.columns]])
+        .sort_values("index")
+        .reset_index(drop=True)
+        .drop(columns=["index"])
+    )
+    return df_full_geocoded
+
+
+if __name__ == "__main__":
+    import toml
+
+    secrets = toml.load(".streamlit/secrets.toml")
+    gmaps_api = secrets["google_maps_api"]
+    test_data = pd.read_excel("data/test/elias_test.xlsx")
+    test_data = test_data.assign(
+        latitude=test_data["Site Latitude"], longitude=test_data["Site Longitude"]
+    )
+    df_full_geocoded = geocode_addresses(test_data, api_key=gmaps_api)
+    df_full_geocoded.to_csv("data/test/elias_test_geocoded.csv", index=False)
     pass
