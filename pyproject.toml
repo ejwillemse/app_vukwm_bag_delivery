@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "app-vukwm-bag-delivery"
+version = "0.1.0"
+description = ""
+authors = ["ejwillemse <ejwillemse@gmail.com>"]
+readme = "README.md"
+packages = [{include = "app_vukwm_bag_delivery"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+streamlit = "^1.15.2"
+watchdog = "^2.2.0"
+pylint = "^2.15.8"
+black = "^22.10.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
