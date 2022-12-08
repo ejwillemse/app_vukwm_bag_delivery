@@ -4,6 +4,7 @@ from app_vukwm_bag_delivery.google_geocode import geocode_addresses
 import app_vukwm_bag_delivery.aggregates as aggregates
 from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
 from app_vukwm_bag_delivery.download_to_excel import to_excel
+import time
 
 # from app_vukwm_bag_delivery.download_to_excel import to_excel
 
@@ -42,8 +43,13 @@ def check_password():
 
 def stream_geocode_addresses(df):
     with st.spinner("Geocoding missing lat-lon addresses"):
-        df = geocode_addresses(df, st.secrets["google_maps_api"], test=True)
+        df = geocode_addresses(df, st.secrets["google_maps_api"], test=False)
     return df
+
+
+@st.cache()
+def check_upload(df):
+    st.session_state.geocoding = False
 
 
 def main_stream_app():
@@ -61,10 +67,14 @@ def main_stream_app():
     uploaded_file = st.file_uploader("Choose an excel file to upload.")
     if uploaded_file is not None:
         st.session_state.file_name = uploaded_file.name
-        df = pd.read_excel(uploaded_file)
-        st.session_state.input_columns = df.columns
-        df = stream_geocode_addresses(df)
-        if df["geocoded"].any():
+        df_upload = pd.read_excel(uploaded_file)
+        check_upload(df_upload)
+        st.session_state.input_columns = df_upload.columns
+        if "geocoding" not in st.session_state or st.session_state.geocoding is False:
+            st.session_state.df = stream_geocode_addresses(df_upload.copy())
+            st.session_state.geocoding = True
+        if st.session_state.geocoding is True and "df" in st.session_state:
+            df = st.session_state.df.copy()
             st.subheader("Geocoding results")
             with st.expander(
                 "Some addresses did not have lat-lon coordinates and were geocoded. Click here to view the results."
@@ -74,9 +84,10 @@ def main_stream_app():
                 )
                 st.dataframe(df.loc[df["geocoded"]])
                 st.map(df.loc[df["geocoded"]])
-        st.session_state.stop_data = df
+            st.session_state.stop_data = df
 
 
+st.set_page_config(layout="wide")
 st.title("VUKWM Bag delivery")
 
 if check_password():
@@ -99,13 +110,12 @@ if "stop_data" in st.session_state:
         day_summary, max_fraction_cutoff, min_stop_cutoff
     )
     if unique_dates.shape[0] > 0:
-        delivery_date = st.multiselect(
+        delivery_date = st.selectbox(
             "Select a delivery date",
             unique_dates,
-            default=[unique_dates.max()],
         )
         stop_data_filter = stop_data.loc[
-            stop_data["collection_date"].isin(delivery_date)
+            stop_data["collection_date"].isin([delivery_date])
         ]
     else:
         stop_data_filter = pd.DataFrame()
