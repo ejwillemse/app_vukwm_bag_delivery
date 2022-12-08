@@ -1,7 +1,11 @@
 import streamlit as st
 import pandas as pd
 from app_vukwm_bag_delivery.google_geocode import geocode_addresses
+import app_vukwm_bag_delivery.aggregates as aggregates
+from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
 from app_vukwm_bag_delivery.download_to_excel import to_excel
+
+# from app_vukwm_bag_delivery.download_to_excel import to_excel
 
 
 def check_password():
@@ -53,125 +57,155 @@ def main_stream_app():
         )
     uploaded_file = st.file_uploader("Choose an excel file to upload.")
     if uploaded_file is not None:
-        file_name = uploaded_file.name
+        st.session_state.file_name = uploaded_file.name
         df = pd.read_excel(uploaded_file)
+        st.session_state.input_columns = df.columns
         df = stream_geocode_addresses(df)
         if df["geocoded"].any():
+            st.subheader("Geocoding results")
             with st.expander(
-                "Some addresses did not have lat-lon coordinates and were geocoded. The results can be viewed here"
+                "Some addresses did not have lat-lon coordinates and were geocoded. Click here to view the results."
             ):
                 st.write(
                     f"The following {df['geocoded'].sum()} addresses were geocoded"
                 )
                 st.dataframe(df.loc[df["geocoded"]])
                 st.map(df.loc[df["geocoded"]])
-        # df_download = df.copy()
-        # df_download["Site Latitude"] = df_download["latitude"]
-        # df_download["Site Longitude"] = df_download["longitude"]
-        # df_download = df_download.drop(columns=["latitude", "longitude"])
-        # df_xlsx = to_excel(df_download)
-        # st.download_button(
-        #     "Press to Download",
-        #     data=df_xlsx,
-        #     file_name=f"{file_name.replace('.xlsx', '')}_geocoded.xlsx",
-        # )
         st.session_state.stop_data = df
 
 
-st.title("VUKM Bag delivery")
+st.title("VUKWM Bag delivery")
 
 if check_password():
     main_stream_app()
 
 if "stop_data" in st.session_state:
-    data_options = st.session_state.stop_data.copy()
-    date_range = data_options.assign(
-        collection_date=pd.to_datetime(
-            data_options["Required Date"], dayfirst=True
-        ).dt.strftime(
-            "%Y-%m-%d",
-        )
-    )
-
-    frac_na_dates = (
-        (
-            date_range.assign(nan_reg=date_range["Registration No"].isna())
-            .groupby(["collection_date"])
-            .agg(
-                n_stops=("collection_date", "count"),
-                n_unassigned=("nan_reg", "sum"),
-            )
-        )
-        .reset_index()
-        .rename(
-            columns={
-                "collection_date": "Collection date",
-                "n_stops": "Total number of stops",
-                "n_unassigned": "Stops not assigned to a vehicle",
-            }
-        )
-    )
-
-    frac_na_dates["Fraction of stops not assigned"] = (
-        frac_na_dates["Stops not assigned to a vehicle"]
-        / frac_na_dates["Total number of stops"]
-    ).round(2)
+    st.subheader("Delivery summaries")
+    stop_data = st.session_state.stop_data.copy()
+    stop_data = aggregates.date_to_string(stop_data)
+    day_summary = aggregates.get_day_summary(stop_data)
     st.write("Total number of stops and unassigned stops for delivery days:")
-    st.dataframe(frac_na_dates)
+    st.dataframe(day_summary)
 
-    min_fraction_cutoff = st.slider(
+    max_fraction_cutoff = st.slider(
         "Maximum allowed fraction of unassigned stops", 0.0, 1.0, 0.25
     )
     min_stop_cutoff = st.slider("Minimum required number of stops", 0, 100, 25)
 
-    allowed_dates = (frac_na_dates["Total number of stops"] >= min_stop_cutoff) & (
-        frac_na_dates["Fraction of stops not assigned"] <= min_fraction_cutoff
+    unique_dates = aggregates.get_unique_filtered_dates(
+        day_summary, max_fraction_cutoff, min_stop_cutoff
     )
-
-    unique_dates = (
-        frac_na_dates.loc[allowed_dates]["Collection date"].sort_values().unique()
-    )
-    delivery_date = st.multiselect(
-        "Select a delivery date",
-        unique_dates,
-        default=[unique_dates.max()],
-    )
-    date_filter = date_range.loc[date_range["collection_date"].isin(delivery_date)]
-    if date_filter.shape[0] > 0:
-        date_filter = date_filter.assign(
-            tansport_area_num=date_filter["Transport Area Code"].str[:-1].astype(int)
-        ).sort_values(["collection_date", "Registration No", "tansport_area_num"])
-        vehicle_delivery_summary = (
-            date_filter.groupby(["Registration No"])
-            .agg(
-                n_stops=("Registration No", "count"),
-                assigned_zones=("tansport_area_num", "unique"),
-            )
-            .reset_index()
-        ).rename(columns={"n_stops": "Total number of stops"})
-        vehicle_summary = (
-            date_filter.groupby(["Registration No", "Product Name"])
-            .agg(
-                n_stops=("Registration No", "count"),
-                n_boxes=("Quantity", "sum"),
-            )
-            .reset_index()
-        ).rename(
-            columns={
-                "n_stops": "Number of deliveries",
-                "n_boxes": "Number of boxes",
-                "assigned_zones": "Transport zone number",
-            }
+    if unique_dates.shape[0] > 0:
+        delivery_date = st.multiselect(
+            "Select a delivery date",
+            unique_dates,
+            default=[unique_dates.max()],
         )
-        st.write("Delivery stops assigned to each vehicle")
-        st.dataframe(vehicle_delivery_summary)
-        st.write("Number of stops per boxes type and number of boxes per vehicle")
-        vehicle_filter = st.multiselect(
-            "Select vehicles:",
-            vehicle_delivery_summary["Registration No"].unique(),
-            default=vehicle_delivery_summary["Registration No"].unique(),
-        )
-        vehicle_summary_limit = vehicle_summary.loc[
-            vehicle_summary["Registration No"].isin(vehicle_filter)
+        stop_data_filter = stop_data.loc[
+            stop_data["collection_date"].isin(delivery_date)
         ]
-        st.dataframe(vehicle_summary_limit)
+    else:
+        stop_data_filter = pd.DataFrame()
+
+    if stop_data_filter.shape[0] > 0:
+        route_summary = aggregates.calc_route_summary(stop_data_filter)
+        route_product_summary = aggregates.calc_route_product_summary(stop_data_filter)
+
+        st.write("Deliveries assigned to each vehicle")
+        st.dataframe(route_summary)
+
+        vehicle_filter = st.multiselect(
+            "Select vehicles for further inspection:",
+            route_summary["Registration No"].unique(),
+            default=route_summary["Registration No"].unique(),
+        )
+        st.write("Number of deliveries per box type and number of boxes per vehicle")
+        route_product_summary_filtered = route_product_summary.loc[
+            route_product_summary["Registration No"].isin(vehicle_filter)
+        ]
+        st.dataframe(route_product_summary_filtered)
+        st.session_state.route_stops = stop_data_filter.copy()
+        st.session_state.route_summary = route_summary.copy()
+        st.session_state.route_product_summary_filtered = (
+            route_product_summary_filtered.copy()
+        )
+
+if "route_stops" in st.session_state:
+    st.subheader("Sequence deliveries for assigned vehicles")
+    if st.button("Generate route sequences"):
+        route_stops = st.session_state.route_stops.copy()
+        n_vehicles = route_stops["Registration No"].nunique()
+        with st.spinner(
+            f"Generating delivery sequences for the {n_vehicles} selected vehicles..."
+        ):
+            results = sequence_routes(route_stops, ports=st.secrets["osrm_ports"][0])
+            assigned_stops = results[0]
+            results_summary = results[-1]
+            tsp_route_summary = (
+                (
+                    st.session_state.route_product_summary_filtered.copy()
+                    .groupby(["Registration No"])
+                    .agg(
+                        n_deliveries=("Number of deliveries", "sum"),
+                        n_boxes=("Number of boxes", "sum"),
+                        product_types=("Product Name", "unique"),
+                    )
+                    .rename(
+                        columns={
+                            "n_deliveries": "Number of deliveries",
+                            "n_boxes": "Number of boxes",
+                            "product_types": "Products",
+                        }
+                    )
+                )
+                .reset_index()
+                .merge(results_summary)
+                .merge(
+                    st.session_state.route_summary[
+                        ["Registration No", "Assigned zone numbers"]
+                    ]
+                )
+            )[
+                [
+                    "Registration No",
+                    "Number of deliveries",
+                    "Number of boxes",
+                    "Total route distance (km)",
+                    "Total route travel time (h)",
+                    "Assigned zone numbers",
+                    "Products",
+                    "geometry",
+                ]
+            ]
+            st.session_state.tsp_route_summary = tsp_route_summary
+            st.session_state.assigned_stops = assigned_stops
+
+    if "tsp_route_summary" in st.session_state:
+        st.subheader("Route summary")
+        st.dataframe(st.session_state.tsp_route_summary.drop(columns=["geometry"]))
+        st.subheader("Sequenced orders")
+    if "assigned_stops" in st.session_state:
+        vehicle_filter = st.multiselect(
+            "Select vehicles for inspection and download:",
+            st.session_state.assigned_stops["Registration No"].unique(),
+            default=st.session_state.assigned_stops["Registration No"].unique(),
+        )
+        assigned_vehicle_stops = st.session_state.assigned_stops.loc[
+            st.session_state.assigned_stops["Registration No"].isin(vehicle_filter)
+        ]
+        df_download = assigned_vehicle_stops.copy().rename(
+            columns={"route_sequence": "Route sequence"}
+        )
+        df_download["Site Latitude"] = df_download["latitude"]
+        df_download["Site Longitude"] = df_download["longitude"]
+        df_download = df_download[
+            st.session_state.input_columns.tolist() + ["geocoded", "Route sequence"]
+        ]
+
+        st.dataframe(df_download)
+        df_xlsx = to_excel(df_download)
+        st.download_button(
+            "Press to Download",
+            data=df_xlsx,
+            file_name=f"{st.session_state.file_name.replace('.xlsx', '')}_sequenced.xlsx",
+        )
