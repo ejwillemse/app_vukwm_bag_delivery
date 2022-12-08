@@ -52,7 +52,10 @@ def main_stream_app():
             """
         Step 1: Upload a bag-delivery excel file.\n
         Step 2: The application will then geocode missing latitude and longitude coordinates using google-maps and show the results.\n
-        Step 3: Click on `"Press to Download"` to download the missing latitude and longitude addresses added.
+        Step 3: Choose a delivery day to generate routes for, taking into acount that stops already have to be assigned to vehicles.\n
+        Step 4: Select one or more vehicles to generate routes for. We recommend choosing all assigned vehicles.\n
+        Step 5: Click on the generate route button, and job sequences for each vehicle will be generated.\n
+        Step 6: Download the results as an Excel file.
         """
         )
     uploaded_file = st.file_uploader("Choose an excel file to upload.")
