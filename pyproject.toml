@@ -18,6 +18,8 @@ toml = "^0.10.2"
 pyxlsb = "^1.0.10"
 XlsxWriter = "^3.0.3"
 geopandas = "^0.12.1"
+streamlit-aggrid = "^0.3.3"
+hygese = "^0.0.0.8"
 
 
 [build-system]

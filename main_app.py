@@ -4,9 +4,6 @@ from app_vukwm_bag_delivery.google_geocode import geocode_addresses
 import app_vukwm_bag_delivery.aggregates as aggregates
 from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
 from app_vukwm_bag_delivery.download_to_excel import to_excel
-import time
-
-# from app_vukwm_bag_delivery.download_to_excel import to_excel
 
 
 def check_password():

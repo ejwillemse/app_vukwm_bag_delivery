@@ -80,6 +80,12 @@ def get_area_num(df):
     ).sort_values(["collection_date", "Registration No", "tansport_area_num"])
 
 
+def get_area_num_format(df):
+    return df.assign(
+        tansport_area_num=df["Transport Area Code"].str[:-1].astype(int)
+    ).sort_values(["collection_date", "Registration No", "tansport_area_num"])
+
+
 def calc_route_summary(df):
     df = get_area_num(df)
     route_summary = (
@@ -103,6 +109,23 @@ def calc_route_product_summary(df):
         df.groupby(["Registration No", "Product Name"])
         .agg(
             n_stops=("Registration No", "count"),
+            n_boxes=("Quantity", "sum"),
+        )
+        .reset_index()
+    ).rename(
+        columns={
+            "n_stops": "Number of deliveries",
+            "n_boxes": "Number of boxes",
+        }
+    )
+    return route_product_summary
+
+
+def calc_product_summary(df):
+    route_product_summary = (
+        df.groupby(["Product Name"])
+        .agg(
+            n_stops=("Product Name", "count"),
             n_boxes=("Quantity", "sum"),
         )
         .reset_index()
