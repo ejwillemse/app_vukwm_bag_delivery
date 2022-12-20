@@ -20,6 +20,8 @@ XlsxWriter = "^3.0.3"
 geopandas = "^0.12.1"
 streamlit-aggrid = "^0.3.3"
 hygese = "^0.0.0.8"
+boto3 = "^1.26.34"
+boto = "^2.49.0"
 
 
 [build-system]

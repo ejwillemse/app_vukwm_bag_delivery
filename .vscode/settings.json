@@ -1,0 +1,27 @@
+{
+    "python.autoComplete.extraPaths": [
+        "./app_vukwm_bag_delivery"
+    ],
+    "python.testing.pytestArgs": [
+        "app_vukwm_bag_delivery",
+        "./app_vukwm_bag_delivery"
+    ],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.analysis.extraPaths": [
+        "./app_vukwm_bag_delivery"
+    ],
+    "code-runner.executorMap": {
+        "python": "\"$pythonPath\" $fullFileName",
+    },
+    "editor.formatOnSaveMode": "file",
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
+    "python.linting.pylintEnabled": true,
+    "python.linting.enabled": true,
+    "python.analysis.typeCheckingMode": "basic",
+    "python.formatting.provider": "black",
+    "editor.formatOnSave": true,
+    "python.logging.level": "info",
+}
