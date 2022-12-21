@@ -32,10 +32,10 @@ def get_crs_code(df: pd.DataFrame) -> str:
     utm_crs_list = query_utm_crs_info(
         datum_name="WGS 84",
         area_of_interest=AreaOfInterest(
-            west_lon_degree=df["longitude"].min(),
-            south_lat_degree=df["latitude"].min(),
-            east_lon_degree=df["longitude"].max(),
-            north_lat_degree=df["latitude"].max(),
+            west_lon_degree=df["lon"].min(),
+            south_lat_degree=df["lat"].min(),
+            east_lon_degree=df["lon"].max(),
+            north_lat_degree=df["lat"].max(),
         ),
     )
     utm_crs = utm_crs_list[0]
@@ -71,7 +71,7 @@ def add_xy_projected_coordinate_point_features(
     crs_code = get_crs_code(df)
     df_geo = gpd.GeoDataFrame(
         df.copy(),
-        geometry=gpd.points_from_xy(x=df["longitude"], y=df["latitude"]),
+        geometry=gpd.points_from_xy(x=df["lon"], y=df["lat"]),
         crs="EPSG:4326",
     ).to_crs(  # type: ignore
         crs_code

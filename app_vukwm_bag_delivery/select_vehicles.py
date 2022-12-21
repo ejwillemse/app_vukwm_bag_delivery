@@ -1,21 +1,9 @@
-import streamlit as st
 import pandas as pd
-from st_aggrid import GridOptionsBuilder, AgGrid
+import streamlit as st
+from st_aggrid import AgGrid, GridOptionsBuilder
 
 
-def select_vehicles():
-    st.subheader("Select vehicles")
-    with st.expander("Instructions"):
-        st.markdown(
-            """
-        Step 1: Upload a bag-delivery excel file.\n
-        Step 2: The application will then geocode missing latitude and longitude coordinates using google-maps and show the results.\n
-        Step 3: Choose a delivery day to generate routes for, taking into acount that stops already have to be assigned to vehicles.\n
-        Step 4: Select one or more vehicles to generate routes for. We recommend choosing all assigned vehicles.\n
-        Step 5: Click on the generate route button, and job sequences for each vehicle will be generated.\n
-        Step 6: Download the results as an Excel file.
-        """
-        )
+def return_vehicle_default():
     vehicle_ids = ["W01", "W02", "W03", "W04", "W05", "W06"]
     vehicle_type = ["Van", "Van", "Van", "Bicycle", "Van", "Van"]
     depot = [
@@ -30,6 +18,8 @@ def select_vehicles():
     lat = [51.49175400, 51.49175400, 51.49175400, 51.51358620, 51.49175400, 51.49175400]
     capacity = [500, 500, 500, 25, 500, 500]
     dedicated_transport_zones = [None, None, None, 2, None, None]
+    cost_per_km = [1, 1, 1, 0.5, 1, 1]
+    cost_per_h = [10, 10, 10, 10, 10, 10]
 
     vehicle_df = pd.DataFrame(
         {
@@ -38,12 +28,16 @@ def select_vehicles():
             "Capacity (#boxes)": capacity,
             "Depot": depot,
             "Dedicated transport zones": dedicated_transport_zones,
+            "Cost (£) per km": cost_per_km,
+            "Cost (£) per hour": cost_per_h,
             "lat": lat,
             "lon": lon,
         }
     )
-    data = vehicle_df.copy()
+    return vehicle_df
 
+
+def return_vehicle_grid(data):
     gb = GridOptionsBuilder.from_dataframe(data)
     gb.configure_selection(
         "multiple",
@@ -72,6 +66,22 @@ def select_vehicles():
         "lon",
         editable=True,
     )
+    gb.configure_column(
+        "Vehicle id",
+        editable=True,
+    )
+    gb.configure_column(
+        "Capacity (#boxes)",
+        editable=True,
+    )
+    gb.configure_column(
+        "Cost (£) per km",
+        editable=True,
+    )
+    gb.configure_column(
+        "Cost (£) per hour",
+        editable=True,
+    )
 
     gridOptions = gb.build()
 
@@ -92,20 +102,30 @@ def select_vehicles():
         editable=True,
         allow_unsafe_jscode=True,
     )
+    return grid_response
 
+
+def select_vehicles():
+    st.write("The following vehicles are available for routing:")
+    vehicle_df = return_vehicle_default()
+    data = vehicle_df
+    grid_response = return_vehicle_grid(data)
     data = grid_response["data"]
     selected = grid_response["selected_rows"]
     select_vehicles = pd.DataFrame(
         selected
     )  # Pass the selected rows to a new dataframe df
 
-    if select_vehicles.shape[0] == 0:
-        st.write(
-            "No vehicles were selected so it's assumed that all are available for routing"
-        )
-        select_vehicles = vehicle_df
-    else:
-        st.write("The following vehicles were selected for routing:")
+    if select_vehicles.shape[0] > 0:
         select_vehicles = select_vehicles.drop(columns=["_selectedRowNodeInfo"])
-        st.write(select_vehicles)
-    st.session_state.fleet = select_vehicles.copy()
+        st.session_state.fleet = select_vehicles.copy()
+
+    if "fleet" in st.session_state:
+        st.write(
+            "The following vehicles were selected for routing during this session:"
+        )
+        st.write(st.session_state.fleet)
+
+
+if __name__ == "__main__":
+    print(return_vehicle_default().columns)

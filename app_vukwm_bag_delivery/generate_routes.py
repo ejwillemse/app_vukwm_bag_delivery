@@ -1,8 +1,9 @@
-import streamlit as st
 import pandas as pd
-from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
+import streamlit as st
+from st_aggrid import AgGrid, GridOptionsBuilder
+
 import app_vukwm_bag_delivery.hygese_solver as hygese_solver
-from st_aggrid import GridOptionsBuilder, AgGrid
+from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
 
 
 def allocate_jobs_per_type(fleet_df, jobs):
@@ -49,7 +50,7 @@ def add_depot(df, fleet, vehicle_id):
     depot_stop = (
         fleet.loc[fleet["Vehicle id"] == vehicle_id]
         .iloc[:1][["Depot", "lat", "lon", "Vehicle id"]]
-        .rename(columns={"Depot": "Site Name", "lon": "longitude", "lat": "latitude"})
+        .rename(columns={"Depot": "Site Name"})
     )
     df_routing = pd.concat([depot_stop, df, depot_stop]).reset_index(drop=True)
     return df_routing
@@ -66,7 +67,7 @@ def generate_bicycle_routes():
         with st.spinner(f"Generating delivery sequences for the bicycle..."):
             results = sequence_routes(
                 df_routing,
-                ports=st.secrets["osrm_ports"][0],
+                ports=st.secrets["osrm_ports"],
                 route_column="Vehicle id",
             )
             gb = GridOptionsBuilder.from_dataframe(results[0])
@@ -84,6 +85,7 @@ def generate_bicycle_routes():
                 reload_data=True,
                 allow_unsafe_jscode=True,
             )
+            return results[0]
 
 
 def generate_van_routes(fleet):
@@ -107,28 +109,17 @@ def generate_van_routes(fleet):
                 reload_data=True,
                 allow_unsafe_jscode=True,
             )
+            return assigned_jobs
 
 
 def generate_routes(fleet, delivery_jobs):
-    st.subheader("Generate routes")
-    with st.expander("Instructions"):
-        st.markdown(
-            """
-        Step 1: Upload a bag-delivery excel file.\n
-        Step 2: The application will then geocode missing latitude and longitude coordinates using google-maps and show the results.\n
-        Step 3: Choose a delivery day to generate routes for, taking into acount that stops already have to be assigned to vehicles.\n
-        Step 4: Select one or more vehicles to generate routes for. We recommend choosing all assigned vehicles.\n
-        Step 5: Click on the generate route button, and job sequences for each vehicle will be generated.\n
-        Step 6: Download the results as an Excel file.
-        """
-        )
     allocate_jobs_per_type(fleet, delivery_jobs)
 
 
 def start_routing():
 
-    if "delivery_jobs" in st.session_state:
-        delivery_jobs = st.session_state.delivery_jobs.copy()
+    if "unassigned_stops_date" in st.session_state:
+        delivery_jobs = st.session_state.unassigned_stops_date.copy()
     else:
         delivery_jobs = None
 
@@ -139,6 +130,8 @@ def start_routing():
 
     if fleet is not None and delivery_jobs is not None:
         generate_routes(fleet, delivery_jobs)
-        if st.button("Generate route sequences"):
-            generate_bicycle_routes()
-            generate_van_routes(fleet)
+        if st.button("GENERATE ROUTES"):
+            bicycle_jobs = generate_bicycle_routes()
+            van_routes = generate_van_routes(fleet)
+            routes = pd.concat([bicycle_jobs, van_routes]).reset_index(drop=True)
+            st.session_state.assigned_jobs = routes.copy()

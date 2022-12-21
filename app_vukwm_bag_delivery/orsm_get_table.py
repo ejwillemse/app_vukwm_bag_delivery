@@ -16,8 +16,8 @@ PORT_TYPE_MAPPING_DEFAULT_STOP_LIMIT = 1000
 def get_time_dist_matrix(
     data: pd.DataFrame,
     endpoint: str = None,
-    lon_col: str = "longitude",
-    lat_col: str = "latitude",
+    lon_col: str = "lon",
+    lat_col: str = "lat",
     timeout: float = 120,
     slow_down: float = 1,
 ) -> Tuple[np.ndarray, np.ndarray]:

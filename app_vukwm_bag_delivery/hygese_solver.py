@@ -2,16 +2,17 @@
 https://github.com/chkwon/PyHygese
 """
 
-import pandas as pd
-import numpy as np
 import hygese as hgs
+import numpy as np
+import pandas as pd
+
 from .geo_utils import add_xy_projected_coordinate_point_features
 from .orsm_get_table import get_time_dist_matrix
 
 
 def add_single_depot(df, fleet):
     depot_stop = fleet.iloc[:1][["Depot", "lat", "lon", "Vehicle id"]].rename(
-        columns={"Depot": "Site Name", "lon": "longitude", "lat": "latitude"}
+        columns={"Depot": "Site Name"}
     )
     df_routing = pd.concat([depot_stop, df]).reset_index(drop=True)
     return df_routing
