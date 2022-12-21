@@ -18,7 +18,7 @@ def add_single_depot(df, fleet):
     return df_routing
 
 
-def prepare_data(df, fleet, demand_column="Quantity", capacity_spread=0.1):
+def prepare_data(df, fleet, demand_column="Total boxes", capacity_spread=0.1):
     df_routing = add_single_depot(df, fleet)
     df_routing = add_xy_projected_coordinate_point_features(df_routing)
     time_matrix, distance_matrix = get_time_dist_matrix(
@@ -55,7 +55,7 @@ def solve_vrp(data, time_limit=3):
 def decode_solution(df, fleet, results):
     df = df.assign(id=np.arange(0, df.shape[0]) + 1)
     depot_stop = fleet.iloc[:1][["Depot", "lat", "lon", "Vehicle id"]].rename(
-        columns={"Depot": "Site Name", "lon": "longitude", "lat": "latitude"}
+        columns={"Depot": "Site Name", "lon": "lon", "lat": "lat"}
     )
     routes = []
     for i, route in enumerate(results.routes):
@@ -78,8 +78,8 @@ def decode_solution(df, fleet, results):
             "Vehicle id",
             "vehicle_type",
             "route_sequence",
-            "latitude",
-            "longitude",
+            "lat",
+            "lon",
         ]
     ]
     return routes_full

@@ -7,6 +7,10 @@ from app_vukwm_bag_delivery.download_to_excel import to_excel
 from app_vukwm_bag_delivery.generate_routes import start_routing
 from app_vukwm_bag_delivery.google_geocode import geocode_addresses
 from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
+from app_vukwm_bag_delivery.return_session_staus import (
+    return_side_bar,
+    return_side_short,
+)
 from app_vukwm_bag_delivery.select_vehicles import select_vehicles
 from check_password import check_password
 from routing_job_selection import stop_data_summary
@@ -24,6 +28,10 @@ if not check_password():
     st.warning("Please log-in to continue.")
     st.stop()  # App won't run anything after this line
 
+
+st.sidebar.header("Session status")
+status_text = st.sidebar.empty()
+status_text.markdown(return_side_short())
 
 with st.expander("Instructions"):
     st.markdown(
@@ -54,40 +62,8 @@ if "stop_data" not in st.session_state:
         geo_data = geo_data.assign(lon=geo_data["Site Longitude"])
         st.session_state.stop_data = geo_data.copy()
 
-
-if "stop_data" in st.session_state:
-    data_loaded_tickbox = " :white_check_mark: Job data have been imported and can be inspected in the `Review Jobs Data` page.\n"
-else:
-    data_loaded_tickbox = " :red_circle: Job data has not yet been imported.\n"
-
-if "fleet" in st.session_state:
-    fleet_loaded_tickbox = (
-        " :white_check_mark: Vehicles have been selected for routing.\n"
-    )
-else:
-    fleet_loaded_tickbox = " :red_circle: Vehicles still have to be selected for routing. Please go to the `Select Vehicles` page.\n"
-
-if "assigned_jobs" in st.session_state:
-    routes_generated_tickbox = " :white_check_mark: Routes have been generated for the vehicles and can be inspected in the `View Routes` page and modified in the `Update Routes` page.\n"
-else:
-    routes_generated_tickbox = " :red_circle: Routes still have to be generated for the vehicles. Please go to `Generate Routes` page.\n"
-
-if "jobs_dispatched" in st.session_state:
-    routes_dispatched_tickbox = (
-        " :white_check_mark: Routes have been dispatched to the drivers.\n"
-    )
-else:
-    routes_dispatched_tickbox = " :red_circle: Routes still have to be dispatched to the drivers. Please go to the `Dispatch Routes` page.\n"
-
-st.markdown(
-    f"""
-Status of session steps:\n 
-{data_loaded_tickbox}
-{fleet_loaded_tickbox}
-{routes_generated_tickbox}
-{routes_dispatched_tickbox}
-"""
-)
+st.markdown(return_side_bar())
+status_text.markdown(return_side_short())
 # upload_and_geocode_file()
 # stop_data_summary()
 # select_vehicles()

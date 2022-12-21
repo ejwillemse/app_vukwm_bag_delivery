@@ -24,6 +24,7 @@ boto3 = "^1.26.34"
 boto = "^2.49.0"
 jupyterlab = "^3.5.2"
 gpsodyssey = {git = "https://github.com/WasteLabs/GPSOdyssey.git"}
+matplotlib = "^3.6.2"
 
 
 [build-system]

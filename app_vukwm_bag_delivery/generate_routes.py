@@ -3,6 +3,7 @@ import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder
 
 import app_vukwm_bag_delivery.hygese_solver as hygese_solver
+import app_vukwm_bag_delivery.return_routes as return_routes
 from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
 
 
@@ -64,52 +65,52 @@ def generate_bicycle_routes():
         fleet = st.session_state.fleet
         vehicle_id = route_stops["Vehicle id"].unique()[0]
         df_routing = add_depot(route_stops, fleet, vehicle_id=vehicle_id)
-        with st.spinner(f"Generating delivery sequences for the bicycle..."):
-            results = sequence_routes(
-                df_routing,
-                ports=st.secrets["osrm_ports"],
-                route_column="Vehicle id",
-            )
-            gb = GridOptionsBuilder.from_dataframe(results[0])
-            gb.configure_pagination(enabled=True)
-            gb.configure_side_bar()
-            gridOptions = gb.build()
-            AgGrid(
-                results[0],
-                gridOptions=gridOptions,
-                fit_columns_on_grid_load=False,
-                theme="streamlit",  # Add theme color to the table
-                enable_enterprise_modules=True,
-                height=500,
-                width="100%",
-                reload_data=True,
-                allow_unsafe_jscode=True,
-            )
-            return results[0]
+        results = sequence_routes(
+            df_routing,
+            ports=st.secrets["osrm_ports"],
+            route_column="Vehicle id",
+        )
+        # gb = GridOptionsBuilder.from_dataframe(results[0])
+        # gb.configure_pagination(enabled=True)
+        # gb.configure_side_bar()
+        # gridOptions = gb.build()
+        # AgGrid(
+        #     results[0],
+        #     gridOptions=gridOptions,
+        #     fit_columns_on_grid_load=False,
+        #     theme="streamlit",  # Add theme color to the table
+        #     enable_enterprise_modules=True,
+        #     height=500,
+        #     width="100%",
+        #     reload_data=True,
+        #     allow_unsafe_jscode=True,
+        # )
+        return results[0]
 
 
-def generate_van_routes(fleet):
+def generate_van_routes(fleet, solver_max):
     if "remaining_jobs" in st.session_state:
         jobs = st.session_state.remaining_jobs
         fleet = fleet.loc[fleet["Type"] != "Bicycle"]
-        with st.spinner(f"Generating routes for the vans..."):
-            assigned_jobs, unassigned_jobs = hygese_solver.generate_routes(jobs, fleet)
-            gb = GridOptionsBuilder.from_dataframe(assigned_jobs)
-            gb.configure_pagination(enabled=True)
-            gb.configure_side_bar()
-            gridOptions = gb.build()
-            AgGrid(
-                assigned_jobs,
-                gridOptions=gridOptions,
-                fit_columns_on_grid_load=False,
-                theme="streamlit",  # Add theme color to the table
-                enable_enterprise_modules=True,
-                height=500,
-                width="100%",
-                reload_data=True,
-                allow_unsafe_jscode=True,
-            )
-            return assigned_jobs
+        assigned_jobs, unassigned_jobs = hygese_solver.generate_routes(
+            jobs, fleet, time_limit=solver_max
+        )
+        # gb = GridOptionsBuilder.from_dataframe(assigned_jobs)
+        # gb.configure_pagination(enabled=True)
+        # gb.configure_side_bar()
+        # gridOptions = gb.build()
+        # AgGrid(
+        #     assigned_jobs,
+        #     gridOptions=gridOptions,
+        #     fit_columns_on_grid_load=False,
+        #     theme="streamlit",  # Add theme color to the table
+        #     enable_enterprise_modules=True,
+        #     height=500,
+        #     width="100%",
+        #     reload_data=True,
+        #     allow_unsafe_jscode=True,
+        # )
+        return assigned_jobs
 
 
 def generate_routes(fleet, delivery_jobs):
@@ -130,8 +131,27 @@ def start_routing():
 
     if fleet is not None and delivery_jobs is not None:
         generate_routes(fleet, delivery_jobs)
+        st.subheader("Configure solver and generate routes")
+        solver_max = st.slider("Maximum solver-time (seconds)", 1, 120, 5)
         if st.button("GENERATE ROUTES"):
-            bicycle_jobs = generate_bicycle_routes()
-            van_routes = generate_van_routes(fleet)
-            routes = pd.concat([bicycle_jobs, van_routes]).reset_index(drop=True)
-            st.session_state.assigned_jobs = routes.copy()
+            with st.spinner(f"Generating routes..."):
+                bicycle_jobs = generate_bicycle_routes()
+                van_routes = generate_van_routes(fleet, solver_max)
+                routes = pd.concat([bicycle_jobs, van_routes]).reset_index(drop=True)
+                st.session_state.assigned_jobs = routes.copy()
+                st.write("Route generation completed.")
+                routes.to_csv("data/test/route_test.csv", index=False)
+                st.session_state.fleet.to_csv("data/test/fleet_test.csv", index=False)
+                st.session_state.unassigned_stops_date.to_csv(
+                    "data/test/unassigned_jobs.csv", index=False
+                )
+            with st.spinner(f"Generating route outputs..."):
+                routes = return_routes.generate_route_data(
+                    st.session_state.assigned_jobs,
+                    st.session_state.fleet,
+                    st.session_state.unassigned_stops_date,
+                )
+                route_maps = return_routes.return_map_html(routes)
+                st.session_state.routes = routes.copy()
+                st.session_state.route_maps = route_maps
+                st.write("Route visualisations completed")

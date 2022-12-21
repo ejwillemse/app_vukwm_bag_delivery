@@ -20,6 +20,8 @@ def return_vehicle_default():
     dedicated_transport_zones = [None, None, None, 2, None, None]
     cost_per_km = [1, 1, 1, 0.5, 1, 1]
     cost_per_h = [10, 10, 10, 10, 10, 10]
+    shift_start_time = ["09:00"] * 6
+    ave_duration = [5] * 6
 
     vehicle_df = pd.DataFrame(
         {
@@ -27,6 +29,8 @@ def return_vehicle_default():
             "Type": vehicle_type,
             "Capacity (#boxes)": capacity,
             "Depot": depot,
+            "Shift start time": shift_start_time,
+            "Average TAT per delivery (min)": ave_duration,
             "Dedicated transport zones": dedicated_transport_zones,
             "Cost (£) per km": cost_per_km,
             "Cost (£) per hour": cost_per_h,
@@ -80,6 +84,31 @@ def return_vehicle_grid(data):
     )
     gb.configure_column(
         "Cost (£) per hour",
+        editable=True,
+    )
+    gb.configure_column(
+        "Shift start time",
+        editable=True,
+        cellEditor="agSelectCellEditor",
+        cellEditorParams={
+            "values": [
+                "07:00",
+                "08:00",
+                "09:00",
+                "10:00",
+                "11:00",
+                "12:00",
+                "13:00",
+                "14:00",
+                "15:00",
+                "16:00",
+                "17:00",
+                "18:00",
+            ]
+        },
+    )
+    gb.configure_column(
+        "Average TAT per delivery (minutes)",
         editable=True,
     )
 

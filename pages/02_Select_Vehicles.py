@@ -1,5 +1,9 @@
 import streamlit as st
 
+from app_vukwm_bag_delivery.return_session_staus import (
+    return_side_bar,
+    return_side_short,
+)
 from app_vukwm_bag_delivery.select_vehicles import select_vehicles
 from check_password import check_password
 
@@ -17,6 +21,10 @@ if not check_password():
 
 st.title("Select and edit vehicles")
 
+st.sidebar.header("Session status")
+status_text = st.sidebar.empty()
+status_text.markdown(return_side_short())
+
 with st.expander("Instructions"):
     st.markdown(
         """
@@ -29,3 +37,4 @@ with st.expander("Instructions"):
     """
     )
 select_vehicles()
+status_text.markdown(return_side_short())

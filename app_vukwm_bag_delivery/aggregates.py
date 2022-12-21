@@ -1,5 +1,5 @@
-import pandas as pd
 import numpy as np
+import pandas as pd
 
 
 def date_to_string(df):
@@ -28,8 +28,8 @@ def get_day_summary(df):
         .rename(
             columns={
                 "collection_date": "Collection date",
-                "n_stops": "Total number of stops",
-                "n_unassigned": "Stops not assigned to a vehicle",
+                "n_stops": "Total number of tickets",
+                "n_unassigned": "Tickets not assigned to a vehicle",
                 "n_assigned_vehicles": "Number of assigned vehicles",
                 "assigned_vehicles": "Assigned vehicles",
             }
@@ -40,15 +40,15 @@ def get_day_summary(df):
     )
     order = [
         "Collection date",
-        "Total number of stops",
-        "Stops not assigned to a vehicle",
-        "Fraction of stops not assigned",
+        "Total number of tickets",
+        "Tickets not assigned to a vehicle",
+        "Fraction of tickets not assigned",
         "Number of assigned vehicles",
         "Assigned vehicles",
     ]
-    df_summary["Fraction of stops not assigned"] = (
-        df_summary["Stops not assigned to a vehicle"]
-        / df_summary["Total number of stops"]
+    df_summary["Fraction of tickets not assigned"] = (
+        df_summary["Tickets not assigned to a vehicle"]
+        / df_summary["Total number of tickets"]
     ).round(2)
     df_summary = df_summary[order]
     return df_summary
@@ -97,7 +97,7 @@ def calc_route_summary(df):
         .reset_index()
     ).rename(
         columns={
-            "n_stops": "Total number of stops",
+            "n_stops": "Total number of tickets",
             "assigned_zones": "Assigned zone numbers",
         }
     )
@@ -126,16 +126,48 @@ def calc_product_summary(df):
         df.groupby(["Product Name"])
         .agg(
             n_stops=("Product Name", "count"),
-            n_boxes=("Quantity", "sum"),
+            n_boxes=("Total boxes", "sum"),
         )
         .reset_index()
     ).rename(
         columns={
-            "n_stops": "Number of deliveries",
+            "n_stops": "Number of stops",
             "n_boxes": "Number of boxes",
         }
     )
     return route_product_summary
+
+
+def combine_product_name_quantity(df):
+    product_names = df["Product Name"].values
+    quantity = df["Quantity"].values
+    ticket_numbers = df["Ticket No"].values
+    boxes = df["Quantity"].sum()
+    descriptions = []
+    for i in range(product_names.shape[0]):
+        descriptions.append(f"{product_names[i]}: {quantity[i]}")
+    descriptions = "\n".join(descriptions)
+    df = df.iloc[:1]  # .drop(columns=["Site Bk"])
+    df["Product description"] = descriptions
+    df["Ticket No"] = "; ".join(ticket_numbers)
+    df["Total boxes"] = boxes
+    df["Product Name"] = "; ".join(product_names)
+    df["Quantity"] = "; ".join(quantity.astype(str))
+    return df
+
+
+def combine_orders(df):
+    orders = date_to_string(df)
+    orders = get_area_num(orders)
+    orders["Transport area"] = "# " + orders["tansport_area_num"].astype(str).str.pad(
+        2, fillchar="0"
+    )
+    orders_grouped = (
+        orders.groupby(["Site Bk"])
+        .apply(combine_product_name_quantity)
+        .reset_index(drop=True)
+    )
+    return orders_grouped
 
 
 if __name__ == "__main__":

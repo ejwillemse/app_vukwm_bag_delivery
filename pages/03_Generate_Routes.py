@@ -1,6 +1,10 @@
 import streamlit as st
 
 from app_vukwm_bag_delivery.generate_routes import start_routing
+from app_vukwm_bag_delivery.return_session_staus import (
+    return_side_bar,
+    return_side_short,
+)
 from check_password import check_password
 
 st.set_page_config(
@@ -15,6 +19,10 @@ if not check_password():
     st.stop()  # App won't run anything after this line
 
 st.title("Generate routes")
+
+st.sidebar.header("Session status")
+status_text = st.sidebar.empty()
+status_text.markdown(return_side_short())
 
 with st.expander("Instructions"):
     st.markdown(
@@ -48,3 +56,5 @@ st.write("Routes will be generated for the following vehicles:")
 st.write(st.session_state.fleet)
 
 start_routing()
+
+status_text.markdown(return_side_short())

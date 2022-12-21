@@ -181,6 +181,5 @@ def combine_orders(df):
 
 
 def return_order_map_html(df):
-    orders_grouped = combine_orders(df)
-    m = KeplerGl(data={"orders": orders_grouped}, config=return_order_config())
+    m = KeplerGl(data={"orders": df}, config=return_order_config())
     return m._repr_html_(center_map=True, read_only=True)
