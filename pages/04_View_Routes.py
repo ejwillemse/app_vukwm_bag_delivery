@@ -3,8 +3,38 @@ import plotly.express as px
 import streamlit as st
 import streamlit.components.v1 as components
 
+from app_vukwm_bag_delivery.return_session_staus import (
+    return_side_bar,
+    return_side_short,
+)
+from check_password import check_password
+
 
 def generate_timeline(df):
+
+    hovertemplate1 = (
+        "<b>Stop no.: %{customdata[0]}</b><br>"
+        + "Site: %{customdata[1]}<br>"
+        + "Address: %{customdata[2]}<br>"
+        + "Delivery products: %{customdata[3]}<br>"
+        + "Total boxes: %{customdata[4]}<br>"
+        + "Arrival time: %{customdata[5]}<br>"
+        + "Departure time: %{customdata[6]}<br>"
+    )
+
+    custom_data = [
+        "Route sequence",
+        "Site Name",
+        "Site Address",
+        "Product description",
+        "Total boxes",
+        "arrive",
+        "depart",
+    ]
+
+    df["arrive"] = df["arrival_time"].dt.strftime("%H:%M:%S")
+    df["depart"] = df["depart_time"].dt.strftime("%H:%M:%S")
+
     assigned_stops_route_paths_plot = df.copy()
     assigned_stops_route_paths_plot = assigned_stops_route_paths_plot.rename(
         columns={
@@ -22,7 +52,9 @@ def generate_timeline(df):
         y="Route ID",
         color="Vehicle type",
         text="Route sequence",
+        custom_data=custom_data,
     )
+    _ = fig.update_traces(hovertemplate=hovertemplate1)
     return fig
 
 
@@ -68,12 +100,6 @@ def summarise_route(assigned_stops_route_paths):
     return route_sum
 
 
-from app_vukwm_bag_delivery.return_session_staus import (
-    return_side_bar,
-    return_side_short,
-)
-from check_password import check_password
-
 if not check_password():
     st.warning("Please log-in to continue.")
     st.stop()  # App won't run anything after this line
@@ -105,9 +131,11 @@ if "routes" not in st.session_state:
 
 routes = st.session_state.routes.copy()
 route_maps = st.session_state.route_maps
-components.html(route_maps, height=750)
 route_sum = summarise_route(routes)
 st.write("Route summary")
 st.write(route_sum)
+
+components.html(route_maps, height=750)
+
 st.write("Route timeline")
 st.plotly_chart(generate_timeline(routes), theme="streamlit", use_container_width=True)
