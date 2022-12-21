@@ -4,18 +4,19 @@ Solving a single TSP instance using OSRM.
 Input -> lat-lon data-frame, with start point and start and end point at end + vehicle type for OSRM profile purposes.
 Output -> sequenced lat-lon data-frame + travel leg info.
 """
-from typing import Dict, Tuple
 import logging
-import requests
-import pandas as pd
+from typing import Dict, Tuple
+
 import geopandas as gpd
+import pandas as pd
+import requests
 
 try:
     import app_vukwm_bag_delivery.osrm as osrm
 except:
     import osrm
-import numpy as np
 
+import numpy as np
 
 OSRM_DRIVING_DEFAULTS = {
     "roundtrip": "false",
@@ -42,10 +43,10 @@ def check_bounding_area(
     if bounding_box is None:
         bounding_box = BOUNDING_BOX
     outside_bounds = (
-        (stops["longitude"] > bounding_box["max_lon"])
-        | (stops["longitude"] < bounding_box["min_lon"])
-        | (stops["latitude"] > bounding_box["max_lat"])
-        | (stops["latitude"] < bounding_box["min_lat"])
+        (stops["lon"] > bounding_box["max_lon"])
+        | (stops["lon"] < bounding_box["min_lon"])
+        | (stops["lat"] > bounding_box["max_lat"])
+        | (stops["lat"] < bounding_box["min_lat"])
     )
 
     if outside_bounds.sum() > 0:
@@ -70,7 +71,7 @@ def generate_osrm_defaults(osrm_driving_defaults: Dict = None) -> str:
 
 
 def generate_osrm_point_inputs(
-    stops: pd.DataFrame, lon_col="longitude", lat_col="latitude"
+    stops: pd.DataFrame, lon_col="lon", lat_col="lat"
 ) -> str:
     """Generate OSRM lon-lat point info for routing"""
     coordinates = ";".join(stops[[lon_col, lat_col]].astype(str).agg(",".join, axis=1))
@@ -84,7 +85,7 @@ def get_osrm_request(
     request = f"{port}/trip/v1/driving/{coordinates}?{defaults()}"
     with requests.get(request, timeout=timeout) as req:
         results = req.json()
-
+    print(request)
     if results["code"] != "Ok":
         message = results["message"]
         raise ValueError(f"OSRM request failed: '{message}'")
@@ -100,14 +101,8 @@ def generate_osrm_tsp_route(
     else:
         port = ports[vehicle_type]
     coordinates = generate_osrm_point_inputs(route_stops)
-    try:
-        results = get_osrm_request(port, coordinates, generate_osrm_defaults)
-        osrm_tsp_success = True
-    except:
-        osrm_tsp_success = False
-        logging.warning("get request with %s failed. Now trying with default.", port)
-        deafult_port = BACKUP_PORT
-        results = get_osrm_request(deafult_port, coordinates, generate_osrm_defaults)
+    results = get_osrm_request(port, coordinates, generate_osrm_defaults)
+    osrm_tsp_success = True
     return results, osrm_tsp_success
 
 

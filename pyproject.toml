@@ -18,6 +18,14 @@ toml = "^0.10.2"
 pyxlsb = "^1.0.10"
 XlsxWriter = "^3.0.3"
 geopandas = "^0.12.1"
+streamlit-aggrid = "^0.3.3"
+hygese = "^0.0.0.8"
+boto3 = "^1.26.34"
+boto = "^2.49.0"
+jupyterlab = "^3.5.2"
+gpsodyssey = {git = "https://github.com/WasteLabs/GPSOdyssey.git"}
+matplotlib = "^3.6.2"
+plotly = "^5.11.0"
 
 
 [build-system]
