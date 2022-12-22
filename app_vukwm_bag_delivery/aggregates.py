@@ -139,6 +139,7 @@ def calc_product_summary(df):
 
 
 def combine_product_name_quantity(df):
+    """We combine all orders assigned to a site into one row, with key info concatinated with `';'`."""
     product_names = df["Product Name"].values
     quantity = df["Quantity"].values
     ticket_numbers = df["Ticket No"].values
@@ -147,7 +148,7 @@ def combine_product_name_quantity(df):
     for i in range(product_names.shape[0]):
         descriptions.append(f"{product_names[i]}: {quantity[i]}")
     descriptions = "\n".join(descriptions)
-    df = df.iloc[:1]  # .drop(columns=["Site Bk"])
+    df = df.iloc[:1]
     df["Product description"] = descriptions
     df["Ticket No"] = "; ".join(ticket_numbers)
     df["Total boxes"] = boxes
