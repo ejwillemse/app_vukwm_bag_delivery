@@ -1,7 +1,7 @@
 """
 Process input data, simple pipeline, converts to data-time and does some high-level aggregation.
 """
-
+import numpy as np
 import pandas as pd
 
 INPUT_DATE_COLUMNS_FORMAT = {
@@ -44,6 +44,14 @@ def extract_transport_number(df):
     )
 
 
+def assign_bicycle_skills(df):
+    return df.assign(
+        skills=(df["tansport_area_number"] == 2).replace(
+            {True: "bicycle", False: np.nan}
+        )
+    )
+
+
 def combine_product_name_quantity(df):
     """We combine all orders assigned to a site into one row, with key info concatinated with `';'`."""
     product_names = df["Product Name"].values
@@ -63,6 +71,11 @@ def combine_product_name_quantity(df):
     return df
 
 
+def filter_unassigned(df):
+    """Return unassigned jobs for routing"""
+    return df.loc[~df["completed"]]
+
+
 def combine_orders(df):
     orders_grouped = (
         df.groupby(AGGREGATION_IDs)
@@ -74,7 +87,9 @@ def combine_orders(df):
 
 def process_input_data(df):
     df = df.copy()
-    df = date_to_string(df)
     df = add_completed_flag(df)
+    df = filter_unassigned(df)
+    df = date_to_string(df)
     df = extract_transport_number(df)
+    df = assign_bicycle_skills(df)
     return df
