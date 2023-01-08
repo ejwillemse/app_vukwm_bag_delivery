@@ -41,7 +41,7 @@ def query_data(df: pd.DataFrame) -> pd.DataFrame:
     df["selected"] = False
     for q in HOVER_INFO:
         if st.session_state[f"{q}_query"]:
-            st.write(st.session_state[f"{q}_query"])
+            # TODO: this should take into account the curveNumber now...
             df.loc[df[q].isin(st.session_state[f"{q}_query"]), "selected"] = True
 
     return df
@@ -64,17 +64,32 @@ def build_bill_to_tip_figure(df: pd.DataFrame) -> go.Figure:
         lon="longitude",
         hover_data=["index", "longitude", "latitude"],
         hover_name="index",
-        color="selected",
-        color_discrete_sequence=["rgba(0, 0, 255, 1)", "rgba(255, 0, 0, 1)"],
-        category_orders={"selected": [False, True]},
+        # color="selected",
+        # color_discrete_sequence=["rgba(0, 0, 255, 1)", "rgba(255, 0, 0, 1)"],
+        # category_orders={
+        #     "selected": [False, True]
+        # },  # this probably dictates the curve number...
         zoom=12,
         size=[50] * df.shape[0],
         height=600,
         size_max=10,
         opacity=1,
     )
+
+    fig.add_trace(
+        go.Scattermapbox(
+            lat=df.loc[df["selected"]]["latitude"],
+            lon=df.loc[df["selected"]]["longitude"],
+            mode="markers",
+            marker=go.scattermapbox.Marker(
+                size=10, color="rgb(242, 177, 172)", opacity=1
+            ),
+            hoverinfo="none",
+        )
+    )
+
     fig.update_layout(mapbox_style="open-street-map", dragmode="select")
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    # fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
     # fig.update_layout(
     #     paper_bgcolor="#FFFFFF", plot_bgcolor="#FFFFFF", dragmode="select"
     # )
@@ -148,10 +163,9 @@ def render_plotly_ui(transformed_df: pd.DataFrame) -> Dict:
     #     )
 
     current_query = {}
-    for el in bill_to_tip_selected:
-        st.write(el)
+    st.write(bill_to_tip_selected)
     current_query["lon_lat_query"] = {
-        f"{el['pointIndex']}" for el in bill_to_tip_selected
+        f"{el['pointIndex']}" for el in bill_to_tip_selected if el["curveNumber"] != 1
     }
     # current_query["size_to_time_query"] = {
     #     f"{el['x']}-{el['y']}" for el in size_to_time_clicked
@@ -189,7 +203,6 @@ def main():
         longitude=data["Site Longitude"],
         index=data.index,
     )
-    st.write(data)
     transformed_df = query_data(data)
 
     st.title("Plotly events")

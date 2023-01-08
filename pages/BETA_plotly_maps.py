@@ -64,8 +64,6 @@ def build_bill_to_tip_figure(df: pd.DataFrame) -> go.Figure:
         ],
         height=800,
     )
-
-    
     fig.update_layout(paper_bgcolor="#FFFFFF", plot_bgcolor="#FFFFFF")
     fig.update_xaxes(gridwidth=0.1, gridcolor="#EDEDED")
     fig.update_yaxes(gridwidth=0.1, gridcolor="#EDEDED")
@@ -108,53 +106,56 @@ def render_preview_ui(df: pd.DataFrame):
 
 def render_plotly_ui(transformed_df: pd.DataFrame) -> Dict:
     """Renders all Plotly figures.
+
     Returns a Dict of filter to set of row identifiers to keep, built from the
     click/select events from Plotly figures.
+
     The return will be then stored into Streamlit Session State next.
     """
-    # c1, c2 = st.columns(2)
+    c1, c2 = st.columns(2)
 
     bill_to_tip_figure = build_bill_to_tip_figure(transformed_df)
-    # size_to_time_figure = build_size_to_time_figure(transformed_df)
-    # day_figure = build_day_figure(transformed_df)
+    size_to_time_figure = build_size_to_time_figure(transformed_df)
+    day_figure = build_day_figure(transformed_df)
 
-    # with c1:
-    bill_to_tip_selected = plotly_events(
-        bill_to_tip_figure,
-        select_event=True,
-        key=f"bill_to_tip_{st.session_state.counter}",
-    )
-    # with c2:
-    #     size_to_time_clicked = plotly_events(
-    #         size_to_time_figure,
-    #         click_event=True,
-    #         key=f"size_to_time_{st.session_state.counter}",
-    #     )
-    #     day_clicked = plotly_events(
-    #         day_figure,
-    #         click_event=True,
-    #         key=f"day_{st.session_state.counter}",
-    #     )
+    with c1:
+        bill_to_tip_selected = plotly_events(
+            bill_to_tip_figure,
+            select_event=True,
+            key=f"bill_to_tip_{st.session_state.counter}",
+        )
+    with c2:
+        size_to_time_clicked = plotly_events(
+            size_to_time_figure,
+            click_event=True,
+            key=f"size_to_time_{st.session_state.counter}",
+        )
+        day_clicked = plotly_events(
+            day_figure,
+            click_event=True,
+            key=f"day_{st.session_state.counter}",
+        )
 
     current_query = {}
     current_query["bill_to_tip_query"] = {
         f"{int(100*el['x'])}-{int(100*el['y'])}" for el in bill_to_tip_selected
     }
-    # current_query["size_to_time_query"] = {
-    #     f"{el['x']}-{el['y']}" for el in size_to_time_clicked
-    # }
-    # current_query["day_query"] = {el["x"] for el in day_clicked}
+    current_query["size_to_time_query"] = {
+        f"{el['x']}-{el['y']}" for el in size_to_time_clicked
+    }
+    current_query["day_query"] = {el["x"] for el in day_clicked}
 
     return current_query
 
 
 def update_state(current_query: Dict[str, Set]):
     """Stores input dict of filters into Streamlit Session State.
+
     If one of the input filters is different from previous value in Session State,
     rerun Streamlit to activate the filtering and plot updating with the new info in State.
     """
     rerun = False
-    for q in ["bill_to_tip"]:  # , "size_to_time", "day"]:
+    for q in ["bill_to_tip", "size_to_time", "day"]:
         if current_query[f"{q}_query"] - st.session_state[f"{q}_query"]:
             st.session_state[f"{q}_query"] = current_query[f"{q}_query"]
             rerun = True
