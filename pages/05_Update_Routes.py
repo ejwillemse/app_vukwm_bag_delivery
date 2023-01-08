@@ -1,3 +1,4 @@
+import leafmap.foliumap as leafmap
 import streamlit as st
 
 from app_vukwm_bag_delivery.return_session_staus import (
@@ -29,8 +30,24 @@ with st.expander("Instructions"):
     )
 st.write("To be released soon...")
 
-if "routes" not in st.session_state:
-    st.warning(
-        "Routes have not yet been generated. Please go to the 'Generate Routes' page."
-    )
-    st.stop()
+# if "routes" not in st.session_state:
+#     st.warning(
+#         "Routes have not yet been generated. Please go to the 'Generate Routes' page."
+#     )
+#     st.stop()
+
+
+st.title("Home")
+
+st.markdown(
+    """
+A [streamlit](https://streamlit.io) app template for geospatial applications based on [streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu). 
+To create a direct link to a pre-selected menu, add `?page=<app name>` to the URL, e.g., `?page=upload`.
+https://share.streamlit.io/giswqs/streamlit-template?page=upload
+"""
+)
+
+m = leafmap.Map(locate_control=True)
+m.add_basemap("ROADMAP")
+m.to_streamlit(height=700)
+

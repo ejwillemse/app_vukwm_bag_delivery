@@ -26,6 +26,8 @@ jupyterlab = "^3.5.2"
 matplotlib = "^3.6.2"
 plotly = "^5.11.0"
 keplergl = "^0.3.2"
+leafmap = "^0.14.1"
+streamlit-plotly-events = "^0.0.6"
 
 
 [build-system]

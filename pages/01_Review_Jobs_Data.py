@@ -1,5 +1,7 @@
+import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
+from st_aggrid import AgGrid, DataReturnMode, GridOptionsBuilder, GridUpdateMode
 
 from app_vukwm_bag_delivery.aggregates import combine_orders
 from app_vukwm_bag_delivery.render_order_map import return_order_map_html
@@ -43,3 +45,19 @@ st.header("Inspect job data")
 html = return_order_map_html(st.session_state.unassigned_stops_date)
 components.html(html, height=500)
 st.write(st.session_state.unassigned_stops_date)
+
+with st.expander("Filter jobs to be EXCLUDED from routing:"):
+    gb = GridOptionsBuilder.from_dataframe(st.session_state.unassigned_stops_date)
+    gridOptions = gb.build()
+    grid_response = AgGrid(
+        st.session_state.unassigned_stops_date,
+        gridOptions=gridOptions,
+        data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+        update_mode=GridUpdateMode.GRID_CHANGED,
+        fit_columns_on_grid_load=False,
+        theme="streamlit",  # Add theme color to the table
+        enable_enterprise_modules=False,
+        width="100%",
+        reload_data=True,
+        allow_unsafe_jscode=True,
+    )

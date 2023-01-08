@@ -64,7 +64,7 @@ if "stop_data" not in st.session_state:
 
 st.markdown(return_side_bar())
 status_text.markdown(return_side_short())
-# upload_and_geocode_file()
-# stop_data_summary()
-# select_vehicles()
-# start_routing()
+upload_and_geocode_file()
+stop_data_summary()
+select_vehicles()
+start_routing()

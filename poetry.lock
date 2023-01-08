@@ -359,6 +359,40 @@ urllib3 = ">=1.25.4,<1.27"
 crt = ["awscrt (==0.15.3)"]
 
 [[package]]
+name = "bqplot"
+version = "0.12.36"
+description = "Interactive plotting for the Jupyter notebook, using d3.js and ipywidgets."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "bqplot-0.12.36-py2.py3-none-any.whl", hash = "sha256:d636ba9471d51dfb0b68d246ced6febdd7e4050cfadb755a16b8e22b8f019edf"},
+    {file = "bqplot-0.12.36.tar.gz", hash = "sha256:6a553e55fdbcc4f62e05679bd74b2549d1efbe43e120ad3b0bcb03a65c7921af"},
+]
+
+[package.dependencies]
+ipywidgets = ">=7.5.0,<9"
+numpy = ">=1.10.4,<2.0.0"
+pandas = ">=1.0.0,<2.0.0"
+traitlets = ">=4.3.0"
+traittypes = ">=0.0.6"
+
+[[package]]
+name = "branca"
+version = "0.6.0"
+description = "Generate complex HTML+JS pages with Python"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "branca-0.6.0-py3-none-any.whl", hash = "sha256:ae706fc7a88dd0296a58bb11c0cb3c6be358491a3b0abee08fe16b4db17814c0"},
+    {file = "branca-0.6.0.tar.gz", hash = "sha256:55949855214504c7583b71b9a03a84dce2e96a84027613bb53b42d04844ce24e"},
+]
+
+[package.dependencies]
+jinja2 = "*"
+
+[[package]]
 name = "cachetools"
 version = "5.2.0"
 description = "Extensible memoizing collections and decorators"
@@ -536,6 +570,21 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
+
+[[package]]
+name = "colour"
+version = "0.1.5"
+description = "converts and manipulates various color representation (HSL, RVB, web, X11, ...)"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "colour-0.1.5-py2.py3-none-any.whl", hash = "sha256:33f6db9d564fadc16e59921a56999b79571160ce09916303d35346dddc17978c"},
+    {file = "colour-0.1.5.tar.gz", hash = "sha256:af20120fefd2afede8b001fbef2ea9da70ad7d49fafdb6489025dae8745c3aee"},
+]
+
+[package.extras]
+test = ["nose"]
 
 [[package]]
 name = "comm"
@@ -793,6 +842,22 @@ files = [
 devel = ["colorama", "json-spec", "jsonschema", "pylint", "pytest", "pytest-benchmark", "pytest-cache", "validictory"]
 
 [[package]]
+name = "filelock"
+version = "3.8.2"
+description = "A platform independent file lock."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "filelock-3.8.2-py3-none-any.whl", hash = "sha256:8df285554452285f79c035efb0c861eb33a4bcfa5b7a137016e32e6a90f9792c"},
+    {file = "filelock-3.8.2.tar.gz", hash = "sha256:7565f628ea56bfcd8e54e42bdc55da899c85c1abfe1b5bcfd147e9188cebb3b2"},
+]
+
+[package.extras]
+docs = ["furo (>=2022.9.29)", "sphinx (>=5.3)", "sphinx-autodoc-typehints (>=1.19.5)"]
+testing = ["covdefaults (>=2.2.2)", "coverage (>=6.5)", "pytest (>=7.2)", "pytest-cov (>=4)", "pytest-timeout (>=2.1)"]
+
+[[package]]
 name = "Fiona"
 version = "1.8.22"
 description = "Fiona reads and writes spatial data files"
@@ -838,6 +903,27 @@ s3 = ["boto3 (>=1.2.4)"]
 test = ["boto3 (>=1.2.4)", "mock", "pytest (>=3)", "pytest-cov"]
 
 [[package]]
+name = "folium"
+version = "0.14.0"
+description = "Make beautiful maps with Leaflet.js & Python"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "folium-0.14.0-py2.py3-none-any.whl", hash = "sha256:c894e2c029a8ca40e043a311978a895cefe32d746a94263f807dd7b6b2e9c679"},
+    {file = "folium-0.14.0.tar.gz", hash = "sha256:8ec44697d18f5932e0fdaee8b19da98625de4d0e72cb30ef56f9479f18e11b9f"},
+]
+
+[package.dependencies]
+branca = ">=0.6.0"
+jinja2 = ">=2.9"
+numpy = "*"
+requests = "*"
+
+[package.extras]
+testing = ["pytest"]
+
+[[package]]
 name = "fonttools"
 version = "4.38.0"
 description = "Tools to manipulate font files"
@@ -873,6 +959,37 @@ python-versions = ">=2.7, !=3.0, !=3.1, !=3.2, !=3.3, !=3.4, <4"
 files = [
     {file = "fqdn-1.5.1-py3-none-any.whl", hash = "sha256:3a179af3761e4df6eb2e026ff9e1a3033d3587bf980a0b1b2e1e5d08d7358014"},
     {file = "fqdn-1.5.1.tar.gz", hash = "sha256:105ed3677e767fb5ca086a0c1f4bb66ebc3c100be518f0e0d755d9eae164d89f"},
+]
+
+[[package]]
+name = "gdown"
+version = "4.6.0"
+description = "Google Drive direct download of big files."
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "gdown-4.6.0-py3-none-any.whl", hash = "sha256:e75c5aa8be8ea1cac642d4793f884339d887ab5e07aaa57fafa16c8a56a0cde5"},
+    {file = "gdown-4.6.0.tar.gz", hash = "sha256:5ce3db0aeda54f46caacb2df86f31c3e3ecd17c355689e6456d85fb528ba9749"},
+]
+
+[package.dependencies]
+beautifulsoup4 = "*"
+filelock = "*"
+requests = {version = "*", extras = ["socks"]}
+six = "*"
+tqdm = "*"
+
+[[package]]
+name = "geojson"
+version = "2.5.0"
+description = "Python bindings and utilities for GeoJSON"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "geojson-2.5.0-py2.py3-none-any.whl", hash = "sha256:ccbd13368dd728f4e4f13ffe6aaf725b6e802c692ba0dde628be475040c534ba"},
+    {file = "geojson-2.5.0.tar.gz", hash = "sha256:6e4bb7ace4226a45d9c8c8b1348b3fc43540658359f93c3f7e03efa9f15f658a"},
 ]
 
 [[package]]
@@ -985,6 +1102,40 @@ perf = ["ipython"]
 testing = ["flake8 (<5)", "flufl.flake8", "importlib-resources (>=1.3)", "packaging", "pyfakefs", "pytest (>=6)", "pytest-black (>=0.3.7)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=1.3)", "pytest-flake8", "pytest-mypy (>=0.9.1)", "pytest-perf (>=0.9.2)"]
 
 [[package]]
+name = "ipyevents"
+version = "2.0.1"
+description = "A custom widget for returning mouse and keyboard events to Python"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ipyevents-2.0.1-py2.py3-none-any.whl", hash = "sha256:9f255fdab40e7598b1143ace90153c5f4e52be15dc6f1b94f575a043a5970c17"},
+    {file = "ipyevents-2.0.1.tar.gz", hash = "sha256:23eb2afab13d9056397f120a88051dd3beb067b698d08b33adffc9e077f019cb"},
+]
+
+[package.dependencies]
+ipywidgets = ">=7.6.0"
+
+[package.extras]
+docs = ["jupyterlab (>=3)", "nbsphinx", "sphinx"]
+test = ["nbval", "pytest", "pytest-cov"]
+
+[[package]]
+name = "ipyfilechooser"
+version = "0.6.0"
+description = "Python file chooser widget for use in Jupyter/IPython in conjunction with ipywidgets"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ipyfilechooser-0.6.0-py3-none-any.whl", hash = "sha256:4555c24b30b819c91dc0ae5e6f7e4cf8f90e5cca531a9209a1fe4deee288d5c5"},
+    {file = "ipyfilechooser-0.6.0.tar.gz", hash = "sha256:41df9e4395a924f8e1b78e2804dbe5066dc3fdc233fb07fecfcdc2a0c9a7d8d3"},
+]
+
+[package.dependencies]
+ipywidgets = "*"
+
+[[package]]
 name = "ipykernel"
 version = "6.19.4"
 description = "IPython Kernel for Jupyter"
@@ -1014,6 +1165,24 @@ traitlets = ">=5.4.0"
 cov = ["coverage[toml]", "curio", "matplotlib", "pytest-cov", "trio"]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx", "sphinxcontrib-github-alt"]
 test = ["flaky", "ipyparallel", "pre-commit", "pytest (>=7.0)", "pytest-asyncio", "pytest-cov", "pytest-timeout"]
+
+[[package]]
+name = "ipyleaflet"
+version = "0.17.2"
+description = "A Jupyter widget for dynamic Leaflet maps"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "ipyleaflet-0.17.2-py3-none-any.whl", hash = "sha256:7deaed9ec5dbfd53ac020cf5d9046ed34ca9aa7e580ca7b131e30fb78500aa7f"},
+    {file = "ipyleaflet-0.17.2.tar.gz", hash = "sha256:811ceb4a15589aa034a80724cfe5bdc93689563b889f4b9bed3d5e3bcb7626bb"},
+]
+
+[package.dependencies]
+branca = ">=0.5.0"
+ipywidgets = ">=7.6.0,<9"
+traittypes = ">=0.2.1,<3"
+xyzservices = ">=2021.8.1"
 
 [[package]]
 name = "ipython"
@@ -1065,6 +1234,21 @@ files = [
     {file = "ipython_genutils-0.2.0-py2.py3-none-any.whl", hash = "sha256:72dd37233799e619666c9f639a9da83c34013a73e8bbc79a7a6348d93c61fab8"},
     {file = "ipython_genutils-0.2.0.tar.gz", hash = "sha256:eb2e116e75ecef9d4d228fdc66af54269afa26ab4463042e33785b887c628ba8"},
 ]
+
+[[package]]
+name = "ipytree"
+version = "0.2.2"
+description = "A Tree Widget using jsTree"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ipytree-0.2.2-py2.py3-none-any.whl", hash = "sha256:744dc1a02c3ec26df8a5ecd87d085a67dc8232a1def6048834403ddcf3b64143"},
+    {file = "ipytree-0.2.2.tar.gz", hash = "sha256:d53d739bbaaa45415733cd06e0dc420a2af3d173438617db472a517bc7a61e56"},
+]
+
+[package.dependencies]
+ipywidgets = ">=7.5.0,<9"
 
 [[package]]
 name = "ipywidgets"
@@ -1554,6 +1738,46 @@ files = [
     {file = "lazy_object_proxy-1.8.0-pp38-pypy38_pp73-any.whl", hash = "sha256:7e1561626c49cb394268edd00501b289053a652ed762c58e1081224c8d881cec"},
     {file = "lazy_object_proxy-1.8.0-pp39-pypy39_pp73-any.whl", hash = "sha256:ce58b2b3734c73e68f0e30e4e725264d4d6be95818ec0a0be4bb6bf9a7e79aa8"},
 ]
+
+[[package]]
+name = "leafmap"
+version = "0.14.1"
+description = "A Python package for geospatial analysis and interactive mapping in a Jupyter environment."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "leafmap-0.14.1-py2.py3-none-any.whl", hash = "sha256:e3dea19748e5dee99e8d818de7c0658aefbb458a524e4be89c17f07e58207732"},
+    {file = "leafmap-0.14.1.tar.gz", hash = "sha256:db3ef939db32daff147939f091637420f15d12858c1b7eca34eb5fa6f54a64b6"},
+]
+
+[package.dependencies]
+bqplot = "*"
+colour = "*"
+folium = ">=0.11.0"
+gdown = "*"
+geojson = "*"
+ipyevents = "*"
+ipyfilechooser = ">=0.6.0"
+ipyleaflet = ">=0.17.0"
+matplotlib = "*"
+numpy = "*"
+pandas = "*"
+pyshp = ">=2.1.3"
+pystac-client = "*"
+python-box = "*"
+scooby = "*"
+whiteboxgui = ">=0.6.0"
+xyzservices = "*"
+
+[package.extras]
+all = ["black", "black[jupyter]", "bokeh", "codespell", "datapane", "deadlink", "geopandas", "googledrivedownloader", "here-map-widget-for-jupyter (>=1.1.1)", "ipygany", "ipysheet", "ipyvtklink", "jupyter-bokeh", "jupyterlab (>=3.0.0)", "keplergl", "laspy", "localtileserver", "mapclassify (>=2.4.0)", "mss", "netcdf4", "osmnx", "owslib", "palettable", "panel", "plotly", "psycopg2", "pycrs", "pydeck", "pyntcloud[las]", "pyvista-xarray", "rio-cogeo", "rioxarray", "sqlalchemy", "streamlit-folium", "xarray-leaflet"]
+apps = ["streamlit-folium", "voila"]
+backends = ["bokeh", "here-map-widget-for-jupyter", "keplergl", "plotly", "pydeck"]
+lidar = ["ipygany", "ipyvtklink", "laspy", "panel", "pyntcloud[las]", "pyvista"]
+raster = ["localtileserver", "netcdf4", "rio-cogeo", "rioxarray", "xarray-leaflet"]
+sql = ["psycopg2", "sqlalchemy"]
+vector = ["geopandas", "osmnx"]
 
 [[package]]
 name = "MarkupSafe"
@@ -2553,6 +2777,106 @@ files = [
 ]
 
 [[package]]
+name = "pyshp"
+version = "2.3.1"
+description = "Pure Python read/write support for ESRI Shapefile format"
+category = "main"
+optional = false
+python-versions = ">=2.7"
+files = [
+    {file = "pyshp-2.3.1-py2.py3-none-any.whl", hash = "sha256:67024c0ccdc352ba5db777c4e968483782dfa78f8e200672a90d2d30fd8b7b49"},
+    {file = "pyshp-2.3.1.tar.gz", hash = "sha256:4caec82fd8dd096feba8217858068bacb2a3b5950f43c048c6dc32a3489d5af1"},
+]
+
+[[package]]
+name = "pysocks"
+version = "1.7.1"
+description = "A Python SOCKS client module. See https://github.com/Anorov/PySocks for more information."
+category = "main"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+files = [
+    {file = "PySocks-1.7.1-py27-none-any.whl", hash = "sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299"},
+    {file = "PySocks-1.7.1-py3-none-any.whl", hash = "sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5"},
+    {file = "PySocks-1.7.1.tar.gz", hash = "sha256:3f8804571ebe159c380ac6de37643bb4685970655d3bba243530d6558b799aa0"},
+]
+
+[[package]]
+name = "pystac"
+version = "1.6.1"
+description = "Python library for working with Spatiotemporal Asset Catalog (STAC)."
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pystac-1.6.1-py3-none-any.whl", hash = "sha256:4c40e6d3a832b9992e9dc2aa9c276322fbd851e441888b5fc2024397477abec8"},
+    {file = "pystac-1.6.1.tar.gz", hash = "sha256:95ef493d6a6df4d982385c1d376c8aa0d967730e8ffeeda0f78cd7372faf066a"},
+]
+
+[package.dependencies]
+python-dateutil = ">=2.7.0"
+
+[package.extras]
+orjson = ["orjson (>=3.5)"]
+validation = ["jsonschema (>=4.0.1)"]
+
+[[package]]
+name = "pystac-client"
+version = "0.5.1"
+description = "Python library for working with Spatiotemporal Asset Catalog (STAC)."
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pystac-client-0.5.1.tar.gz", hash = "sha256:f585bd9bcd52ee399c8a292dbb7e0405c0da359a73bc07c1ef82a65c17124d94"},
+    {file = "pystac_client-0.5.1-py3-none-any.whl", hash = "sha256:f181c5d078e3c0b0769d492c79b213afb673666c6d0dc89c5f194dde0a8bcbb4"},
+]
+
+[package.dependencies]
+pystac = ">=1.4.0"
+python-dateutil = ">=2.7.0"
+requests = ">=2.27.1"
+
+[package.extras]
+validation = ["jsonschema (>=4.5.1)"]
+
+[[package]]
+name = "python-box"
+version = "6.1.0"
+description = "Advanced Python dictionaries with dot notation access"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "python-box-6.1.0.tar.gz", hash = "sha256:6e7c243b356cb36e2c0f0e5ed7850969fede6aa812a7f501de7768996c7744d7"},
+    {file = "python_box-6.1.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:c14aa4e72bf30f4d573e62ff8030a86548603a100c3fb534561dbedf4a83f454"},
+    {file = "python_box-6.1.0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ab13208b053525ef154a36a4a52873b98a12b18b946edd4c939a4d5080e9a218"},
+    {file = "python_box-6.1.0-cp310-cp310-win_amd64.whl", hash = "sha256:d199cd289b4f4d053770eadd70217c76214aac30b92a23adfb9627fd8558d300"},
+    {file = "python_box-6.1.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:ac44b3b85714a4575cc273b5dbd39ef739f938ef6c522d6757704a29e7797d16"},
+    {file = "python_box-6.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3f0036f91e13958d2b37d2bc74c1197aa36ffd66755342eb64910f63d8a2990f"},
+    {file = "python_box-6.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:af6bcee7e1abe9251e9a41ca9ab677e1f679f6059321cfbae7e78a3831e0b736"},
+    {file = "python_box-6.1.0-cp37-cp37m-macosx_10_15_x86_64.whl", hash = "sha256:11cbe62f0dace8a6e2a10d210a5e87b99ad1a1286865568862516794c923a988"},
+    {file = "python_box-6.1.0-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:fa4696b5e09ccf695bf05c16bb5ca1fcc95a141a71a31eb262eee8e2ac07189a"},
+    {file = "python_box-6.1.0-cp37-cp37m-win_amd64.whl", hash = "sha256:3638d3559f19ece7fa29f6a6550bc64696cd3b65e3d4154df07a3d06982252ff"},
+    {file = "python_box-6.1.0-cp38-cp38-macosx_10_15_x86_64.whl", hash = "sha256:53998c3b95e31d1f31e46279ef1d27ac30b137746927260901ee61457f8468a0"},
+    {file = "python_box-6.1.0-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:594b0363b187df855ff8649488b1301dddbbeea769629b7caeb584efe779b841"},
+    {file = "python_box-6.1.0-cp38-cp38-win_amd64.whl", hash = "sha256:1d29eafaa287857751e27fbe9a08dd856480f0037fe988b221eba4dac33e5852"},
+    {file = "python_box-6.1.0-cp39-cp39-macosx_10_15_x86_64.whl", hash = "sha256:9dbd92b67c443a97326273c9239fce04d3b6958be815d293f96ab65bc4a9dae7"},
+    {file = "python_box-6.1.0-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:ed6d7fe47d756dc2d9dea448702cea103716580a2efee7c859954929295fe28e"},
+    {file = "python_box-6.1.0-cp39-cp39-win_amd64.whl", hash = "sha256:7b73f26e40a7adc57b9e39f5687d026dfa8a336f48aefaf852a223b4e37392ad"},
+    {file = "python_box-6.1.0-py3-none-any.whl", hash = "sha256:bdec0a5f5a17b01fc538d292602a077aa8c641fb121e1900dff0591791af80e8"},
+]
+
+[package.extras]
+all = ["msgpack", "ruamel.yaml (>=0.17)", "toml"]
+msgpack = ["msgpack"]
+pyyaml = ["PyYAML"]
+ruamel-yaml = ["ruamel.yaml (>=0.17)"]
+toml = ["toml"]
+tomli = ["tomli", "tomli-w"]
+yaml = ["ruamel.yaml (>=0.17)"]
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -2824,6 +3148,7 @@ files = [
 certifi = ">=2017.4.17"
 charset-normalizer = ">=2,<3"
 idna = ">=2.5,<4"
+PySocks = {version = ">=1.5.6,<1.5.7 || >1.5.7", optional = true, markers = "extra == \"socks\""}
 urllib3 = ">=1.21.1,<1.27"
 
 [package.extras]
@@ -2893,6 +3218,21 @@ botocore = ">=1.12.36,<2.0a.0"
 
 [package.extras]
 crt = ["botocore[crt] (>=1.20.29,<2.0a.0)"]
+
+[[package]]
+name = "scooby"
+version = "0.7.0"
+description = "A Great Dane turned Python environment detective"
+category = "main"
+optional = false
+python-versions = ">=3.7.*"
+files = [
+    {file = "scooby-0.7.0-py3-none-any.whl", hash = "sha256:42f7612e1c35352e3397c307732b6d795bba11245885d9c50e503a99db465d13"},
+    {file = "scooby-0.7.0.tar.gz", hash = "sha256:b1c0ffbae02d7a96adb7c627edbe8f24c7d28fd013ee23b2d07b951f256f1219"},
+]
+
+[package.extras]
+cpu = ["mkl", "psutil"]
 
 [[package]]
 name = "semver"
@@ -3140,6 +3480,22 @@ python-decouple = ">=3.6,<4.0"
 streamlit = ">=0.87.0"
 
 [[package]]
+name = "streamlit-plotly-events"
+version = "0.0.6"
+description = "Plotly chart component for Streamlit that also allows for events to bubble back up to Streamlit."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "streamlit-plotly-events-0.0.6.tar.gz", hash = "sha256:1fe25dbf0e5d803aeb90253be04d7b395f5bcfdf3c654f96ff3c19424e7f9582"},
+    {file = "streamlit_plotly_events-0.0.6-py3-none-any.whl", hash = "sha256:e63fbe3c6a0746fdfce20060fc45ba5cd97805505c332b27372dcbd02c2ede29"},
+]
+
+[package.dependencies]
+plotly = ">=4.14.3"
+streamlit = ">=0.63"
+
+[[package]]
 name = "tenacity"
 version = "8.1.0"
 description = "Retry code until it succeeds"
@@ -3262,6 +3618,27 @@ files = [
     {file = "tornado-6.2-cp37-abi3-win_amd64.whl", hash = "sha256:e5f923aa6a47e133d1cf87d60700889d7eae68988704e20c75fb2d65677a8e4b"},
     {file = "tornado-6.2.tar.gz", hash = "sha256:9b630419bde84ec666bfd7ea0a4cb2a8a651c2d5cccdbdd1972a0c859dfc3c13"},
 ]
+
+[[package]]
+name = "tqdm"
+version = "4.64.1"
+description = "Fast, Extensible Progress Meter"
+category = "main"
+optional = false
+python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,>=2.7"
+files = [
+    {file = "tqdm-4.64.1-py2.py3-none-any.whl", hash = "sha256:6fee160d6ffcd1b1c68c65f14c829c22832bc401726335ce92c52d395944a6a1"},
+    {file = "tqdm-4.64.1.tar.gz", hash = "sha256:5f4f682a004951c1b450bc753c710e9280c5746ce6ffedee253ddbcbf54cf1e4"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "platform_system == \"Windows\""}
+
+[package.extras]
+dev = ["py-make (>=0.1.0)", "twine", "wheel"]
+notebook = ["ipywidgets (>=6)"]
+slack = ["slack-sdk"]
+telegram = ["requests"]
 
 [[package]]
 name = "traitlets"
@@ -3485,6 +3862,39 @@ optional = ["python-socks", "wsaccel"]
 test = ["websockets"]
 
 [[package]]
+name = "whitebox"
+version = "2.2.0"
+description = "An advanced geospatial data analysis platform"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "whitebox-2.2.0-py2.py3-none-any.whl", hash = "sha256:0455cf727233adb53abe1bbe221fe0ac597d3c2609a3f7e74c1243f8ffb4b190"},
+    {file = "whitebox-2.2.0.tar.gz", hash = "sha256:8afc78a2f59e1b58e1cae2509f9489b7fc9f2105a5ee7d84a4005e5905dcea01"},
+]
+
+[package.dependencies]
+Click = ">=6.0"
+
+[[package]]
+name = "whiteboxgui"
+version = "2.2.0"
+description = "An interactive GUI for whitebox-tools in a Jupyter-based environment"
+category = "main"
+optional = false
+python-versions = ">=3.5"
+files = [
+    {file = "whiteboxgui-2.2.0-py2.py3-none-any.whl", hash = "sha256:8269b9828d5b7f39ae01bdd0e98f1563f28e4629ad025cafad3b003d666db047"},
+    {file = "whiteboxgui-2.2.0.tar.gz", hash = "sha256:ade973b4220718e2b82cd29bab4878847b422011a95fe5b1376b8c680155ec55"},
+]
+
+[package.dependencies]
+ipyfilechooser = "*"
+ipytree = "*"
+ipywidgets = "*"
+whitebox = "*"
+
+[[package]]
 name = "widgetsnbextension"
 version = "3.6.1"
 description = "IPython HTML widgets for Jupyter"
@@ -3586,6 +3996,18 @@ files = [
 ]
 
 [[package]]
+name = "xyzservices"
+version = "2022.9.0"
+description = "Source of XYZ tiles providers"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "xyzservices-2022.9.0-py3-none-any.whl", hash = "sha256:5547b3d6bc06a60561d039fc9ef5fd521d8bea9b6b3d617410fd764b30c6c2bd"},
+    {file = "xyzservices-2022.9.0.tar.gz", hash = "sha256:55651961708b9a14849978b339df76008c886df7a8326308a5549bae5516260c"},
+]
+
+[[package]]
 name = "zipp"
 version = "3.11.0"
 description = "Backport of pathlib-compatible object wrapper for zip files"
@@ -3604,4 +4026,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ecf1cc26d21595fd9dea102aea34cb92274ec81f61fcb8885873e41c14dd369a"
+content-hash = "ee2c7f02d190b9b22272098caee192476cf647823a5593989f2d5a2802891638"
