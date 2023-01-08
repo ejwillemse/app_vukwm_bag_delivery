@@ -2,12 +2,11 @@ import pandas as pd
 import streamlit as st
 
 import app_vukwm_bag_delivery.aggregates as aggregates
-from app_vukwm_bag_delivery.download_s3_file import return_routing_files
+import app_vukwm_bag_delivery.presenters.load_input_data as load_input_data
 from app_vukwm_bag_delivery.download_to_excel import to_excel
 from app_vukwm_bag_delivery.generate_routes import start_routing
 from app_vukwm_bag_delivery.google_geocode import geocode_addresses
 from app_vukwm_bag_delivery.osrm_tsp import sequence_routes
-from app_vukwm_bag_delivery.pipelines.process_input_data import node
 from app_vukwm_bag_delivery.return_session_staus import (
     return_side_bar,
     return_side_short,
@@ -47,26 +46,9 @@ with st.expander("Instructions"):
     )
 
 if "stop_data" not in st.session_state:
-
     with st.spinner(f"Initiating session and loading data..."):
-        (excel_data, geo_data, unassigned_stops_data) = return_routing_files(
-            st.secrets["bucket"],
-            st.secrets["dev_s3"],
-            st.secrets["s3_input_paths"]["raw_user_input"],
-            st.secrets["s3_input_paths"]["geocoded_input"],
-            st.secrets["s3_input_paths"]["unassigned_stops_input"],
-        )
+        load_input_data.load_data()
 
-        unassigned_jobs = node.process_input_data(geo_data)
-        unassigned_stops = node.combine_orders(unassigned_jobs)
-        st.session_state.input_data = {
-            "unassigned_jobs": unassigned_jobs,
-            "unassigned_stops": unassigned_stops,
-        }
-        st.session_state.stop_data = geo_data.copy()
-
-# st.write(st.session_state.input_data["unassigned_jobs"])
-# st.write(st.session_state.input_data["unassigned_stops"])
 st.markdown(return_side_bar())
 status_text.markdown(return_side_short())
 # upload_and_geocode_file()
