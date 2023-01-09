@@ -91,7 +91,9 @@ def confirm_selection(selected_df):
 
 
 def select_vehicles():
-    st.write("The following vehicles are available for routing:")
+    st.write(
+        "The following vehicles are available for routing. Select the ones to be used:"
+    )
     vehicle_df = get_defaults.return_vehicle_default()
     selected_df = return_vehicle_grid(vehicle_df)
 
@@ -104,7 +106,6 @@ def select_vehicles():
 
 
 set_page_config()
-
 st.sidebar.header("Session status")
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
