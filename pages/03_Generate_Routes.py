@@ -5,9 +5,13 @@ import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.generate_routes.presenters.generate_matrix import (
     generate_matrix_inputs,
 )
+from app_vukwm_bag_delivery.generate_routes.presenters.generate_route_objects import (
+    generate_vroom_input,
+)
 from app_vukwm_bag_delivery.generate_routes.presenters.process_input_data import (
     process_input_data,
 )
+from app_vukwm_bag_delivery.generate_routes.presenters.solve_vroom_instace import solve
 
 # from app_vukwm_bag_delivery.generate_routes import start_routing
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
@@ -80,10 +84,10 @@ def start_routing():
             generate_matrix_inputs()
         st.markdown(":white_check_mark: Map data loaded")
         with st.spinner("Set up routin engine..."):
-            pass
+            generate_vroom_input()
         st.markdown(":white_check_mark: Routing engine setup completed")
         with st.spinner("Generate routes..."):
-            pass
+            solve()
         st.markdown(":white_check_mark: Routes generated")
         with st.spinner("Complete route analysis..."):
             pass
@@ -100,11 +104,3 @@ display_routes()
 display_excluded_stops()
 start_routing()
 side_bar_progress.update_side_bar(side_bar_status)
-
-
-# st.write("Routes will be generated for the following vehicles:")
-# st.write(st.session_state.fleet)
-
-# start_routing()
-
-# status_text.markdown(return_side_short())
