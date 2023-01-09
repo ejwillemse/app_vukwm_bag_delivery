@@ -3,11 +3,11 @@ import plotly.express as px
 import streamlit as st
 import streamlit.components.v1 as components
 
-from app_vukwm_bag_delivery.return_session_staus import (
+from util_views.return_session_status import (
     return_side_bar,
     return_side_short,
 )
-from check_password import check_password
+from presenters.utils.check_password import check_password
 
 
 def generate_timeline(df):

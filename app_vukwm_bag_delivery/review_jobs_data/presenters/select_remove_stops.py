@@ -36,9 +36,6 @@ def update_select_remove_dataframe(selected_df) -> None:
         st.session_state.data_02_intermediate["removed_unassigned_stops"] = selected_df
 
 
-import datetime
-
-
 def select_remove_dataframe(df):
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_pagination(

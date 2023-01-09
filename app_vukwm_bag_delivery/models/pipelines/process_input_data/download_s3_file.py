@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Dict, List
+from typing import Dict
 
 import boto3
 import pandas as pd
@@ -84,27 +84,3 @@ def return_routing_files(
         my_bucket, unassigned_stops_files, read_json_file
     )
     return latest_excel_file, latest_geo_file, latest_unassigned_stops_file
-
-
-if __name__ == "__main__":
-    import toml
-
-    bucket = "veolia-uk-platfrom"
-    secrets = toml.load(".streamlit/secrets.toml")
-    bucket = secrets["bucket"]
-    s3_cred = secrets["dev_s3"]
-    input_paths = secrets["s3_input_paths"]
-    (
-        latest_excel_file,
-        latest_geo_file,
-        latest_unassigned_stops_file,
-    ) = return_routing_files(
-        bucket,
-        s3_cred,
-        input_paths["raw_user_input"],
-        input_paths["geocoded_input"],
-        input_paths["unassigned_stops_input"],
-    )
-    # print(latest_excel_file)
-    # print(latest_geo_file)
-    # print(latest_unassigned_stops_file)

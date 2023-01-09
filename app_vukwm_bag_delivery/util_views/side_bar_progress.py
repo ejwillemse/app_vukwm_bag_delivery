@@ -1,6 +1,6 @@
 import streamlit as st
 
-from app_vukwm_bag_delivery.views.return_session_status import return_short_status
+from app_vukwm_bag_delivery.util_views.return_session_status import return_short_status
 
 
 def view_sidebar():

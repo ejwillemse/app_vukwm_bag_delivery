@@ -1,11 +1,11 @@
 import streamlit as st
 
 from app_vukwm_bag_delivery.generate_routes import start_routing
-from app_vukwm_bag_delivery.return_session_staus import (
+from util_views.return_session_status import (
     return_side_bar,
     return_side_short,
 )
-from check_password import check_password
+from presenters.utils.check_password import check_password
 
 st.set_page_config(
     layout="wide",
