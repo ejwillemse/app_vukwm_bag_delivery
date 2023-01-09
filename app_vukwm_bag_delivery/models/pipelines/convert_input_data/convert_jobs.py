@@ -68,6 +68,7 @@ def unassigned_stops_convert(df, df_remove=None):
     if df_remove is not None and df_remove.shape[0] > 0:
         df = remove_unselected_stops(df, df_remove)
     df = unassigned_jobs_convert(df)
+    df["stop_id"] = df["stop_id"].astype(str)
     df = combine_orders(df)
     return df
 
