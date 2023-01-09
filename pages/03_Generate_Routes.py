@@ -2,6 +2,9 @@ import streamlit as st
 
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.generate_routes.presenters.decode_solution import (
+    decode_soltuion,
+)
 from app_vukwm_bag_delivery.generate_routes.presenters.generate_matrix import (
     generate_matrix_inputs,
 )
@@ -12,8 +15,6 @@ from app_vukwm_bag_delivery.generate_routes.presenters.process_input_data import
     process_input_data,
 )
 from app_vukwm_bag_delivery.generate_routes.presenters.solve_vroom_instace import solve
-
-# from app_vukwm_bag_delivery.generate_routes import start_routing
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
@@ -89,10 +90,11 @@ def start_routing():
         with st.spinner("Generate routes..."):
             solve()
         st.markdown(":white_check_mark: Routes generated")
-        with st.spinner("Complete route analysis..."):
-            pass
-        st.markdown(":white_check_mark: Analyses completed")
-        st.markdown("Routes can be viewed in `View Routes` page")
+
+    with st.spinner("Complete route analysis..."):
+        decode_soltuion()
+    st.markdown(":white_check_mark: Analyses completed")
+    st.markdown("Routes can be viewed in `View Routes` page")
 
 
 set_page_config()
