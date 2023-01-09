@@ -1,17 +1,36 @@
 import streamlit as st
 
-from util_views.return_session_status import (
-    return_side_bar,
-    return_side_short,
+import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.select_vehicles.presenters.select_vehicles import (
+    return_vehicle_grid,
+    save_vehicle_selection,
 )
-from app_vukwm_bag_delivery.select_vehicles import select_vehicles
-from presenters.utils.check_password import check_password
+from app_vukwm_bag_delivery.select_vehicles.views import get_defaults
+from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
-st.set_page_config(
-    layout="wide",
-    page_title="Welcome",
-    initial_sidebar_state="expanded",
-)
+VEHICLE_VIEW_COLUMNS = [
+    "Vehicle id",
+    "Type",
+    "Capacity (#boxes)",
+    "Depot",
+    "Shift start time",
+    "Shift end time",
+    "Average TAT per delivery (min)",
+    "Dedicated transport zones",
+    "Cost (£) per km",
+    "Cost (£) per hour",
+    "lat",
+    "lon",
+]
+
+
+def set_page_config():
+    st.set_page_config(
+        layout="wide",
+        page_title="Select and edit vehicles",
+        initial_sidebar_state="expanded",
+    )
+    st.title("Select and edit vehicles")
 
 
 if not check_password():
@@ -19,22 +38,54 @@ if not check_password():
     st.stop()  # App won't run anything after this line
 
 
-st.title("Select and edit vehicles")
+def check_previous_steps_completed():
+    if (
+        "data_02_intermediate" not in st.session_state
+        or "unassigned_stops" not in st.session_state.data_02_intermediate
+        or "unassigned_jobs" not in st.session_state.data_02_intermediate
+    ):
+        st.warning("Job data not loaded during session. Please go back to `Home` page")
+        st.stop()  # App won't run anything after this line
+
+
+def view_instructions():
+    with st.expander("Instructions"):
+        st.markdown(
+            """
+        Perform the following steps to edit vehicle information and select the vehicles to be routed. If no vehicles are selected, it is assumed that the entire fleet is available for routing.
+
+        * Step 1: Inspect the vehicle information in the table.
+        * Step 2: Edit the vehicle informaiton where required.
+        * Step 3: Select active vehicles by clicking on the boxes next to the vehicle ID.
+        * Step 4: Click on "Update" to load the vehicles.
+        """
+        )
+
+
+def confirm_selection(selected_df):
+    pressed = st.button("Click here to save vehicle selection")
+    if pressed:
+        save_vehicle_selection(selected_df)
+
+
+def select_vehicles():
+    st.write("The following vehicles are available for routing:")
+    vehicle_df = get_defaults.return_vehicle_default()
+    selected_df = return_vehicle_grid(vehicle_df)
+
+    if selected_df.shape[0] > 0:
+        st.write(
+            f"The following {selected_df.shape[0]} vehicles will be used for deliveries:"
+        )
+        st.write(selected_df[VEHICLE_VIEW_COLUMNS])
+        confirm_selection(selected_df[VEHICLE_VIEW_COLUMNS])
+
+
+set_page_config()
 
 st.sidebar.header("Session status")
-status_text = st.sidebar.empty()
-status_text.markdown(return_side_short())
-
-with st.expander("Instructions"):
-    st.markdown(
-        """
-    Perform the following steps to edit vehicle information and select the vehicles to be routed. If no vehicles are selected, it is assumed that the entire fleet is available for routing.
-
-    * Step 1: Inspect the vehicle information in the table.
-    * Step 2: Edit the vehicle informaiton where required.
-    * Step 3: Select active vehicles by clicking on the boxes next to the vehicle ID.
-    * Step 4: Click on "Update" to load the vehicles.
-    """
-    )
+side_bar_status = side_bar_progress.view_sidebar()
+check_previous_steps_completed()
+view_instructions()
 select_vehicles()
-status_text.markdown(return_side_short())
+side_bar_progress.update_side_bar(side_bar_status)
