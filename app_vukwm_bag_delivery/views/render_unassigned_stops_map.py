@@ -154,32 +154,10 @@ def return_order_config():
     return config
 
 
-def combine_product_name_quantity(df):
-    product_names = df["Product Name"].values
-    quantity = df["Quantity"].values
-    descriptions = []
-    for i in range(product_names.shape[0]):
-        descriptions.append(f"{product_names[i]}: {quantity[i]}")
-    descriptions = "\n".join(descriptions)
-    df = df.iloc[:1]  # .drop(columns=["Site Bk"])
-    df["Product description"] = descriptions
-    return df
-
-
-def combine_orders(df):
-    orders = aggregates.date_to_string(df)
-    orders = aggregates.get_area_num(orders)
-    orders["Transport area"] = "# " + orders["tansport_area_num"].astype(str).str.pad(
-        2, fillchar="0"
-    )
-    orders_grouped = (
-        orders.groupby(["Site Bk"])
-        .apply(combine_product_name_quantity)
-        .reset_index(drop=True)
-    )
-    return orders_grouped
-
-
 def return_order_map_html(df):
-    m = KeplerGl(data={"orders": df}, config=return_order_config())
+    df_map = df.copy()
+    df_map["Transport area"] = "#" + df_map["transport_area_number"].astype(
+        str
+    ).str.zfill(2)
+    m = KeplerGl(data={"orders": df_map}, config=return_order_config())
     return m._repr_html_(center_map=True, read_only=True)
