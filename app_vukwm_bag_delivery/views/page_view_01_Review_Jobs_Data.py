@@ -115,14 +115,14 @@ def confirm_removal():
 
 
 def view_select_removal_stops() -> None:
-    st.header("Select stops to be excluded from routing")
-    data = st.session_state.data_02_intermediate["unassigned_jobs"]
-    data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
-    select_remove_dataframe(data)
-    selected_df = return_selected()
-    if selected_df.shape[0] > 0:
-        st.write("Currently the following stops will be EXCLUDED for routing.")
-        st.write(selected_df[STOP_VIEW_COLUMNS])
+    with st.expander("Select stops to be excluded from routing"):
+        data = st.session_state.data_02_intermediate["unassigned_jobs"]
+        data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
+        select_remove_dataframe(data)
+        selected_df = return_selected()
+        if selected_df.shape[0] > 0:
+            st.write("Currently the following stops will be EXCLUDED for routing.")
+            st.write(selected_df[STOP_VIEW_COLUMNS])
+        else:
+            st.write("Currently all stops will be included for routing.")
         confirm_removal()
-    else:
-        st.write("Currently all stops will be included for routing.")
