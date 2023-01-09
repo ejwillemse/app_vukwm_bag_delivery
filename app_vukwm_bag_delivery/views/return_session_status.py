@@ -1,7 +1,7 @@
 import streamlit as st
 
 
-def return_side_bar():
+def return_full_status():
     if "stop_data" in st.session_state:
         data_loaded_tickbox = " :white_check_mark: Job data have been imported and can be inspected in the `Review Jobs Data` page.\n"
     else:
@@ -35,7 +35,7 @@ Status of session steps:\n
     return mark_down
 
 
-def return_side_short():
+def return_short_status():
     if "stop_data" in st.session_state:
         data_loaded_tickbox = " :white_check_mark: Job data imported\n"
     else:
