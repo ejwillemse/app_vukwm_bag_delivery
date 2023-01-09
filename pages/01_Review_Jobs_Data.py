@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -70,8 +71,12 @@ def view_instructions():
 
 
 def check_previous_steps_completed():
-    if "stop_data" not in st.session_state:
-        st.warning("Job data not loaded during session. Please go back the `Home` page")
+    if (
+        "data_02_intermediate" not in st.session_state
+        or "unassigned_stops" not in st.session_state.data_02_intermediate
+        or "unassigned_jobs" not in st.session_state.data_02_intermediate
+    ):
+        st.warning("Job data not loaded during session. Please go back to `Home` page")
         st.stop()  # App won't run anything after this line
 
 
@@ -112,6 +117,18 @@ def confirm_removal():
             ] = st.session_state.data_02_intermediate["removed_unassigned_stops"].copy()
 
 
+def clear_selection_removal():
+    pressed = st.button("Click here to clear selection")
+    if pressed:
+        st.session_state.data_02_intermediate[
+            "removed_unassigned_stops"
+        ] = pd.DataFrame()
+        st.session_state.data_02_intermediate[
+            "user_confirmed_removed_unassigned_stops"
+        ] = pd.DataFrame()
+        st.experimental_rerun()
+
+
 def view_select_removal_stops() -> None:
     with st.expander("Select stops to be excluded from routing"):
         data = st.session_state.data_02_intermediate["unassigned_jobs"]
@@ -126,6 +143,24 @@ def view_select_removal_stops() -> None:
         confirm_removal()
 
 
+def view_pre_selected_stops() -> None:
+    if (
+        "user_confirmed_removed_unassigned_stops"
+        in st.session_state.data_02_intermediate
+        and st.session_state.data_02_intermediate[
+            "user_confirmed_removed_unassigned_stops"
+        ].shape[0]
+        > 0
+    ):
+        st.subheader("Jobs manually selected and will be EXCLUDED from delivery")
+        st.write(
+            st.session_state.data_02_intermediate[
+                "user_confirmed_removed_unassigned_stops"
+            ].rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
+        )
+        clear_selection_removal()
+
+
 if not check_password():
     st.warning("Please log-in to continue.")
     st.stop()  # App won't run anything after this line
@@ -138,3 +173,5 @@ view_stops_map()
 view_all_stops()
 view_product_summary()
 view_select_removal_stops()
+view_pre_selected_stops()
+side_bar_status = side_bar_progress.update_side_bar(side_bar_status)
