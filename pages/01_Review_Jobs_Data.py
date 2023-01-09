@@ -114,7 +114,11 @@ def confirm_removal():
         if "removed_unassigned_stops" in st.session_state.data_02_intermediate:
             st.session_state.data_02_intermediate[
                 "user_confirmed_removed_unassigned_stops"
-            ] = st.session_state.data_02_intermediate["removed_unassigned_stops"].copy()
+            ] = (
+                st.session_state.data_02_intermediate["removed_unassigned_stops"]
+                .rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
+                .copy()
+            )
 
 
 def clear_selection_removal():
