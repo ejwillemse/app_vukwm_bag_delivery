@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 
 from .geo_utils import add_xy_projected_coordinate_point_features
-from .orsm_get_table import get_time_dist_matrix
+from .models.pipelines.generate_solver_inputs.orsm_get_table import get_time_dist_matrix
 
 
 def add_single_depot(df, fleet):

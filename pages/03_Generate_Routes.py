@@ -2,7 +2,14 @@ import streamlit as st
 
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
-from app_vukwm_bag_delivery.generate_routes import start_routing
+from app_vukwm_bag_delivery.generate_routes.presenters.generate_matrix import (
+    generate_matrix_inputs,
+)
+from app_vukwm_bag_delivery.generate_routes.presenters.process_input_data import (
+    process_input_data,
+)
+
+# from app_vukwm_bag_delivery.generate_routes import start_routing
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
@@ -54,13 +61,34 @@ def display_routes():
 
 
 def display_excluded_stops():
-    if return_session_status.check_jobs_excluded_from_route:
+    if return_session_status.check_jobs_excluded_from_route():
         st.write("The following stops will be EXCLUDED from routing:")
         st.write(
             st.session_state.data_02_intermediate[
                 "user_confirmed_removed_unassigned_stops"
             ]
         )
+
+
+def start_routing():
+    start = st.button("Generate routes")
+    if start:
+        with st.spinner("Peperating fleet and stop data..."):
+            process_input_data()
+        st.markdown(":white_check_mark: Fleet and stop data prepared")
+        with st.spinner("Generating map data..."):
+            generate_matrix_inputs()
+        st.markdown(":white_check_mark: Map data loaded")
+        with st.spinner("Set up routin engine..."):
+            pass
+        st.markdown(":white_check_mark: Routing engine setup completed")
+        with st.spinner("Generate routes..."):
+            pass
+        st.markdown(":white_check_mark: Routes generated")
+        with st.spinner("Complete route analysis..."):
+            pass
+        st.markdown(":white_check_mark: Analyses completed")
+        st.markdown("Routes can be viewed in `View Routes` page")
 
 
 set_page_config()
@@ -70,6 +98,7 @@ check_previous_steps_completed()
 view_instructions()
 display_routes()
 display_excluded_stops()
+start_routing()
 side_bar_progress.update_side_bar(side_bar_status)
 
 
