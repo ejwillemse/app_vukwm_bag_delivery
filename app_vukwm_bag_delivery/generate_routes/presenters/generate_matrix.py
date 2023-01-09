@@ -33,7 +33,7 @@ def extract_matrix(route_df, matrix_df):
     matrix = {}
     for profile in route_profile:
         logging.info(f"Generate {profile} matrix with {matrix_df.shape[0]} points")
-        matrix["profile"] = get_osrm_tables.get_time_dist_matrix(
+        matrix[profile] = get_osrm_tables.get_time_dist_matrix(
             matrix_df, st.secrets["osrm_port_mapping"][profile]
         )
     return matrix
