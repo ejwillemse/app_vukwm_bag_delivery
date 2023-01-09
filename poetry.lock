@@ -2943,6 +2943,33 @@ files = [
 tzdata = {version = "*", markers = "python_version >= \"3.6\""}
 
 [[package]]
+name = "pyvroom"
+version = "0.0.14"
+description = "Vehicle routing open-source optimization machine (VROOM)"
+category = "main"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pyvroom-0.0.14-cp310-cp310-macosx_10_14_x86_64.whl", hash = "sha256:b50c5a28a5ec61a98d25297cecc442ea13863f6b86c6afdfe6f65a418f3014c3"},
+    {file = "pyvroom-0.0.14-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:d9f98df68baec66fce50ef9c7b41e81f73baf9984a1c61ce7cc8f51c14b28c14"},
+    {file = "pyvroom-0.0.14-cp310-cp310-win_amd64.whl", hash = "sha256:3a96dac6ba24cb75a34e65fa41424f1660fb58e97d3097bf0c0ccdb961910b46"},
+    {file = "pyvroom-0.0.14-cp37-cp37m-macosx_10_14_x86_64.whl", hash = "sha256:57dabcb1c349ce3efa2d185cb4c46ae0da24dc4c488b6ea024489e6cdfb60b9a"},
+    {file = "pyvroom-0.0.14-cp37-cp37m-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:dc68d6c0904c05fc76d5ac4500fbc5ed8c5b7a033128b6985306aac53c187de8"},
+    {file = "pyvroom-0.0.14-cp37-cp37m-win_amd64.whl", hash = "sha256:5118fb6597ad7adc715141fc54879fc0c5f6c586ea2ba2ae7126c9022ca8bd7c"},
+    {file = "pyvroom-0.0.14-cp38-cp38-macosx_10_14_x86_64.whl", hash = "sha256:2c773aff6d6d9d6c0e32d76ada5a8debbb22875a48c5b79b442e9e1b088762f2"},
+    {file = "pyvroom-0.0.14-cp38-cp38-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9ba85a82dc12ccc80511ca36827acd9dfe7a3c0b6f90819c4b6c4179da87ec7d"},
+    {file = "pyvroom-0.0.14-cp38-cp38-win_amd64.whl", hash = "sha256:47a92b69d626ab3d903fa30c6f670e6bb1178fb4f34f2ea0527215fdddc00db6"},
+    {file = "pyvroom-0.0.14-cp39-cp39-macosx_10_14_x86_64.whl", hash = "sha256:278b507ef75c542a07ec561a586ba3db532d501b0cf55e03ed5464d13174fab6"},
+    {file = "pyvroom-0.0.14-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b215d75b3ed8de544d416747e4b9f253f8c734477cf8b262301dc3a7a97aac59"},
+    {file = "pyvroom-0.0.14-cp39-cp39-win_amd64.whl", hash = "sha256:156054866a3749fedaa0d93b1a14b3f249f30b215426b776b18b4aebcc093c04"},
+    {file = "pyvroom-0.0.14.tar.gz", hash = "sha256:73b404a97c2c401a6c5b2473d81d5f0263bfb34f22ffb4ade90a3df24f59f2b4"},
+]
+
+[package.dependencies]
+numpy = "*"
+pandas = "*"
+
+[[package]]
 name = "pywin32"
 version = "305"
 description = "Python for Window Extensions"
@@ -4026,4 +4053,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "ee2c7f02d190b9b22272098caee192476cf647823a5593989f2d5a2802891638"
+content-hash = "a2122781be0583257d6317f8af48d2485b9428ca2bad56295833af1e907f875c"
