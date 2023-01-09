@@ -14,18 +14,19 @@ def calc_route_product_summary(df):
         return products
 
     route_product_summary = (
-        df.groupby(GROUPING_COLUMN)
+        df.sort_values(["Product Name"])
+        .groupby(GROUPING_COLUMN)
         .agg(
             n_stops=("Ticket No", "count"),
-            n_products=("Total boxes", "sum"),
+            n_products=("Quantity", "sum"),
             product_types=("Product Name", "unique"),
         )
         .reset_index()
     )
 
-    route_product_summary = route_product_summary.assign(
-        product_types=route_product_summary["product_types"].apply(find_unique_products)
-    )
+    # route_product_summary = route_product_summary.assign(
+    #     product_types=route_product_summary["product_types"].apply(find_unique_products)
+    # )
 
     route_product_summary = route_product_summary.rename(
         columns={
