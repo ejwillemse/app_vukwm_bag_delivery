@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
@@ -62,6 +63,27 @@ def view_instructions():
         )
 
 
+def clear_selection_removal():
+    pressed = st.button("Click here to clear selection")
+    if pressed:
+        st.session_state.data_02_intermediate["unassigned_routes"] = pd.DataFrame()
+        st.experimental_rerun()
+
+
+def view_pre_selected_routes() -> None:
+    if (
+        "unassigned_routes" in st.session_state.data_02_intermediate
+        and st.session_state.data_02_intermediate["unassigned_routes"].shape[0] > 0
+    ):
+        st.subheader("Vehicles currently selected for routing")
+        st.write(
+            st.session_state.data_02_intermediate["unassigned_routes"][
+                VEHICLE_VIEW_COLUMNS
+            ]
+        )
+        clear_selection_removal()
+
+
 def confirm_selection(selected_df):
     pressed = st.button("Click here to save vehicle selection")
     if pressed:
@@ -88,4 +110,5 @@ side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
 select_vehicles()
+view_pre_selected_routes()
 side_bar_progress.update_side_bar(side_bar_status)

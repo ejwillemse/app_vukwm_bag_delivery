@@ -25,6 +25,7 @@ def check_intermediate_unassigned_fleet_loaded():
     return (
         "data_02_intermediate" in st.session_state
         and "unassigned_routes" in st.session_state.data_02_intermediate
+        and st.session_state.data_02_intermediate["unassigned_routes"].shape[0]
     )
 
 
