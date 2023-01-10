@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from shapely import wkt
 
-import app_vukwm_bag_delivery.models.pipelines.generate_solver_inputs.osrm_get_routes as osrm_get_routes
+import app_vukwm_bag_delivery.models.osrm_wrappers.osrm_get_routes as osrm_get_routes
 
 
 class DecodeVroomSolution:

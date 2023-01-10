@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from app_vukwm_bag_delivery.models.pipelines.generate_solver_inputs import (
-    get_osrm_tables,
-)
+import app_vukwm_bag_delivery.models.osrm_wrappers.get_osrm_tables as get_osrm_tables
 
 
 def combine_route_stops(stops, routes):

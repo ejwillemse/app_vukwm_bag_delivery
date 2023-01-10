@@ -10,7 +10,7 @@ import geopandas as gpd
 import pandas as pd
 import requests
 
-import app_vukwm_bag_delivery.models.pipelines.generate_solver_inputs.osrm as osrm
+import app_vukwm_bag_delivery.models.osrm_wrappers.osrm as osrm
 
 OSRM_DRIVING_DEFAULTS = {
     "steps": "true",

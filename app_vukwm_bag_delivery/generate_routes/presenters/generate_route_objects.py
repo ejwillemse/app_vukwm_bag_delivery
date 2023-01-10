@@ -2,7 +2,7 @@ import streamlit as st
 from vroom.input import input
 
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
-from app_vukwm_bag_delivery.models.routing_engine import generate_vroom_object
+from app_vukwm_bag_delivery.models.vroom_wrappers import generate_vroom_object
 
 
 def generate_vroom_input():

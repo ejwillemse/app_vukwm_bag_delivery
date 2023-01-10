@@ -1,6 +1,6 @@
 import streamlit as st
 
-import app_vukwm_bag_delivery.models.routing_engine.decode_vroom_solution as decode
+import app_vukwm_bag_delivery.models.vroom_wrappers.decode_vroom_solution as decode
 
 
 def decode_soltuion():
