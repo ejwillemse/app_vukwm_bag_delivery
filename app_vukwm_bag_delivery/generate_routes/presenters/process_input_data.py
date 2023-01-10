@@ -8,10 +8,9 @@ from app_vukwm_bag_delivery.models.pipelines.convert_input_data import (
 
 
 def process_input_data():
-    fleet_df = convert_fleet.convert_fleet(
+    unassigned_routes = convert_fleet.convert_fleet(
         st.session_state.data_02_intermediate["unassigned_routes"]
     )
-    st.session_state.data_03_primary = {"unassigned_routes": fleet_df}
 
     if return_session_status.check_jobs_excluded_from_route():
         remove_stops = st.session_state.data_02_intermediate[
@@ -20,9 +19,14 @@ def process_input_data():
     else:
         remove_stops = None
 
-    stop_df = convert_jobs.unassigned_stops_convert(
+    unassigned_stops = convert_jobs.unassigned_stops_convert(
         st.session_state.data_02_intermediate["unassigned_jobs"], remove_stops
     )
+    unassigned_stops = convert_jobs.add_skills(unassigned_stops, unassigned_routes)
 
-    stop_df = convert_jobs.add_skills(stop_df, fleet_df)
-    st.session_state.data_03_primary["unassigned_stops"] = stop_df
+    locations, unassigned_stops, unassigned_routes = convert_jobs.create_locations(
+        unassigned_stops, unassigned_routes
+    )
+    st.session_state.data_03_primary = {"locations": locations}
+    st.session_state.data_03_primary["unassigned_stops"] = unassigned_stops
+    st.session_state.data_03_primary["unassigned_routes"] = unassigned_routes

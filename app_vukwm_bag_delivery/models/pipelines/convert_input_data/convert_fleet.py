@@ -1,6 +1,7 @@
 """
 Convert fleet data into standard data model
 """
+import numpy as np
 
 UNASSIGNED_ROUTE_COLUMN_MAPPING = [
     {"new_column": "route_id", "old_column": "Vehicle id"},
@@ -10,6 +11,11 @@ UNASSIGNED_ROUTE_COLUMN_MAPPING = [
     {"new_column": "latitude", "old_column": "lat"},
     {"new_column": "longitude", "old_column": "lon"},
     {"new_column": "capacity", "old_column": "Capacity (#boxes)"},
+    {
+        "new_column": "activity_type",
+        "old_column": "activity_type",
+        "default": "DEPOT_START_END",
+    },
     {
         "new_column": "time_window_start",
         "old_column": "Shift start time",
@@ -41,5 +47,9 @@ def unassigned_route_convert(df, drop_columns=True):
 def convert_fleet(df):
     df = df.copy()
     df = unassigned_route_convert(df)
-    df = df.assign(profile=df["profile"].replace(PROFILE_MAPPING))
+    df = df.assign(
+        profile=df["profile"].replace(PROFILE_MAPPING),
+        stop_id=df["route_id"],
+        route_index=np.arange(0, df.shape[0]),
+    )
     return df
