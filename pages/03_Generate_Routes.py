@@ -80,21 +80,25 @@ def start_routing():
     if start:
         with st.spinner("Peperating fleet and stop data..."):
             process_input_data()
-        st.markdown(":white_check_mark: Fleet and stop data prepared")
+            st.markdown(":white_check_mark: Fleet and stop data prepared")
         with st.spinner("Generating map data..."):
             generate_matrix_inputs()
-        st.markdown(":white_check_mark: Map data loaded")
-        with st.spinner("Set up routin engine..."):
+            st.markdown(":white_check_mark: Map data loaded")
+        with st.spinner("Seting up route engine..."):
             generate_vroom_input()
-        st.markdown(":white_check_mark: Routing engine setup completed")
-        with st.spinner("Generate routes..."):
+            st.markdown(":white_check_mark: Routing engine setup completed")
+        with st.spinner("Generating routes..."):
             solve()
-        st.markdown(":white_check_mark: Routes generated")
-
-    with st.spinner("Complete route analysis..."):
-        decode_soltuion()
-    st.markdown(":white_check_mark: Analyses completed")
-    st.markdown("Routes can be viewed in `View Routes` page")
+            st.markdown(":white_check_mark: Routes generated")
+    with st.spinner("Completing route analysis..."):
+        decoder = decode_soltuion()
+        st.markdown(":white_check_mark: Analyses completed")
+        st.session_state.decoder = decoder
+        st.markdown("Routes can be viewed in `View Routes` page")
+    if "decoder" in st.session_state:
+        st.write(st.session_state.decoder.route_summary)
+        st.write(st.session_state.decoder.routes_extended_df)
+        # st.write(st.session_state.decoder.travel_leg_info)
 
 
 set_page_config()
