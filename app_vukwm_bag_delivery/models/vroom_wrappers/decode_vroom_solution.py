@@ -190,6 +190,25 @@ def add_demand_info(
     return assigned_stops
 
 
+def format_vroom_solution_routes(
+    solution_routes: pd.DataFrame,
+    unassigned_routes: pd.DataFrame,
+    matrix_data: pd.DataFrame,
+    unassigned_stops: pd.DataFrame,
+) -> pd.DataFrame:
+    """Convert solution into correct format"""
+    assigned_stops = convert_solution_routes(solution_routes)
+    assigned_stops = add_route_info(assigned_stops, unassigned_routes)
+    assigned_stops = add_stop_ids(assigned_stops, matrix_data)
+    assigned_stops = add_time_windows(
+        assigned_stops, unassigned_stops, unassigned_routes
+    )
+    assigned_stops = add_demand_info(assigned_stops, unassigned_stops)
+    assigned_stops = calc_times(assigned_stops)
+    assigned_stops = add_sequences(assigned_stops)
+    return assigned_stops
+
+
 class DecodeVroomSolution:
     def __init__(self, matrix_df, route_df, stop_df, solution, matrix):
         self.matrix_df = matrix_df
@@ -203,6 +222,14 @@ class DecodeVroomSolution:
         self.travel_leg_info = pd.DataFrame()
         self.stop_sequence_info = pd.DataFrame()
         self.route_summary = pd.DataFrame()
+
+    def format_solution_routes(self):
+        self.assigned_stops = format_vroom_solution_routes(
+            self.solution.routes,
+            # self.unassigned_routes,
+            # self.matrix_data,
+            # self.unassigned_stops,
+        )
 
     def extract_unassigned(self):
         unassigned_stops_location_index = [
@@ -316,22 +343,18 @@ if __name__ == "__main__":
 
     import geopandas as gpd
 
-    routes = pd.read_csv("data/test/temp_vroom_solution.csv")
-    unassigned_jobs = pd.read_csv("data/test/stop_df.csv", dtype={"stop_id": str})
-    unassigned_routes = pd.read_csv("data/test/unassigned_route_df.csv")
-    matrix_data = pd.read_csv("data/test/matrix_df.csv", dtype={"stop_id": str})
-    stop_sequence_info = pd.read_csv(
+    routes_test = pd.read_csv("data/test/temp_vroom_solution.csv")
+    unassigned_jobs_test = pd.read_csv("data/test/stop_df.csv", dtype={"stop_id": str})
+    unassigned_routes_test = pd.read_csv("data/test/unassigned_route_df.csv")
+    matrix_data_test = pd.read_csv("data/test/matrix_df.csv", dtype={"stop_id": str})
+    stop_sequence_info_test = pd.read_csv(
         "data/test/stop_sequence_info.csv", dtype={"stop_id": str}
     )
     travel_leg = gpd.read_file("data/test/travel_leg_info.geojson")
     with open("data/test/matrix.pickle", "br") as f:
         matrix = pickle.load(f)
 
-    routes = convert_solution_routes(routes)
-    routes = add_route_info(routes, unassigned_routes)
-    routes = add_stop_ids(routes, matrix_data)
-    routes = add_time_windows(routes, unassigned_jobs, unassigned_routes)
-    routes = add_demand_info(routes, unassigned_jobs)
-    routes = calc_times(routes)
-    routes = add_sequences(routes)
-    print(routes)
+    routes_test = format_vroom_solution_routes(
+        routes_test, unassigned_routes_test, matrix_data_test, unassigned_jobs_test
+    )
+    print(routes_test)
