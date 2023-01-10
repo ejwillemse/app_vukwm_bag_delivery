@@ -3,7 +3,9 @@ Decode vroom solution
 """
 import numpy as np
 import pandas as pd
-import vroom.job
+from shapely import wkt
+
+import app_vukwm_bag_delivery.models.pipelines.generate_solver_inputs.osrm_get_routes as osrm_get_routes
 
 
 class DecodeVroomSolution:
@@ -16,6 +18,9 @@ class DecodeVroomSolution:
         self.stops_unassigned_df = pd.DataFrame()
         self.routes_unused_df = pd.DataFrame()
         self.routes_extended_df = pd.DataFrame()
+        self.travel_leg_info = pd.DataFrame()
+        self.stop_sequence_info = pd.DataFrame()
+        self.route_summary = pd.DataFrame()
 
     def extract_unassigned(self):
         unassigned_stops_location_index = [
@@ -104,3 +109,21 @@ class DecodeVroomSolution:
             routes_kpis["travel_distance"] / routes_kpis["travel_time"] * 3.6
         ).fillna(0)
         return routes_kpis
+
+    def get_geo_info(self, port_mapping):
+        travel_path_info = osrm_get_routes.return_route_osrm_info(
+            self.routes_extended_df, port_mapping
+        )
+        self.travel_leg_info = travel_path_info["travel_leg_info"]
+        self.stop_sequence_info = travel_path_info["stop_sequence_info"]
+        self.route_summary = travel_path_info["route_summary"]
+
+    def add_travel_leg(self):
+        stop_info = self.routes_extended_df.copy()
+        travel_leg = self.travel_leg_info.copy()
+        travel_leg["geometry"] = travel_leg["geometry"].apply(wkt.dumps)
+        travel_leg["visit_sequence"] = travel_leg["travel_sequence"] + 1
+        stop_info = stop_info.merge(
+            travel_leg[["route_id", "visit_sequence", "geometry"]], how="left"
+        )
+        self.routes_extended_df = stop_info

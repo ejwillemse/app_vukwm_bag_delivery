@@ -13,8 +13,6 @@ def decode_soltuion():
     decoder.extract_unassigned()
     decoder.complete_route_df()
     decoder.extract_unused_routes()
-    st.write(decoder.get_route_kpis())
-    st.write("Stops that cannot be completed:")
-    st.write(decoder.stops_unassigned_df)
-    st.write("Unused vehicles:")
-    st.write(decoder.routes_unused_df)
+    decoder.get_geo_info(st.secrets["osrm_port_mapping"])
+    decoder.add_travel_leg()
+    return decoder
