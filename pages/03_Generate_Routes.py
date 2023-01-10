@@ -90,14 +90,36 @@ def start_routing():
         with st.spinner("Generating routes..."):
             solve()
             st.markdown(":white_check_mark: Routes generated")
-    with st.spinner("Completing route analysis..."):
-        decoder = decode_soltuion()
-        st.markdown(":white_check_mark: Analyses completed")
-        st.session_state.decoder = decoder
-        st.markdown("Routes can be viewed in `View Routes` page")
+        with st.spinner("Completing route analysis..."):
+            decoder = decode_soltuion()
+            st.markdown(":white_check_mark: Analyses completed")
+            st.session_state.decoder = decoder
+            st.markdown("Routes can be viewed in `View Routes` page")
     if "decoder" in st.session_state:
+        st.write(st.session_state.decoder.solution.routes)
         st.write(st.session_state.decoder.route_summary)
         st.write(st.session_state.decoder.routes_extended_df)
+        st.session_state.decoder.solution.routes.to_csv(
+            "data/test/temp_vroom_solution.csv", index=False
+        )
+        st.session_state.decoder.unassigned_route_df.to_csv(
+            "data/test/unassigned_route_df.csv", index=False
+        )
+        st.session_state.decoder.stop_df.to_csv("data/test/stop_df.csv", index=False)
+        st.session_state.decoder.matrix_df.to_csv(
+            "data/test/matrix_df.csv", index=False
+        )
+        st.session_state.decoder.stop_sequence_info.to_csv(
+            "data/test/stop_sequence_info.csv", index=False
+        )
+        st.session_state.decoder.travel_leg_info.to_file(
+            "data/test/travel_leg_info.geojson", driver="GeoJSON"
+        )
+        import pickle
+
+        with open("data/test/matrix.pickle", "bw") as f:
+            pickle.dump(st.session_state.decoder.matrix, f)
+
         # st.write(st.session_state.decoder.travel_leg_info)
 
 

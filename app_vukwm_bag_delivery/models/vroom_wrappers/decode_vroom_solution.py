@@ -1,16 +1,43 @@
 """
 Decode vroom solution
 """
+import sys
+
 import numpy as np
 import pandas as pd
 from shapely import wkt
 
+sys.path.insert(0, ".")
+
 import app_vukwm_bag_delivery.models.osrm_wrappers.osrm_get_routes as osrm_get_routes
+
+VROOM_ROUTES_MAPPING_OLD_TO_NEW = {
+    "vehicle_id": "route_index",
+    "type": "activity_type",
+    "location_index": "cost_matrix_index",
+    "arrival": "arrival_time__seconds",
+    "service": "service_duration__seconds",
+    "waiting_time": "waiting_duration__seconds",
+}
+
+TYPE_CONVERSION = {"stop_id": "str"}
+
+VROOM_ACTIVITY_TYPE_MAPPING = {
+    "start": "DEPOT_START",
+    "end": "DEPOT_END",
+    "job": "DELIVERY",
+}
+
+JOB_ACTIVITIES = ["DELIVERY"]
+
 
 # REQUIRED FUNCTIONS
 MAPPING = {
     "route_id": "route_id",
     "vehicle_profile": "profile",
+    "stop_id": "stop_id",
+    "visit_sequence": "visit_sequence",
+    "job_visit_sequence": "job_visit_sequence",
     "arrival_time": "arrival_time",
     "service_start_time": "service_start_time",
     "departure_time": "departure_time",
@@ -18,7 +45,7 @@ MAPPING = {
     "travel_duration_to_stop__seconds": "travel_duration_to_stop_seconds",
     "travel_distance_to_stop__meters": "travel_distance_to_stop_meters",
     "service_duration__seconds": "service_duration_seconds",
-    "wait_time__seconds": "wait_time",
+    "waiting_time__seconds": "waiting_time",
     "activity_type": "activity_type",
     "demand": "demand",
     "skills": "skills",
@@ -28,8 +55,139 @@ MAPPING = {
     "road_longitude": "road_longitude",
     "road_latitude": "road_latitude",
     "road_snap_distance__meters": "road_snap_distance_meters",
+    "time_window_start": "time_window_start",
+    "time_window_end": "time_window_end",
     "service_issues": "service_issues",
 }
+
+
+def convert_solution_routes(
+    solution_routes: pd.DataFrame,
+    mapping: dict = VROOM_ROUTES_MAPPING_OLD_TO_NEW,
+    activity_mapping: dict = VROOM_ACTIVITY_TYPE_MAPPING,
+) -> pd.DataFrame:
+    assigned_stops = solution_routes.rename(columns=mapping)[mapping.values()]
+    assigned_stops = assigned_stops.assign(
+        activity_type=assigned_stops["activity_type"].replace(activity_mapping)
+    )
+    return assigned_stops
+
+
+def calc_times(
+    assigned_stops: pd.DataFrame,
+    time_horizon_start: str = "00:00:00",
+    output_format: str = "%H:%M:%S",
+) -> pd.DataFrame:
+    """Calc formatted arrival, service start times and departure times."""
+
+    def hms_from_seconds(seconds_series):
+        return (
+            time_horizon_dt + pd.to_timedelta(seconds_series, unit="s")
+        ).dt.strftime(output_format)
+
+    time_horizon_dt = pd.to_datetime(time_horizon_start)
+    arrival_time__seconds = assigned_stops["arrival_time__seconds"]
+    service_start_time__seconds = (
+        arrival_time__seconds + assigned_stops["waiting_duration__seconds"]
+    )
+    departure_time__seconds = (
+        service_start_time__seconds + assigned_stops["service_duration__seconds"]
+    )
+    assigned_stops = assigned_stops.assign(
+        arrival_time=hms_from_seconds(arrival_time__seconds),
+        service_start_time=hms_from_seconds(service_start_time__seconds),
+        departure_time=hms_from_seconds(departure_time__seconds),
+    )
+    return assigned_stops
+
+
+def add_sequences(assigned_stops: pd.DataFrame, job_activities=None) -> pd.DataFrame:
+    """Add stop and job only visit sequences"""
+
+    def cal_route_sequences(df):
+        return df.groupby(["route_id"]).cumcount()
+
+    if job_activities is None:
+        job_activities = JOB_ACTIVITIES
+
+    assigned_stops = assigned_stops.assign(
+        stop_sequence=cal_route_sequences(assigned_stops)
+    )
+    job_stops = assigned_stops.loc[
+        assigned_stops["activity_type"].isin(job_activities)
+    ].copy()
+    job_stops = job_stops.assign(job_visit_sequence=cal_route_sequences(job_stops))
+    assigned_stops = assigned_stops.merge(
+        job_stops[["route_id", "stop_sequence", "job_visit_sequence"]], how="left"
+    )
+    return assigned_stops
+
+
+def add_route_info(
+    assigned_stops: pd.DataFrame, unassigned_routes: pd.DataFrame
+) -> pd.DataFrame:
+    """Add minimum route info (profile and capacity) for further processing"""
+    unassigned_routes = unassigned_routes.assign(
+        route_index=np.arange(unassigned_routes.shape[0])
+    )
+    assigned_stops = assigned_stops.merge(
+        unassigned_routes[["route_index", "route_id", "profile", "capacity"]],
+        how="left",
+        left_on="route_index",
+        right_on="route_index",
+        validate="m:m",
+    )
+    return assigned_stops
+
+
+def add_stop_ids(
+    assigned_stops: pd.DataFrame, matrix_info: pd.DataFrame
+) -> pd.DataFrame:
+    assigned_stops = assigned_stops.merge(
+        matrix_info[["matrix_index", "stop_id"]],
+        how="left",
+        validate="m:1",  # because of depot stops
+        left_on="cost_matrix_index",
+        right_on="matrix_index",
+    )
+    assigned_stops = assigned_stops.assign(
+        stop_id=assigned_stops["stop_id"].astype(str)
+    )
+    return assigned_stops
+
+
+def add_time_windows(
+    assigned_stops: pd.DataFrame,
+    unassigned_stops: pd.DataFrame,
+    unassigned_routes: pd.DataFrame,
+) -> pd.DataFrame:
+    """Add time-window info. Better would just be to have a single stop object, which takes ALL stop info (depots, IFs, etc...)"""
+    time_windows = pd.concat(
+        [
+            unassigned_stops[["stop_id", "time_window_start", "time_window_end"]],
+            unassigned_routes.rename(columns={"route_id": "stop_id"})[
+                ["stop_id", "time_window_start", "time_window_end"]
+            ],
+        ]
+    )
+    assigned_stops = assigned_stops.merge(
+        time_windows, how="left", left_on="stop_id", right_on="stop_id", validate="m:1"
+    )
+    return assigned_stops
+
+
+def add_demand_info(
+    assigned_stops: pd.DataFrame, unassigned_stops: pd.DataFrame
+) -> pd.DataFrame:
+    """Add demand info, such this is not used in the model currently"""
+    assigned_stops = assigned_stops.merge(
+        unassigned_stops[["stop_id", "demand"]],
+        left_on="stop_id",
+        right_on="stop_id",
+        validate="m:1",
+        how="left",
+    )
+    return assigned_stops
 
 
 class DecodeVroomSolution:
@@ -151,3 +309,29 @@ class DecodeVroomSolution:
             travel_leg[["route_id", "visit_sequence", "geometry"]], how="left"
         )
         self.routes_extended_df = stop_info
+
+
+if __name__ == "__main__":
+    import pickle
+
+    import geopandas as gpd
+
+    routes = pd.read_csv("data/test/temp_vroom_solution.csv")
+    unassigned_jobs = pd.read_csv("data/test/stop_df.csv", dtype={"stop_id": str})
+    unassigned_routes = pd.read_csv("data/test/unassigned_route_df.csv")
+    matrix_data = pd.read_csv("data/test/matrix_df.csv", dtype={"stop_id": str})
+    stop_sequence_info = pd.read_csv(
+        "data/test/stop_sequence_info.csv", dtype={"stop_id": str}
+    )
+    travel_leg = gpd.read_file("data/test/travel_leg_info.geojson")
+    with open("data/test/matrix.pickle", "br") as f:
+        matrix = pickle.load(f)
+
+    routes = convert_solution_routes(routes)
+    routes = add_route_info(routes, unassigned_routes)
+    routes = add_stop_ids(routes, matrix_data)
+    routes = add_time_windows(routes, unassigned_jobs, unassigned_routes)
+    routes = add_demand_info(routes, unassigned_jobs)
+    routes = calc_times(routes)
+    routes = add_sequences(routes)
+    print(routes)
