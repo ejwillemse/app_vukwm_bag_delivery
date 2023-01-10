@@ -14,7 +14,7 @@ import app_vukwm_bag_delivery.models.osrm_wrappers.osrm_get_routes as osrm_get_r
 VROOM_ROUTES_MAPPING_OLD_TO_NEW = {
     "vehicle_id": "route_index",
     "type": "activity_type",
-    "location_index": "cost_matrix_index",
+    "location_index": "location_index",
     "arrival": "arrival_time__seconds",
     "service": "service_duration__seconds",
     "waiting_time": "waiting_duration__seconds",
@@ -23,13 +23,11 @@ VROOM_ROUTES_MAPPING_OLD_TO_NEW = {
 TYPE_CONVERSION = {"stop_id": "str"}
 
 VROOM_ACTIVITY_TYPE_MAPPING = {
-    "start": "DEPOT_START",
-    "end": "DEPOT_END",
+    "start": "DEPOT_START_END",
+    "end": "DEPOT_START_END",
     "job": "DELIVERY",
 }
-
-JOB_ACTIVITIES = ["DELIVERY"]
-
+JOB_ACTIVITIES = ["JOB"]
 
 # REQUIRED FUNCTIONS
 MAPPING = {
@@ -37,7 +35,7 @@ MAPPING = {
     "vehicle_profile": "profile",
     "stop_id": "stop_id",
     "visit_sequence": "visit_sequence",
-    "job_visit_sequence": "job_visit_sequence",
+    "job_sequence": "job_sequence",
     "arrival_time": "arrival_time",
     "service_start_time": "service_start_time",
     "departure_time": "departure_time",
@@ -101,6 +99,36 @@ def calc_times(
     return assigned_stops
 
 
+def add_location_info(
+    assigned_stops: pd.DataFrame,
+    locations: pd.DataFrame,
+    location_column_drop=["service_duration__seconds"],
+) -> pd.DataFrame:
+    assigned_stops = assigned_stops.merge(
+        locations.drop(columns=location_column_drop), how="left", validate="m:1"
+    )
+    return assigned_stops
+
+
+def add_route_info(
+    assigned_stops: pd.DataFrame, unassigned_routes: pd.DataFrame
+) -> pd.DataFrame:
+    """Add minimum route info (profile and capacity) for further processing"""
+    unassigned_routes = unassigned_routes.assign(
+        route_index=np.arange(unassigned_routes.shape[0])
+    )
+    assigned_stops = assigned_stops.merge(
+        unassigned_routes.assign(vehicle_skills=unassigned_routes["skills"])[
+            ["route_index", "route_id", "profile", "capacity", "vehicle_skills"]
+        ],
+        how="left",
+        left_on="route_index",
+        right_on="route_index",
+        validate="m:m",
+    )
+    return assigned_stops
+
+
 def add_sequences(assigned_stops: pd.DataFrame, job_activities=None) -> pd.DataFrame:
     """Add stop and job only visit sequences"""
 
@@ -114,103 +142,33 @@ def add_sequences(assigned_stops: pd.DataFrame, job_activities=None) -> pd.DataF
         stop_sequence=cal_route_sequences(assigned_stops)
     )
     job_stops = assigned_stops.loc[
-        assigned_stops["activity_type"].isin(job_activities)
+        assigned_stops["location_type"].isin(job_activities)
     ].copy()
-    job_stops = job_stops.assign(job_visit_sequence=cal_route_sequences(job_stops))
+    job_stops = job_stops.assign(job_sequence=cal_route_sequences(job_stops))
     assigned_stops = assigned_stops.merge(
-        job_stops[["route_id", "stop_sequence", "job_visit_sequence"]], how="left"
-    )
-    return assigned_stops
-
-
-def add_route_info(
-    assigned_stops: pd.DataFrame, unassigned_routes: pd.DataFrame
-) -> pd.DataFrame:
-    """Add minimum route info (profile and capacity) for further processing"""
-    unassigned_routes = unassigned_routes.assign(
-        route_index=np.arange(unassigned_routes.shape[0])
-    )
-    assigned_stops = assigned_stops.merge(
-        unassigned_routes[["route_index", "route_id", "profile", "capacity"]],
-        how="left",
-        left_on="route_index",
-        right_on="route_index",
-        validate="m:m",
-    )
-    return assigned_stops
-
-
-def add_stop_ids(
-    assigned_stops: pd.DataFrame, matrix_info: pd.DataFrame
-) -> pd.DataFrame:
-    assigned_stops = assigned_stops.merge(
-        matrix_info[["matrix_index", "stop_id"]],
-        how="left",
-        validate="m:1",  # because of depot stops
-        left_on="cost_matrix_index",
-        right_on="matrix_index",
-    )
-    assigned_stops = assigned_stops.assign(
-        stop_id=assigned_stops["stop_id"].astype(str)
-    )
-    return assigned_stops
-
-
-def add_time_windows(
-    assigned_stops: pd.DataFrame,
-    unassigned_stops: pd.DataFrame,
-    unassigned_routes: pd.DataFrame,
-) -> pd.DataFrame:
-    """Add time-window info. Better would just be to have a single stop object, which takes ALL stop info (depots, IFs, etc...)"""
-    time_windows = pd.concat(
-        [
-            unassigned_stops[["stop_id", "time_window_start", "time_window_end"]],
-            unassigned_routes.rename(columns={"route_id": "stop_id"})[
-                ["stop_id", "time_window_start", "time_window_end"]
-            ],
-        ]
-    )
-    assigned_stops = assigned_stops.merge(
-        time_windows, how="left", left_on="stop_id", right_on="stop_id", validate="m:1"
-    )
-    return assigned_stops
-
-
-def add_demand_info(
-    assigned_stops: pd.DataFrame, unassigned_stops: pd.DataFrame
-) -> pd.DataFrame:
-    """Add demand info, such this is not used in the model currently"""
-    assigned_stops = assigned_stops.merge(
-        unassigned_stops[["stop_id", "demand"]],
-        left_on="stop_id",
-        right_on="stop_id",
-        validate="m:1",
-        how="left",
+        job_stops[["route_id", "stop_sequence", "job_sequence"]], how="left"
     )
     return assigned_stops
 
 
 def format_vroom_solution_routes(
     solution_routes: pd.DataFrame,
+    locations: pd.DataFrame,
     unassigned_routes: pd.DataFrame,
-    matrix_data: pd.DataFrame,
-    unassigned_stops: pd.DataFrame,
 ) -> pd.DataFrame:
     """Convert solution into correct format"""
     assigned_stops = convert_solution_routes(solution_routes)
-    assigned_stops = add_route_info(assigned_stops, unassigned_routes)
-    assigned_stops = add_stop_ids(assigned_stops, matrix_data)
-    assigned_stops = add_time_windows(
-        assigned_stops, unassigned_stops, unassigned_routes
-    )
-    assigned_stops = add_demand_info(assigned_stops, unassigned_stops)
     assigned_stops = calc_times(assigned_stops)
+    assigned_stops = add_location_info(assigned_stops, locations)
+    assigned_stops = add_route_info(assigned_stops, unassigned_routes)
     assigned_stops = add_sequences(assigned_stops)
     return assigned_stops
 
 
 class DecodeVroomSolution:
-    def __init__(self, matrix_df, route_df, stop_df, solution, matrix):
+    def __init__(
+        self, solution_routes, locations, unassigned_routes, unassigned_stops, matrix
+    ):
         self.matrix_df = matrix_df
         self.unassigned_route_df = route_df
         self.stop_df = stop_df
@@ -343,18 +301,35 @@ if __name__ == "__main__":
 
     import geopandas as gpd
 
-    routes_test = pd.read_csv("data/test/temp_vroom_solution.csv")
-    unassigned_jobs_test = pd.read_csv("data/test/stop_df.csv", dtype={"stop_id": str})
-    unassigned_routes_test = pd.read_csv("data/test/unassigned_route_df.csv")
-    matrix_data_test = pd.read_csv("data/test/matrix_df.csv", dtype={"stop_id": str})
-    stop_sequence_info_test = pd.read_csv(
-        "data/test/stop_sequence_info.csv", dtype={"stop_id": str}
+    unassigned_stops = pd.read_csv(
+        "data/local_test/03_Generate_Routes/unassigned_stops.csv",
+        dtype={"stop_id": str},
     )
-    travel_leg = gpd.read_file("data/test/travel_leg_info.geojson")
-    with open("data/test/matrix.pickle", "br") as f:
+    unassigned_routes_test = pd.read_csv(
+        "data/local_test/03_Generate_Routes/unassigned_routes.csv",
+        dtype={"route_id": str},
+    )
+    locations_test = pd.read_csv(
+        "data/local_test/03_Generate_Routes/locations.csv", dtype={"stop_id": str}
+    )
+    solution_routes_test = pd.read_csv(
+        "data/local_test/03_Generate_Routes/vroom_routes.csv",
+    )
+
+    with open("data/local_test/03_Generate_Routes/matrix.pickle", "br") as f:
         matrix = pickle.load(f)
 
+    # stop_sequence_info_test = pd.read_csv(
+    #     "data/test/stop_sequence_info.csv", dtype={"stop_id": str}
+    # )
+    # travel_leg = gpd.read_file("data/test/travel_leg_info.geojson")
+
+    # assigned_stops = convert_solution_routes(solution_routes_test)
+    # assigned_stops = calc_times(assigned_stops)
+    # assigned_stops = add_location_info(assigned_stops, locations_test)
+    # assigned_stops = add_route_info(assigned_stops, unassigned_routes_test)
+    # assigned_stops = add_sequences(assigned_stops)
     routes_test = format_vroom_solution_routes(
-        routes_test, unassigned_routes_test, matrix_data_test, unassigned_jobs_test
+        solution_routes_test, locations_test, unassigned_routes_test
     )
-    print(routes_test)
+    pass
