@@ -21,8 +21,8 @@ UNASSIGNED_STOPS_COLUMN_MAPPING = [
         "default": "DELIVERY",
     },
     {
-        "new_column": "duration",
-        "old_column": "service_duration__seconds",
+        "new_column": "service_duration__seconds",
+        "old_column": "duration",
         "default": 5 * 60,
     },
     {
@@ -40,11 +40,11 @@ UNASSIGNED_STOPS_COLUMN_MAPPING = [
 
 def combine_product_name_quantity(df):
     """We combine all orders assigned to a site into one row, with key info concatinated with `';'`."""
-    duration = df["duration"].max()
+    duration = df["service_duration__seconds"].max()
     demand = df["demand"].sum()
     df = df.iloc[:1]  # TODO: this stores key info, but also assigns the same date info
     df["demand"] = demand
-    df["duration"] = duration
+    df["service_duration__seconds"] = duration
     return df
 
 
