@@ -7,6 +7,30 @@ from shapely import wkt
 
 import app_vukwm_bag_delivery.models.osrm_wrappers.osrm_get_routes as osrm_get_routes
 
+# REQUIRED FUNCTIONS
+MAPPING = {
+    "route_id": "route_id",
+    "vehicle_profile": "profile",
+    "arrival_time": "arrival_time",
+    "service_start_time": "service_start_time",
+    "departure_time": "departure_time",
+    "waiting_duration__seconds": "waiting_duration_seconds",
+    "travel_duration_to_stop__seconds": "travel_duration_to_stop_seconds",
+    "travel_distance_to_stop__meters": "travel_distance_to_stop_meters",
+    "service_duration__seconds": "service_duration_seconds",
+    "wait_time__seconds": "wait_time",
+    "activity_type": "activity_type",
+    "demand": "demand",
+    "skills": "skills",
+    "latitude": "latitude",
+    "longitude": "longitude",
+    "travel_path_to_stop": "travel_path_to_stop",
+    "road_longitude": "road_longitude",
+    "road_latitude": "road_latitude",
+    "road_snap_distance__meters": "road_snap_distance_meters",
+    "service_issues": "service_issues",
+}
+
 
 class DecodeVroomSolution:
     def __init__(self, matrix_df, route_df, stop_df, solution, matrix):
