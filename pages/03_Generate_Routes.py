@@ -3,7 +3,7 @@ import streamlit as st
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.generate_routes.presenters.decode_solution import (
-    decode_soltuion,
+    decode_solution,
 )
 from app_vukwm_bag_delivery.generate_routes.presenters.generate_matrix import (
     generate_matrix_inputs,
@@ -75,34 +75,49 @@ def display_excluded_stops():
         )
 
 
-def start_routing():
+def routing_steps():
+    with st.spinner("Peperating fleet and stop data..."):
+        process_input_data()
+        st.markdown(":white_check_mark: Fleet and stop data prepared")
+    with st.spinner("Generating map data..."):
+        generate_matrix_inputs()
+        st.markdown(":white_check_mark: Map data loaded")
+    with st.spinner("Seting up route engine..."):
+        generate_vroom_input()
+        st.markdown(":white_check_mark: Routing engine setup completed")
+    with st.spinner("Generating routes..."):
+        solve()
+        st.markdown(":white_check_mark: Routes generated")
+    with st.spinner("Completing route analysis..."):
+        decode_solution()
+        st.markdown(":white_check_mark: Analyses completed")
+        st.markdown(
+            "Full route info can be viewed in the `View Routes` page. Below is a high level summary."
+        )
+        st.write(st.session_state.data_07_reporting["assigned_stops"])
+
+
+def show_route_summary():
+    if return_session_status.check_route_generation_completed():
+        st.subheader("Routes generated")
+        st.markdown(
+            "Full route info can be viewed in the `View Routes` page. Below is a high level summary."
+        )
+        st.write(st.session_state.data_07_reporting["assigned_stops"])
+
+
+def routing():
     start = st.button("Generate routes")
     if start:
-        with st.spinner("Peperating fleet and stop data..."):
-            process_input_data()
-        st.markdown(":white_check_mark: Fleet and stop data prepared")
-        with st.spinner("Generating map data..."):
-            generate_matrix_inputs()
-        st.markdown(":white_check_mark: Map data loaded")
-        with st.spinner("Set up routin engine..."):
-            generate_vroom_input()
-        st.markdown(":white_check_mark: Routing engine setup completed")
-        with st.spinner("Generate routes..."):
-            solve()
-        st.markdown(":white_check_mark: Routes generated")
-
-    with st.spinner("Complete route analysis..."):
-        decode_soltuion()
-    st.markdown(":white_check_mark: Analyses completed")
-    st.markdown("Routes can be viewed in `View Routes` page")
+        routing_steps()
 
 
 set_page_config()
-st.sidebar.header("Session status")
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
 display_routes()
 display_excluded_stops()
-start_routing()
+routing()
+show_route_summary()
 side_bar_progress.update_side_bar(side_bar_status)
