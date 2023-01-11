@@ -34,7 +34,7 @@ MAPPING = {
     "route_id": "route_id",
     "vehicle_profile": "profile",
     "stop_id": "stop_id",
-    "visit_sequence": "visit_sequence",
+    "stop_sequence": "stop_sequence",
     "job_sequence": "job_sequence",
     "arrival_time": "arrival_time",
     "service_start_time": "service_start_time",
@@ -43,19 +43,19 @@ MAPPING = {
     "travel_duration_to_stop__seconds": "travel_duration_to_stop_seconds",
     "travel_distance_to_stop__meters": "travel_distance_to_stop_meters",
     "service_duration__seconds": "service_duration_seconds",
-    "waiting_time__seconds": "waiting_time",
+    "waiting_duration__seconds": "waiting_duration__seconds",
     "activity_type": "activity_type",
     "demand": "demand",
     "skills": "skills",
     "latitude": "latitude",
     "longitude": "longitude",
     "travel_path_to_stop": "travel_path_to_stop",
-    "road_longitude": "road_longitude",
-    "road_latitude": "road_latitude",
-    "road_snap_distance__meters": "road_snap_distance_meters",
+    "road_snap_longitude": "road_longitude",
+    "road_snap_latitude": "road_latitude",
+    "road_snap_distance__meters": "road_snap_distance__meters",
     "time_window_start": "time_window_start",
     "time_window_end": "time_window_end",
-    "service_issues": "service_issues",
+    "service_issue": "service_issue",
 }
 
 
@@ -167,86 +167,48 @@ def format_vroom_solution_routes(
 
 class DecodeVroomSolution:
     def __init__(
-        self, solution_routes, locations, unassigned_routes, unassigned_stops, matrix
+        self,
+        solution_routes,
+        locations,
+        unassigned_routes,
+        unassigned_stops,
+        matrix,
+        osrm_ports,
     ):
-        self.matrix_df = matrix_df
-        self.unassigned_route_df = route_df
-        self.stop_df = stop_df
-        self.solution = solution
+        self.locations = locations
+        self.unassigned_routes = unassigned_routes
+        self.unassigned_stops = unassigned_stops
+        self.solution_routes = solution_routes
         self.matrix = matrix
-        self.stops_unassigned_df = pd.DataFrame()
-        self.routes_unused_df = pd.DataFrame()
-        self.routes_extended_df = pd.DataFrame()
+        self.assigned_stops = pd.DataFrame()
+        self.unused_routes = pd.DataFrame()
         self.travel_leg_info = pd.DataFrame()
         self.stop_sequence_info = pd.DataFrame()
         self.route_summary = pd.DataFrame()
+        self.unscheduled_stops = pd.DataFrame()
+        self.osrm_port = osrm_ports
 
     def format_solution_routes(self):
         self.assigned_stops = format_vroom_solution_routes(
-            self.solution.routes,
-            # self.unassigned_routes,
-            # self.matrix_data,
-            # self.unassigned_stops,
+            self.solution_routes, self.locations, self.unassigned_routes
         )
-
-    def extract_unassigned(self):
-        unassigned_stops_location_index = [
-            stops._location._index() for stops in self.solution.unassigned
-        ]
-
-        unassigned_ids = self.matrix_df.loc[
-            self.matrix_df["matrix_index"].isin(unassigned_stops_location_index)
-        ]["stop_id"].values
-        self.stops_unassigned_df = self.stop_df.loc[
-            self.stop_df["stop_id"].isin(unassigned_ids)
-        ].copy()
-
-    def add_times(self, df):
-        start_time = "00:00:00"
-        df["arrival_time"] = pd.to_datetime(start_time) + pd.to_timedelta(
-            df["arrival"], unit="s"
-        )
-        df["service_start_time"] = df["arrival_time"] + pd.to_timedelta(
-            df["waiting_time"], unit="s"
-        )
-        df["departure_time"] = df["service_start_time"] + pd.to_timedelta(
-            df["service"], unit="s"
-        )
-        for time in ["arrival_time", "service_start_time", "departure_time"]:
-            df[time] = df[time].dt.strftime("%H:%M:%S")
-        return df
-
-    def complete_route_df(self):
-        unassigned_route = self.unassigned_route_df.copy()
-        unassigned_route["vehicle_id"] = np.arange(0, unassigned_route.shape[0])
-        route_df = self.solution.routes.copy()
-        route_df = route_df.merge(
-            self.matrix_df,
-            left_on="location_index",
-            right_on="matrix_index",
-            how="left",
-        ).merge(
-            unassigned_route[["vehicle_id", "route_id", "profile"]],
-            how="left",
-        )
-        route_df["visit_sequence"] = route_df.groupby("vehicle_id").cumcount()
-        route_df = self.add_times(route_df)
-        self.routes_extended_df = route_df
 
     def extract_unused_routes(self):
-        routes_unused_df = self.unassigned_route_df.loc[
-            ~self.unassigned_route_df["route_id"].isin(
-                self.routes_extended_df["route_id"].values
-            )
-        ].copy()
-        self.routes_unused_df = routes_unused_df
+        self.unused_routes = self.unassigned_routes.loc[
+            ~self.unassigned_routes["route_id"].isin(self.assigned_stops)
+        ]
 
-    def get_route_kpis(self):
-        route_ids = self.routes_extended_df["route_id"].unique()
+    def extract_unserviced_stops(self):
+        self.unserviced_stops = self.unassigned_stops.loc[
+            ~self.unassigned_stops["stop_id"].isin(self.assigned_stops["stop_id"])
+        ]
+
+    def add_matrix_info(self):
+        route_ids = self.assigned_stops["route_id"].unique()
         routes_kpis = []
         for route_id in route_ids:
-            stops = self.routes_extended_df.loc[
-                self.routes_extended_df["route_id"] == route_id
+            stops = self.assigned_stops.loc[
+                self.assigned_stops["route_id"] == route_id
             ].copy()
             profile = stops["profile"].unique()
             assert len(profile) == 1
@@ -268,32 +230,93 @@ class DecodeVroomSolution:
             ]
             travel_distances.insert(0, 0)
 
-            stops["travel_time"] = travel_times
-            stops["travel_distance"] = travel_distances
+            stops["travel_duration_to_stop__seconds"] = travel_times
+            stops["travel_distance_to_stop__meters"] = travel_distances
             routes_kpis.append(stops)
         routes_kpis = pd.concat(routes_kpis)
-        routes_kpis["travel_speed"] = (
-            routes_kpis["travel_distance"] / routes_kpis["travel_time"] * 3.6
+        routes_kpis["travel_speed__kmh"] = (
+            routes_kpis["travel_distance_to_stop__meters"]
+            / routes_kpis["travel_duration_to_stop__seconds"]
+            * 3.6
         ).fillna(0)
-        return routes_kpis
+        self.assigned_stops = routes_kpis
 
-    def get_geo_info(self, port_mapping):
+    def get_geo_info(self):
         travel_path_info = osrm_get_routes.return_route_osrm_info(
-            self.routes_extended_df, port_mapping
+            self.assigned_stops, self.osrm_port
         )
         self.travel_leg_info = travel_path_info["travel_leg_info"]
         self.stop_sequence_info = travel_path_info["stop_sequence_info"]
         self.route_summary = travel_path_info["route_summary"]
 
     def add_travel_leg(self):
-        stop_info = self.routes_extended_df.copy()
+        stop_info = self.assigned_stops.copy()
         travel_leg = self.travel_leg_info.copy()
-        travel_leg["geometry"] = travel_leg["geometry"].apply(wkt.dumps)
-        travel_leg["visit_sequence"] = travel_leg["travel_sequence"] + 1
-        stop_info = stop_info.merge(
-            travel_leg[["route_id", "visit_sequence", "geometry"]], how="left"
+        travel_leg = travel_leg.assign(
+            travel_path_to_stop=travel_leg["geometry"].apply(wkt.dumps),
+            stop_sequence=travel_leg["travel_sequence"] + 1,
         )
-        self.routes_extended_df = stop_info
+        stop_info = stop_info.merge(
+            travel_leg[["route_id", "stop_sequence", "travel_path_to_stop"]], how="left"
+        )
+        self.assigned_stops = stop_info
+
+    def add_road_snap_info(self):
+        self.assigned_stops = self.assigned_stops.merge(
+            self.stop_sequence_info.drop(columns=["original_index"]).rename(
+                columns={
+                    "route_sequence": "stop_sequence",
+                    "road_snap_distance_m": "road_snap_distance__meters",
+                }
+            )
+        )
+
+    def add_duration_capacity_cumsum(self):
+        self.assigned_stops = self.assigned_stops.assign(
+            duration_cum=self.assigned_stops[
+                [
+                    "travel_duration_to_stop__seconds",
+                    "waiting_duration__seconds",
+                    "service_duration__seconds",
+                ]
+            ]
+            .fillna(0)
+            .sum(axis=1)
+        )
+        self.assigned_stops = self.assigned_stops.assign(
+            demand_cum=self.assigned_stops.groupby(["route_id"])["demand"].cumsum(),
+            travel_distance_cum__meters=self.assigned_stops.groupby(["route_id"])[
+                "travel_distance_to_stop__meters"
+            ].cumsum(),
+            duration_cum__seconds=self.assigned_stops.groupby(["route_id"])[
+                "duration_cum"
+            ].cumsum(),
+        )
+
+    def assign_service_issues(self):
+        early_flag = self.assigned_stops["waiting_duration__seconds"] > 0
+        late_flag = pd.to_datetime(
+            self.assigned_stops["arrival_time"]
+        ) > pd.to_datetime(self.assigned_stops["time_window_start"])
+        self.assigned_stops.loc[early_flag, "service_issue"] = "EARLY"
+        self.assigned_stops.loc[late_flag, "service_issue"] = "LATE"
+
+    def format_assigned_stops(self):
+        self.assigned_stops = self.assigned_stops.rename(columns=MAPPING)[
+            MAPPING.values()
+        ]
+
+    def convert_solution(self):
+        self.format_solution_routes()
+        self.assign_service_issues()
+        self.extract_unused_routes()
+        self.extract_unserviced_stops()
+        self.add_matrix_info()
+        self.get_geo_info()
+        self.add_travel_leg()
+        self.add_road_snap_info()
+        self.add_duration_capacity_cumsum()
+        self.format_assigned_stops()
 
 
 if __name__ == "__main__":
@@ -319,17 +342,19 @@ if __name__ == "__main__":
     with open("data/local_test/03_Generate_Routes/matrix.pickle", "br") as f:
         matrix = pickle.load(f)
 
-    # stop_sequence_info_test = pd.read_csv(
-    #     "data/test/stop_sequence_info.csv", dtype={"stop_id": str}
-    # )
-    # travel_leg = gpd.read_file("data/test/travel_leg_info.geojson")
-
-    # assigned_stops = convert_solution_routes(solution_routes_test)
-    # assigned_stops = calc_times(assigned_stops)
-    # assigned_stops = add_location_info(assigned_stops, locations_test)
-    # assigned_stops = add_route_info(assigned_stops, unassigned_routes_test)
-    # assigned_stops = add_sequences(assigned_stops)
-    routes_test = format_vroom_solution_routes(
-        solution_routes_test, locations_test, unassigned_routes_test
+    decoder = DecodeVroomSolution(
+        solution_routes_test,
+        locations_test,
+        unassigned_routes_test,
+        unassigned_stops,
+        matrix,
+        osrm_ports={
+            "bicycle": "http://34.216.224.175:8001",
+            "auto": "http://34.216.224.175:8000",
+            "default": "http://34.216.224.175:8000",
+        },
     )
-    pass
+    decoder.convert_solution()
+    decoder.assigned_stops.to_csv(
+        "data/local_test/03_Generate_Routes/assigned_stops.csv"
+    )
