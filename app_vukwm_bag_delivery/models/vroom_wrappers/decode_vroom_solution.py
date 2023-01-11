@@ -40,9 +40,9 @@ MAPPING = {
     "service_start_time": "service_start_time",
     "departure_time": "departure_time",
     "waiting_duration__seconds": "waiting_duration_seconds",
-    "travel_duration_to_stop__seconds": "travel_duration_to_stop_seconds",
-    "travel_distance_to_stop__meters": "travel_distance_to_stop_meters",
-    "service_duration__seconds": "service_duration_seconds",
+    "travel_duration_to_stop__seconds": "travel_duration_to_stop__seconds",
+    "travel_distance_to_stop__meters": "travel_distance_to_stop__meters",
+    "service_duration__seconds": "service_duration__seconds",
     "waiting_duration__seconds": "waiting_duration__seconds",
     "activity_type": "activity_type",
     "demand": "demand",
@@ -56,6 +56,9 @@ MAPPING = {
     "time_window_start": "time_window_start",
     "time_window_end": "time_window_end",
     "service_issue": "service_issue",
+    "demand_cum": "demand_cum",
+    "travel_distance_cum__meters": "travel_distance_cum__meters",
+    "duration_cum__seconds": "duration_cum__seconds",
 }
 
 
@@ -357,4 +360,6 @@ if __name__ == "__main__":
         },
     )
     assigned_stops = decoder.convert_solution()
-    assigned_stops.to_csv("data/local_test/03_Generate_Routes/assigned_stops.csv")
+    assigned_stops.to_csv(
+        "data/local_test/03_Generate_Routes/assigned_stops.csv", index=False
+    )

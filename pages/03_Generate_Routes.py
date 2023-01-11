@@ -91,10 +91,6 @@ def routing_steps():
     with st.spinner("Completing route analysis..."):
         decode_solution()
         st.markdown(":white_check_mark: Analyses completed")
-        st.markdown(
-            "Full route info can be viewed in the `View Routes` page. Below is a high level summary."
-        )
-        st.write(st.session_state.data_07_reporting["assigned_stops"])
 
 
 def show_route_summary():
