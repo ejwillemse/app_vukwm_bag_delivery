@@ -294,10 +294,11 @@ class DecodeVroomSolution:
         )
 
     def assign_service_issues(self):
-        early_flag = self.assigned_stops["waiting_duration__seconds"] > 0
+        early_flag = self.assigned_stops["waiting_duration__seconds"].fillna(0) > 0
         late_flag = pd.to_datetime(
             self.assigned_stops["arrival_time"]
-        ) > pd.to_datetime(self.assigned_stops["time_window_start"])
+        ) > pd.to_datetime(self.assigned_stops["time_window_end"])
+        self.assigned_stops = self.assigned_stops.assign(service_issue="ON-TIME")
         self.assigned_stops.loc[early_flag, "service_issue"] = "EARLY"
         self.assigned_stops.loc[late_flag, "service_issue"] = "LATE"
 
@@ -317,6 +318,7 @@ class DecodeVroomSolution:
         self.add_road_snap_info()
         self.add_duration_capacity_cumsum()
         self.format_assigned_stops()
+        return self.assigned_stops
 
 
 if __name__ == "__main__":
@@ -354,7 +356,5 @@ if __name__ == "__main__":
             "default": "http://34.216.224.175:8000",
         },
     )
-    decoder.convert_solution()
-    decoder.assigned_stops.to_csv(
-        "data/local_test/03_Generate_Routes/assigned_stops.csv"
-    )
+    assigned_stops = decoder.convert_solution()
+    assigned_stops.to_csv("data/local_test/03_Generate_Routes/assigned_stops.csv")

@@ -29,6 +29,13 @@ def check_intermediate_unassigned_fleet_loaded():
     )
 
 
+def check_route_generation_completed():
+    return (
+        "data_07_reporting" in st.session_state
+        and "assigned_stops" in st.session_state.data_07_reporting
+    )
+
+
 def return_full_status():
     if check_intermediate_unassigned_jobs_loaded():
         data_loaded_tickbox = " :white_check_mark: Job data have been imported and can be inspected in the `Review Jobs Data` page.\n"
@@ -47,7 +54,7 @@ def return_full_status():
     else:
         fleet_loaded_tickbox = " :red_circle: Vehicles still have to be selected for routing. Please go to the `Select Vehicles` page.\n"
 
-    if "assigned_jobs" in st.session_state:
+    if check_route_generation_completed():
         routes_generated_tickbox = " :white_check_mark: Routes have been generated for the vehicles and can be inspected in the `View Routes` page and modified in the `Update Routes` page.\n"
     else:
         routes_generated_tickbox = " :red_circle: Routes still have to be generated for the vehicles. Please go to `Generate Routes` page.\n"
@@ -86,7 +93,7 @@ def return_short_status():
     else:
         fleet_loaded_tickbox = " :red_circle: Vehicles selected\n"
 
-    if "assigned_jobs" in st.session_state:
+    if check_route_generation_completed():
         routes_generated_tickbox = " :white_check_mark: Routes generated\n"
     else:
         routes_generated_tickbox = " :red_circle: Routes generated\n"
