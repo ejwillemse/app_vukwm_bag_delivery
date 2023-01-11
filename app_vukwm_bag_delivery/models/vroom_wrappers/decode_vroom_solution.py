@@ -59,6 +59,8 @@ MAPPING = {
     "demand_cum": "demand_cum",
     "travel_distance_cum__meters": "travel_distance_cum__meters",
     "duration_cum__seconds": "duration_cum__seconds",
+    "travel_speed__kmh": "travel_speed__kmh",
+    "location_type": "location_type",
 }
 
 
