@@ -21,5 +21,5 @@ def decode_solution():
     st.session_state.data_07_reporting = {
         "assigned_stops": assigned_stops,
         "unused_routes": decoder.unused_routes,
-        "unscheduled_stops": decode.unscheduled_stops,
+        "unserviced_stops": decoder.unserviced_stops,
     }

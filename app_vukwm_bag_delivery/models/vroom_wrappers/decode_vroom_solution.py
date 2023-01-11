@@ -190,7 +190,7 @@ class DecodeVroomSolution:
         self.travel_leg_info = pd.DataFrame()
         self.stop_sequence_info = pd.DataFrame()
         self.route_summary = pd.DataFrame()
-        self.unscheduled_stops = pd.DataFrame()
+        self.unserviced_stops = pd.DataFrame()
         self.osrm_port = osrm_ports
 
     def format_solution_routes(self):
@@ -200,7 +200,7 @@ class DecodeVroomSolution:
 
     def extract_unused_routes(self):
         self.unused_routes = self.unassigned_routes.loc[
-            ~self.unassigned_routes["route_id"].isin(self.assigned_stops)
+            ~self.unassigned_routes["route_id"].isin(self.assigned_stops["route_id"])
         ]
 
     def extract_unserviced_stops(self):

@@ -5,6 +5,8 @@ def route_summary(assigned_stops):
     return (
         assigned_stops.assign(
             job_flag=assigned_stops["location_type"] == "JOB",
+            early=assigned_stops["service_issue"] == "EARLY",
+            late=assigned_stops["service_issue"] == "LATE",
         )
         .groupby(["route_id", "profile"])
         .agg(
@@ -16,6 +18,8 @@ def route_summary(assigned_stops):
             average_speed__kmh=("travel_speed__kmh", "mean"),
             stops=("job_flag", "sum"),
             demand=("demand", "sum"),
+            early_stops=("early", "sum"),
+            late_stops=("late", "sum"),
         )
     ).reset_index()
 
