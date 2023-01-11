@@ -36,6 +36,22 @@ def check_route_generation_completed():
     )
 
 
+def check_unused_routes():
+    return (
+        "data_07_reporting" in st.session_state
+        and "unused_routes" in st.session_state.data_07_reporting
+        and st.session_state.data_07_reporting["unused_routes"].shape[0] > 0
+    )
+
+
+def check_unserviced_stops():
+    return (
+        "data_07_reporting" in st.session_state
+        and "unserviced_stops" in st.session_state.data_07_reporting
+        and st.session_state.data_07_reporting["unserviced_stops"].shape[0] > 0
+    )
+
+
 def return_full_status():
     if check_intermediate_unassigned_jobs_loaded():
         data_loaded_tickbox = " :white_check_mark: Job data have been imported and can be inspected in the `Review Jobs Data` page.\n"

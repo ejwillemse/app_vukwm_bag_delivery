@@ -18,4 +18,8 @@ def decode_solution():
         st.secrets["osrm_port_mapping"],
     )
     assigned_stops = decoder.convert_solution()
-    st.session_state.data_07_reporting = {"assigned_stops": assigned_stops}
+    st.session_state.data_07_reporting = {
+        "assigned_stops": assigned_stops,
+        "unused_routes": decoder.unused_routes,
+        "unserviced_stops": decoder.unserviced_stops,
+    }

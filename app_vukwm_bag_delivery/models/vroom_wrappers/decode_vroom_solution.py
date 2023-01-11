@@ -40,9 +40,9 @@ MAPPING = {
     "service_start_time": "service_start_time",
     "departure_time": "departure_time",
     "waiting_duration__seconds": "waiting_duration_seconds",
-    "travel_duration_to_stop__seconds": "travel_duration_to_stop_seconds",
-    "travel_distance_to_stop__meters": "travel_distance_to_stop_meters",
-    "service_duration__seconds": "service_duration_seconds",
+    "travel_duration_to_stop__seconds": "travel_duration_to_stop__seconds",
+    "travel_distance_to_stop__meters": "travel_distance_to_stop__meters",
+    "service_duration__seconds": "service_duration__seconds",
     "waiting_duration__seconds": "waiting_duration__seconds",
     "activity_type": "activity_type",
     "demand": "demand",
@@ -56,6 +56,11 @@ MAPPING = {
     "time_window_start": "time_window_start",
     "time_window_end": "time_window_end",
     "service_issue": "service_issue",
+    "demand_cum": "demand_cum",
+    "travel_distance_cum__meters": "travel_distance_cum__meters",
+    "duration_cum__seconds": "duration_cum__seconds",
+    "travel_speed__kmh": "travel_speed__kmh",
+    "location_type": "location_type",
 }
 
 
@@ -185,7 +190,7 @@ class DecodeVroomSolution:
         self.travel_leg_info = pd.DataFrame()
         self.stop_sequence_info = pd.DataFrame()
         self.route_summary = pd.DataFrame()
-        self.unscheduled_stops = pd.DataFrame()
+        self.unserviced_stops = pd.DataFrame()
         self.osrm_port = osrm_ports
 
     def format_solution_routes(self):
@@ -195,7 +200,7 @@ class DecodeVroomSolution:
 
     def extract_unused_routes(self):
         self.unused_routes = self.unassigned_routes.loc[
-            ~self.unassigned_routes["route_id"].isin(self.assigned_stops)
+            ~self.unassigned_routes["route_id"].isin(self.assigned_stops["route_id"])
         ]
 
     def extract_unserviced_stops(self):
@@ -357,4 +362,6 @@ if __name__ == "__main__":
         },
     )
     assigned_stops = decoder.convert_solution()
-    assigned_stops.to_csv("data/local_test/03_Generate_Routes/assigned_stops.csv")
+    assigned_stops.to_csv(
+        "data/local_test/03_Generate_Routes/assigned_stops.csv", index=False
+    )
