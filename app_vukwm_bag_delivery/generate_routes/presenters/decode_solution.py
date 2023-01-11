@@ -2,6 +2,7 @@ import streamlit as st
 
 import app_vukwm_bag_delivery.models.vroom_wrappers.decode_vroom_solution as decode
 
+
 def decode_solution():
     unassigned_routes = st.session_state.data_03_primary["unassigned_routes"]
     unassigned_stops = st.session_state.data_03_primary["unassigned_stops"]
@@ -17,4 +18,8 @@ def decode_solution():
         st.secrets["osrm_port_mapping"],
     )
     assigned_stops = decoder.convert_solution()
-    st.session_state.data_07_reporting = {"assigned_stops": assigned_stops}
+    st.session_state.data_07_reporting = {
+        "assigned_stops": assigned_stops,
+        "unused_routes": decoder.unused_routes,
+        "unscheduled_stops": decode.unscheduled_stops,
+    }
