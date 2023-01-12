@@ -650,6 +650,16 @@ def return_map():
     ].copy()
     unassigned_stops = st.session_state.data_02_intermediate["unassigned_stops"].copy()
     unserviced_stops = st.session_state.data_07_reporting["unserviced_stops"].copy()
+
+    if (
+        "view_routes" in st.session_state
+        and "filter_vehicles" in st.session_state.view_routes
+    ):
+        filter_routes = st.session_state.view_routes["filter_vehicles"]
+        if filter_routes:
+            assigned_stops = assigned_stops.loc[
+                assigned_stops["route_id"].isin(filter_routes)
+            ]
     assigned_stops_display = return_assigned_stops_display(
         assigned_stops, unassigned_stops
     )
