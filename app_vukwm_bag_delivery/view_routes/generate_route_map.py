@@ -50,7 +50,7 @@ def return_config():
                             },
                             "isVisible": True,
                             "visConfig": {
-                                "radius": 30,
+                                "radius": 35,
                                 "fixedRadius": False,
                                 "opacity": 0.75,
                                 "outline": False,
@@ -103,11 +103,11 @@ def return_config():
                             "textLabel": [
                                 {
                                     "field": {
-                                        "name": "Job sequence",
+                                        "name": "Stop sequence",
                                         "type": "integer",
                                     },
                                     "color": [255, 255, 255],
-                                    "size": 16,
+                                    "size": 18,
                                     "offset": [0, 0],
                                     "anchor": "middle",
                                     "alignment": "center",
@@ -581,7 +581,6 @@ def return_unserviced_stops_display(unassigned_stops, unserviced_stops):
 
 
 def unit_conversions(assigned_stops):
-    st.write(assigned_stops)
     assigned_stops = assigned_stops.assign(
         vehicle_profile=assigned_stops["vehicle_profile"].replace(VEHICLE_TYPE_MAPPING),
         waiting_duration__seconds=(
