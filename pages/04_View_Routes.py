@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
+from app_vukwm_bag_delivery.view_routes.generate_route_gant import return_gant
 from app_vukwm_bag_delivery.view_routes.generate_route_map import return_map
 
 
@@ -61,11 +62,23 @@ def display_routes():
     components.html(html, height=750)
 
 
+def display_gant():
+    detail = st.radio(
+        "Label detail",
+        options=["Simple", "Detailed"],
+        help="`Detailed` works best if the resolution is at 15min.",
+    )
+    detail_flag = {"Simple": False, "Detailed": True}[detail]
+    gant = return_gant(detail_flag)
+    st.plotly_chart(gant, theme="streamlit", use_container_width=True)
+
+
 set_page_config()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
 display_routes()
+display_gant()
 # display_excluded_stops()
 # routing()
 # show_route_summary()
