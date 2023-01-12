@@ -581,6 +581,7 @@ def return_unserviced_stops_display(unassigned_stops, unserviced_stops):
 
 
 def unit_conversions(assigned_stops):
+    st.write(assigned_stops)
     assigned_stops = assigned_stops.assign(
         vehicle_profile=assigned_stops["vehicle_profile"].replace(VEHICLE_TYPE_MAPPING),
         waiting_duration__seconds=(

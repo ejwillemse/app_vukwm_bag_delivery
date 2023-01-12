@@ -23,3 +23,4 @@ def decode_solution():
         "unused_routes": decoder.unused_routes,
         "unserviced_stops": decoder.unserviced_stops,
     }
+    st.write(assigned_stops)
