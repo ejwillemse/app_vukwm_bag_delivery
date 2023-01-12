@@ -4,9 +4,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
-from app_vukwm_bag_delivery.models.pipelines.generate_solver_inputs import (
-    get_osrm_tables,
-)
+import app_vukwm_bag_delivery.models.osrm_wrappers.get_osrm_tables as get_osrm_tables
 
 
 def combine_route_stops(stops, routes):
@@ -40,8 +38,9 @@ def extract_matrix(route_df, matrix_df):
 
 
 def generate_matrix_inputs():
-    stop_df = st.session_state.data_03_primary["unassigned_stops"]
-    route_df = st.session_state.data_03_primary["unassigned_routes"]
-    matrix_df = combine_route_stops(stop_df, route_df)
-    matrix = extract_matrix(route_df, matrix_df)
-    st.session_state.data_04_model_input = {"matrix_df": matrix_df, "matrix": matrix}
+    locations = st.session_state.data_03_primary["locations"].sort_values(
+        "location_index"
+    )
+    unassigned_routes = st.session_state.data_03_primary["unassigned_routes"]
+    matrix = extract_matrix(unassigned_routes, locations)
+    st.session_state.data_04_model_input = {"matrix": matrix}

@@ -80,7 +80,6 @@ def check_previous_steps_completed():
         st.stop()  # App won't run anything after this line
 
 
-@st.experimental_memo
 def view_product_summary():
     with st.expander(" View summary per transport area"):
         st.write(
@@ -90,7 +89,6 @@ def view_product_summary():
         )
 
 
-@st.experimental_memo
 def view_all_stops():
     with st.expander("View all stops"):
         st.write(
@@ -100,7 +98,6 @@ def view_all_stops():
         )
 
 
-@st.experimental_memo
 def view_stops_map():
     html = return_order_map_html(
         st.session_state.data_02_intermediate["unassigned_stops"]
