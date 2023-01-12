@@ -32,7 +32,7 @@ JOB_ACTIVITIES = ["JOB"]
 # REQUIRED FUNCTIONS
 MAPPING = {
     "route_id": "route_id",
-    "vehicle_profile": "profile",
+    "profile": "vehicle_profile",
     "stop_id": "stop_id",
     "stop_sequence": "stop_sequence",
     "job_sequence": "job_sequence",

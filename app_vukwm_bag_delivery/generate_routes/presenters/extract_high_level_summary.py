@@ -5,7 +5,7 @@ from app_vukwm_bag_delivery.models.pipelines.summarise.sum_routes import route_s
 
 SUMMARY_VIEW_MAPPING = {
     "route_id": "Vehicle id",
-    "profile": "Vehicle type",
+    "vehicle_profile": "Vehicle type",
     "start_time": "Route start",
     "end_time": "Route end",
     "total_distance__meters": "Distance travelled (km)",
@@ -22,7 +22,7 @@ VEHICLE_TYPE_MAPPING = {"auto": "Van", "bicycle": "Bicycle"}
 
 def unit_conversions(assigned_stops):
     assigned_stops = assigned_stops.assign(
-        profile=assigned_stops["profile"].replace(VEHICLE_TYPE_MAPPING),
+        vehicle_profile=assigned_stops["vehicle_profile"].replace(VEHICLE_TYPE_MAPPING),
         total_distance__meters=(assigned_stops["total_distance__meters"] / 1000)
         .round(0)
         .astype(int),
@@ -49,6 +49,7 @@ def add_totals(route_sums):
 
 def extract_high_level_summary():
     assigned_stops = st.session_state.data_07_reporting["assigned_stops"]
+
     route_sum = route_summary(assigned_stops)
     route_sum = add_totals(route_sum)
     route_sum = (
@@ -63,6 +64,7 @@ def extract_high_level_summary():
 def extract_unused_routes():
     unassigned_routes = st.session_state.data_02_intermediate["unassigned_routes"]
     unused_routes = st.session_state.data_07_reporting["unused_routes"]
+
     return unassigned_routes.loc[
         unassigned_routes["Vehicle id"].isin(unused_routes["route_id"])
     ]
