@@ -53,12 +53,14 @@ def check_unserviced_stops():
 
 
 def return_full_status():
+    warnings = False
     if check_intermediate_unassigned_jobs_loaded():
         data_loaded_tickbox = " :white_check_mark: Job data have been imported and can be inspected in the `Review Jobs Data` page.\n"
     else:
         data_loaded_tickbox = " :red_circle: Job data has not yet been imported.\n"
 
     if check_jobs_excluded_from_route():
+        warnings = True
         data_excluded_tickbox = " :large_orange_diamond: Jobs have been manually excluded from delivery via the `Review Jobs Data` page.\n"
     else:
         data_excluded_tickbox = ""
@@ -75,25 +77,44 @@ def return_full_status():
     else:
         routes_generated_tickbox = " :red_circle: Routes still have to be generated for the vehicles. Please go to `Generate Routes` page.\n"
 
+    if check_unused_routes():
+        warnings = True
+        unused_routes_tickbox = " :large_orange_diamond: Some of the vehicles are not being used. Go to `View Routes` for more details.\n"
+    else:
+        unused_routes_tickbox = ""
+
+    if check_unserviced_stops():
+        warnings = True
+        check_unserviced_stops_tickbox = " :large_orange_diamond: Some of the jobs could not be allocated to vehicles. Go to `View Routes` for more details.\n"
+    else:
+        check_unserviced_stops_tickbox = ""
+
     if "jobs_dispatched" in st.session_state:
         routes_dispatched_tickbox = (
             " :white_check_mark: Routes have been dispatched to the drivers.\n"
         )
     else:
         routes_dispatched_tickbox = " :red_circle: Routes still have to be dispatched to the drivers. Please go to the `Dispatch Routes` page.\n"
+    if warnings:
+        warning_heading = "## Warnings"
+    else:
+        warning_heading = ""
     mark_down = f"""
 Status of session steps:\n 
 {data_loaded_tickbox}
-{data_excluded_tickbox}
 {fleet_loaded_tickbox}
 {routes_generated_tickbox}
 {routes_dispatched_tickbox}
+{warning_heading}
+{data_excluded_tickbox}
+{check_unserviced_stops_tickbox}
+{unused_routes_tickbox}
 """
     return mark_down
 
 
 def return_short_status():
-
+    warnings = False
     if check_intermediate_unassigned_jobs_loaded():
         data_loaded_tickbox = " :white_check_mark: Job data imported\n"
     else:
@@ -101,6 +122,7 @@ def return_short_status():
 
     if check_jobs_excluded_from_route():
         data_excluded_tickbox = " :large_orange_diamond: Jobs manually excluded\n"
+        warnings = True
     else:
         data_excluded_tickbox = ""
 
@@ -114,15 +136,34 @@ def return_short_status():
     else:
         routes_generated_tickbox = " :red_circle: Routes generated\n"
 
+    if check_unused_routes():
+        warnings = True
+        unused_routes_tickbox = " :large_orange_diamond: Unused vehicles\n"
+    else:
+        unused_routes_tickbox = ""
+
+    if check_unserviced_stops():
+        warnings = True
+        check_unserviced_stops_tickbox = " :large_orange_diamond: Unallocated jobs\n"
+    else:
+        check_unserviced_stops_tickbox = ""
+
     if "jobs_dispatched" in st.session_state:
         routes_dispatched_tickbox = " :white_check_mark: Routes dispatched\n"
     else:
         routes_dispatched_tickbox = " :red_circle: Routes dispatched\n"
+    if warnings:
+        warning_heading = "## Warnings"
+    else:
+        warning_heading = ""
     mark_down = f"""
 {data_loaded_tickbox}
-{data_excluded_tickbox}
 {fleet_loaded_tickbox}
 {routes_generated_tickbox}
 {routes_dispatched_tickbox}
+{warning_heading}
+{data_excluded_tickbox}
+{check_unserviced_stops_tickbox}
+{unused_routes_tickbox}
 """
     return mark_down

@@ -77,21 +77,27 @@ def display_excluded_stops():
 
 
 def routing_steps():
-    with st.spinner("Peperating fleet and stop data..."):
-        process_input_data()
-        st.markdown(":white_check_mark: Fleet and stop data prepared")
-    with st.spinner("Generating map data..."):
-        generate_matrix_inputs()
-        st.markdown(":white_check_mark: Map data loaded")
-    with st.spinner("Seting up route engine..."):
-        generate_vroom_input()
-        st.markdown(":white_check_mark: Routing engine setup completed")
-    with st.spinner("Generating routes..."):
-        solve()
-        st.markdown(":white_check_mark: Routes generated")
-    with st.spinner("Completing route analysis..."):
-        decode_solution()
-        st.markdown(":white_check_mark: Analyses completed")
+    st.write("Routing steps status")
+    step_place_holder1 = st.empty()
+    step_place_holder1.write(":white_circle: Fleet and stop data prepared")
+    step_place_holder2 = st.empty()
+    step_place_holder2.write(":white_circle: Map data loaded")
+    step_place_holder3 = st.empty()
+    step_place_holder3.write(":white_circle: Routing engine setup completed")
+    step_place_holder4 = st.empty()
+    step_place_holder4.write(":white_circle: Routes generated")
+    step_place_holder5 = st.empty()
+    step_place_holder5.write(":white_circle: Analyses completed")
+    process_input_data()
+    step_place_holder1.markdown(":white_check_mark: Fleet and stop data prepared")
+    generate_matrix_inputs()
+    step_place_holder2.markdown(":white_check_mark: Map data loaded")
+    generate_vroom_input()
+    step_place_holder3.markdown(":white_check_mark: Routing engine setup completed")
+    solve()
+    step_place_holder4.markdown(":white_check_mark: Routes generated")
+    decode_solution()
+    step_place_holder5.markdown(":white_check_mark: Analyses completed")
 
 
 def show_route_sum():
