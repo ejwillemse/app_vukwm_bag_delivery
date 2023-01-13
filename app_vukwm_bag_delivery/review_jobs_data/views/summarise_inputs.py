@@ -24,10 +24,6 @@ def calc_route_product_summary(df):
         .reset_index()
     )
 
-    # route_product_summary = route_product_summary.assign(
-    #     product_types=route_product_summary["product_types"].apply(find_unique_products)
-    # )
-
     route_product_summary = route_product_summary.rename(
         columns={
             "transport_area_number": "Transport area",
@@ -37,3 +33,46 @@ def calc_route_product_summary(df):
         }
     )
     return route_product_summary
+
+
+def day_summary(df):
+    return (
+        df.groupby(["Required Date"])
+        .agg(
+            **{
+                "Uncompleted orders": ("Ticket No", "count"),
+            }
+        )
+        .reset_index()
+    )
+
+
+def profile_type_summary(df):
+    return (
+        df.assign(
+            **{
+                "Delivery vehicle type": (df["transport_area_number"] == 2).replace(
+                    {True: "Bicycle", False: "Van or Bicycle"}
+                )
+            }
+        )
+        .groupby(["Delivery vehicle type"])
+        .agg(
+            **{
+                "Uncompleted orders": ("Ticket No", "count"),
+            }
+        )
+        .reset_index()
+    )
+
+
+def product_type_summary(df):
+    return (
+        df.groupby(["Product Name"])
+        .agg(
+            **{
+                "Number of items": ("Quantity", "sum"),
+            }
+        )
+        .reset_index()
+    )
