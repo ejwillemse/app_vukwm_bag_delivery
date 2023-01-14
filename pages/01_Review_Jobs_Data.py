@@ -11,6 +11,9 @@ from app_vukwm_bag_delivery.review_jobs_data.presenters.select_remove_stops impo
     return_selected,
     select_remove_dataframe,
 )
+from app_vukwm_bag_delivery.review_jobs_data.presenters.update_time_windows import (
+    update_timewindows_selection,
+)
 from app_vukwm_bag_delivery.review_jobs_data.views.render_unassigned_stops_map import (
     return_order_map_html,
 )
@@ -138,6 +141,7 @@ def clear_selection_removal():
 
 
 def view_select_removal_stops() -> None:
+    st.subheader("Exclude jobs from delivery")
     with st.expander("Select stops to be excluded from routing"):
         data = st.session_state.data_02_intermediate["unassigned_jobs"]
         data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
@@ -151,7 +155,38 @@ def view_select_removal_stops() -> None:
         confirm_removal()
 
 
+def view_pre_edited_timewindows() -> None:
+    if (
+        "unassigned_routes" in st.session_state.data_02_intermediate
+        and st.session_state.data_02_intermediate["unassigned_routes"].shape[0] > 0
+    ):
+        st.subheader("Vehicles currently selected for routing")
+        st.write(
+            st.session_state.data_02_intermediate["unassigned_routes"][
+                VEHICLE_VIEW_COLUMNS
+            ]
+        )
+        clear_selection_removal()
+
+
+def confirm_selection(selected_df):
+    pressed = st.button("Click here to save time window updates")
+    if pressed:
+        st.session_state.data_02_intermediate["save_updated_time_windows"] = selected_df
+
+
+def clear_selection():
+    pressed = st.button("Click here to clear time window updates")
+    if pressed:
+        st.session_state.data_02_intermediate[
+            "save_updated_time_windows"
+        ] = pd.DataFrame()
+        st.session_state.data_02_intermediate["updated_time_windows"] = pd.DataFrame()
+        st.write(st.session_state.data_02_intermediate["updated_time_windows"].shape[0])
+
+
 def confirm_update_timewindows() -> None:
+    st.subheader("Confirm delivery time windows")
     return_time_window_info()
     unassigned_stops_tw = st.session_state.data_02_intermediate["unassigned_stops_tw"]
     with st.expander("View time window gantt chart"):
@@ -165,16 +200,14 @@ def confirm_update_timewindows() -> None:
             timelines["unkown_open"], theme="streamlit", use_container_width=True
         )
     with st.expander("Inspect and update time windows"):
-        st.write(unassigned_stops_tw.fillna(""))
-        # data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
-        # select_remove_dataframe(data)
-        # selected_df = return_selected()
-        # if selected_df.shape[0] > 0:
-        #     st.write("Currently the following stops will be EXCLUDED for routing.")
-        #     st.write(selected_df[STOP_VIEW_COLUMNS])
-        # else:
-        #     st.write("Currently all stops will be included for routing.")
-        # confirm_removal()
+        updated_time_windows = update_timewindows_selection()
+        if updated_time_windows.shape[0] > 0:
+            st.write(
+                f"The following {updated_time_windows.shape[0]} site's delivery time windows have been edited:"
+            )
+            st.write(updated_time_windows)
+            confirm_selection(updated_time_windows)
+            # clear_selection()
 
 
 def view_pre_selected_stops() -> None:
@@ -224,16 +257,14 @@ check_previous_steps_completed()
 view_instructions()
 view_stops_map()
 st.subheader("Delivery summary")
-with st.expander("Show/hide summaries", True):
+with st.expander("Show/hide summaries", False):
     view_day_summary()
     view_profile_type_summary()
     view_product_type_summary()
     view_product_summary()
 
 view_all_stops()
-st.subheader("Confirm delivery time windows")
 confirm_update_timewindows()
-st.subheader("Exclude jobs from delivery")
 view_select_removal_stops()
 view_pre_selected_stops()
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)
