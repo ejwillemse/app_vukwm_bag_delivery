@@ -3,11 +3,6 @@ import pandas as pd
 from keplergl import KeplerGl
 from shapely import wkt
 
-try:
-    import app_vukwm_bag_delivery.osrm_get_routes as osrm_get_routes
-except:
-    import osrm_get_routes
-
 
 def return_route_config():
     config = {
@@ -288,7 +283,9 @@ def return_route_config():
     return config
 
 
-def generate_route_data(assigned_stops, unassigned_routes, unassigned_stops):
+def generate_route_data(
+    assigned_stops, unassigned_routes, unassigned_stops, travel_legs
+):
     assigned_stops["Registration No"] = assigned_stops["Vehicle id"]
     assigned_stops = assigned_stops[
         list(unassigned_stops.columns) + ["route_sequence", "Vehicle id"]
@@ -309,11 +306,6 @@ def generate_route_data(assigned_stops, unassigned_routes, unassigned_stops):
     unassigned_routes = unassigned_routes.assign(
         route_id=unassigned_routes["Vehicle id"], vehicle_type=unassigned_routes["Type"]
     )
-    osrm_routes = osrm_get_routes.return_route_osrm_info(
-        unassigned_routes, assigned_stops_route
-    )
-
-    travel_legs = osrm_routes[0].copy()
 
     travel_legs["geometry"] = travel_legs["geometry"].apply(wkt.dumps)
     travel_legs = pd.DataFrame(travel_legs)

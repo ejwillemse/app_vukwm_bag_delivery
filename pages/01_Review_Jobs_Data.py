@@ -3,15 +3,25 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import (
+    generate_known_unknown,
+    return_time_window_info,
+)
 from app_vukwm_bag_delivery.review_jobs_data.presenters.select_remove_stops import (
     return_selected,
     select_remove_dataframe,
+)
+from app_vukwm_bag_delivery.review_jobs_data.presenters.update_time_windows import (
+    update_timewindows_selection,
 )
 from app_vukwm_bag_delivery.review_jobs_data.views.render_unassigned_stops_map import (
     return_order_map_html,
 )
 from app_vukwm_bag_delivery.review_jobs_data.views.summarise_inputs import (
     calc_route_product_summary,
+    day_summary,
+    product_type_summary,
+    profile_type_summary,
 )
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
@@ -80,17 +90,15 @@ def check_previous_steps_completed():
         st.stop()  # App won't run anything after this line
 
 
-@st.experimental_memo
 def view_product_summary():
-    with st.expander(" View summary per transport area"):
-        st.write(
-            calc_route_product_summary(
-                st.session_state.data_02_intermediate["unassigned_jobs"]
-            )
+    st.markdown("View stop info per transport area")
+    st.write(
+        calc_route_product_summary(
+            st.session_state.data_02_intermediate["unassigned_jobs"]
         )
+    )
 
 
-@st.experimental_memo
 def view_all_stops():
     with st.expander("View all stops"):
         st.write(
@@ -100,7 +108,6 @@ def view_all_stops():
         )
 
 
-@st.experimental_memo
 def view_stops_map():
     html = return_order_map_html(
         st.session_state.data_02_intermediate["unassigned_stops"]
@@ -134,6 +141,7 @@ def clear_selection_removal():
 
 
 def view_select_removal_stops() -> None:
+    st.subheader("Exclude jobs from delivery")
     with st.expander("Select stops to be excluded from routing"):
         data = st.session_state.data_02_intermediate["unassigned_jobs"]
         data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
@@ -145,6 +153,61 @@ def view_select_removal_stops() -> None:
         else:
             st.write("Currently all stops will be included for routing.")
         confirm_removal()
+
+
+def view_pre_edited_timewindows() -> None:
+    if (
+        "unassigned_routes" in st.session_state.data_02_intermediate
+        and st.session_state.data_02_intermediate["unassigned_routes"].shape[0] > 0
+    ):
+        st.subheader("Vehicles currently selected for routing")
+        st.write(
+            st.session_state.data_02_intermediate["unassigned_routes"][
+                VEHICLE_VIEW_COLUMNS
+            ]
+        )
+        clear_selection_removal()
+
+
+def confirm_selection(selected_df):
+    pressed = st.button("Click here to save time window updates")
+    if pressed:
+        st.session_state.data_02_intermediate["save_updated_time_windows"] = selected_df
+
+
+def clear_selection():
+    pressed = st.button("Click here to clear time window updates")
+    if pressed:
+        st.session_state.data_02_intermediate[
+            "save_updated_time_windows"
+        ] = pd.DataFrame()
+        st.session_state.data_02_intermediate["updated_time_windows"] = pd.DataFrame()
+        st.write(st.session_state.data_02_intermediate["updated_time_windows"].shape[0])
+
+
+def confirm_update_timewindows() -> None:
+    st.subheader("Confirm delivery time windows")
+    return_time_window_info()
+    unassigned_stops_tw = st.session_state.data_02_intermediate["unassigned_stops_tw"]
+    with st.expander("View time window gantt chart"):
+        timelines = generate_known_unknown(unassigned_stops_tw)
+        st.markdown("Sites with known open and close times")
+        st.plotly_chart(
+            timelines["known_open"], theme="streamlit", use_container_width=True
+        )
+        st.markdown("Sites with unknown open and close times")
+        st.plotly_chart(
+            timelines["unkown_open"], theme="streamlit", use_container_width=True
+        )
+    with st.expander("Inspect and update time windows"):
+        updated_time_windows = update_timewindows_selection()
+        if updated_time_windows.shape[0] > 0:
+            st.write(
+                f"The following {updated_time_windows.shape[0]} site's delivery time windows have been edited:"
+            )
+            st.write(updated_time_windows)
+            confirm_selection(updated_time_windows)
+            # clear_selection()
 
 
 def view_pre_selected_stops() -> None:
@@ -165,6 +228,25 @@ def view_pre_selected_stops() -> None:
         clear_selection_removal()
 
 
+def view_day_summary():
+    st.markdown("Delivery info per day")
+    st.write(day_summary(st.session_state.data_02_intermediate["unassigned_jobs"]))
+
+
+def view_profile_type_summary():
+    st.markdown("Delivery info per required delivery vehicle type")
+    st.write(
+        profile_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+    )
+
+
+def view_product_type_summary():
+    st.markdown("Delivery info per product type")
+    st.write(
+        product_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+    )
+
+
 if not check_password():
     st.warning("Please log-in to continue.")
     st.stop()  # App won't run anything after this line
@@ -174,8 +256,15 @@ side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
 view_stops_map()
+st.subheader("Delivery summary")
+with st.expander("Show/hide summaries", False):
+    view_day_summary()
+    view_profile_type_summary()
+    view_product_type_summary()
+    view_product_summary()
+
 view_all_stops()
-view_product_summary()
+confirm_update_timewindows()
 view_select_removal_stops()
 view_pre_selected_stops()
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)
