@@ -12,6 +12,9 @@ from app_vukwm_bag_delivery.review_jobs_data.views.render_unassigned_stops_map i
 )
 from app_vukwm_bag_delivery.review_jobs_data.views.summarise_inputs import (
     calc_route_product_summary,
+    day_summary,
+    product_type_summary,
+    profile_type_summary,
 )
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
@@ -80,17 +83,15 @@ def check_previous_steps_completed():
         st.stop()  # App won't run anything after this line
 
 
-@st.experimental_memo
 def view_product_summary():
-    with st.expander(" View summary per transport area"):
-        st.write(
-            calc_route_product_summary(
-                st.session_state.data_02_intermediate["unassigned_jobs"]
-            )
+    st.markdown("View stop info per transport area")
+    st.write(
+        calc_route_product_summary(
+            st.session_state.data_02_intermediate["unassigned_jobs"]
         )
+    )
 
 
-@st.experimental_memo
 def view_all_stops():
     with st.expander("View all stops"):
         st.write(
@@ -100,7 +101,6 @@ def view_all_stops():
         )
 
 
-@st.experimental_memo
 def view_stops_map():
     html = return_order_map_html(
         st.session_state.data_02_intermediate["unassigned_stops"]
@@ -165,6 +165,25 @@ def view_pre_selected_stops() -> None:
         clear_selection_removal()
 
 
+def view_day_summary():
+    st.markdown("Delivery info per day")
+    st.write(day_summary(st.session_state.data_02_intermediate["unassigned_jobs"]))
+
+
+def view_profile_type_summary():
+    st.markdown("Delivery info per required delivery vehicle type")
+    st.write(
+        profile_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+    )
+
+
+def view_product_type_summary():
+    st.markdown("Delivery info per product type")
+    st.write(
+        product_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+    )
+
+
 if not check_password():
     st.warning("Please log-in to continue.")
     st.stop()  # App won't run anything after this line
@@ -174,8 +193,15 @@ side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
 view_stops_map()
+st.subheader("Delivery summary")
+with st.expander("Show/hide summaries", True):
+    view_day_summary()
+    view_profile_type_summary()
+    view_product_type_summary()
+    view_product_summary()
+
 view_all_stops()
-view_product_summary()
+st.subheader("Exclude jobs from delivery")
 view_select_removal_stops()
 view_pre_selected_stops()
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)
