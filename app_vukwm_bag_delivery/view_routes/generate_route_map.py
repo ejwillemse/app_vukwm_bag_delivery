@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import streamlit as st
 from keplergl import KeplerGl
@@ -670,6 +671,12 @@ def return_map():
     else:
         unserviced_stops_display = pd.DataFrame()
     depots = return_depot_display(unassigned_routes)
+    assigned_stops_display.loc[
+        assigned_stops_display["Activity type"] == "DEPOT_START_END", "latitude"
+    ] = np.nan
+    assigned_stops_display.loc[
+        assigned_stops_display["Activity type"] == "DEPOT_START_END", "longitude"
+    ] = np.nan
     m = KeplerGl(
         data={
             "assigned_stops": assigned_stops_display.copy().fillna(" "),

@@ -52,12 +52,27 @@ def check_unserviced_stops():
     )
 
 
+def check_time_windows_update():
+    return (
+        "data_02_intermediate" in st.session_state
+        or "save_updated_time_windows" in st.session_state.data_02_intermediate
+        or st.session_state.data_02_intermediate["save_updated_time_windows"].shape[0]
+        > 0
+    )
+
+
 def return_full_status():
     warnings = False
     if check_intermediate_unassigned_jobs_loaded():
         data_loaded_tickbox = " :white_check_mark: Job data have been imported and can be inspected in the `Review Jobs Data` page.\n"
     else:
         data_loaded_tickbox = " :red_circle: Job data has not yet been imported.\n"
+
+    if check_time_windows_update():
+        warnings = True
+        data_time_windows_tickbox = " :large_orange_diamond: Delivery time windows of jobs have been manually updated via the `Review Jobs Data` page.\n"
+    else:
+        data_time_windows_tickbox = ""
 
     if check_jobs_excluded_from_route():
         warnings = True
@@ -106,6 +121,7 @@ Status of session steps:\n
 {routes_generated_tickbox}
 {routes_dispatched_tickbox}
 {warning_heading}
+{data_time_windows_tickbox}
 {data_excluded_tickbox}
 {check_unserviced_stops_tickbox}
 {unused_routes_tickbox}
@@ -119,6 +135,12 @@ def return_short_status():
         data_loaded_tickbox = " :white_check_mark: Job data imported\n"
     else:
         data_loaded_tickbox = " :red_circle: Job data imported\n"
+
+    if check_time_windows_update():
+        warnings = True
+        data_time_windows_tickbox = " :large_orange_diamond: Time windows updated\n"
+    else:
+        data_time_windows_tickbox = ""
 
     if check_jobs_excluded_from_route():
         data_excluded_tickbox = " :large_orange_diamond: Jobs manually excluded\n"
@@ -152,16 +174,19 @@ def return_short_status():
         routes_dispatched_tickbox = " :white_check_mark: Routes dispatched\n"
     else:
         routes_dispatched_tickbox = " :red_circle: Routes dispatched\n"
+
     if warnings:
         warning_heading = "## Warnings"
     else:
         warning_heading = ""
+
     mark_down = f"""
 {data_loaded_tickbox}
 {fleet_loaded_tickbox}
 {routes_generated_tickbox}
 {routes_dispatched_tickbox}
 {warning_heading}
+{data_time_windows_tickbox}
 {data_excluded_tickbox}
 {check_unserviced_stops_tickbox}
 {unused_routes_tickbox}
