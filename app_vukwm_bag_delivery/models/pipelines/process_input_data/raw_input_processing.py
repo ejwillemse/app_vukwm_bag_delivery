@@ -3,10 +3,11 @@ Process input data, simple pipeline, converts to data-time and does some high-le
 """
 import numpy as np
 import pandas as pd
+import streamlit as st
 
 INPUT_DATE_COLUMNS_FORMAT = {
     "Created Date": "%Y-%d-%m",
-    "Required Date": "%Y-%d-%m",
+    # "Required Date": "%Y-%d-%m",
     "Scheduled Date": "%d/%m/%Y",
     "Completed Date": "%d/%m/%Y",
 }
@@ -23,10 +24,13 @@ def date_to_string(df):
         df = df.assign(
             **{
                 date_column: lambda x: pd.to_datetime(
-                    df[date_column], format=INPUT_DATE_COLUMNS_FORMAT[date_column]
+                    df[date_column],
+                    format=INPUT_DATE_COLUMNS_FORMAT[date_column],
+                    errors="coerce",
                 ).dt.strftime(OUTPUT_DATE_FORMAT)
             }
         )
+    st.write(df)
     return df
 
 

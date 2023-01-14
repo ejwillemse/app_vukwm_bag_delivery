@@ -7,16 +7,19 @@ from app_vukwm_bag_delivery.models.pipelines.process_input_data import (
 
 
 def load_raw_data():
-    (excel_data, geo_data, _) = download_s3_file.return_routing_files(
+    (excel_data, geo_data, _, open_time_data) = download_s3_file.return_routing_files(
         st.secrets["bucket"],
         st.secrets["dev_s3"],
         st.secrets["s3_input_paths"]["raw_user_input"],
         st.secrets["s3_input_paths"]["geocoded_input"],
         st.secrets["s3_input_paths"]["unassigned_stops_input"],
+        st.secrets["s3_input_paths"]["opening_time_input"],
     )
+    st.write(open_time_data)
     st.session_state.data_01_raw = {
         "raw_input": excel_data,
         "unassigned_stops": geo_data,
+        "open_time": open_time_data,
     }
     st.session_state.stop_data = geo_data.copy()
 
