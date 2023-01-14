@@ -55,8 +55,8 @@ def check_unserviced_stops():
 def check_time_windows_update():
     return (
         "data_02_intermediate" in st.session_state
-        or "save_updated_time_windows" in st.session_state.data_02_intermediate
-        or st.session_state.data_02_intermediate["save_updated_time_windows"].shape[0]
+        and "save_updated_time_windows" in st.session_state.data_02_intermediate
+        and st.session_state.data_02_intermediate["save_updated_time_windows"].shape[0]
         > 0
     )
 
