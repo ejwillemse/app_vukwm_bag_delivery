@@ -15,7 +15,6 @@ def load_raw_data():
         st.secrets["s3_input_paths"]["unassigned_stops_input"],
         st.secrets["s3_input_paths"]["opening_time_input"],
     )
-    st.write(open_time_data)
     st.session_state.data_01_raw = {
         "raw_input": excel_data,
         "unassigned_stops": geo_data,

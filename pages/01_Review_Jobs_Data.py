@@ -3,6 +3,10 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import (
+    generate_known_unknown,
+    return_time_window_info,
+)
 from app_vukwm_bag_delivery.review_jobs_data.presenters.select_remove_stops import (
     return_selected,
     select_remove_dataframe,
@@ -147,6 +151,32 @@ def view_select_removal_stops() -> None:
         confirm_removal()
 
 
+def confirm_update_timewindows() -> None:
+    return_time_window_info()
+    unassigned_stops_tw = st.session_state.data_02_intermediate["unassigned_stops_tw"]
+    with st.expander("View time window gantt chart"):
+        timelines = generate_known_unknown(unassigned_stops_tw)
+        st.markdown("Sites with known open and close times")
+        st.plotly_chart(
+            timelines["known_open"], theme="streamlit", use_container_width=True
+        )
+        st.markdown("Sites with unknown open and close times")
+        st.plotly_chart(
+            timelines["unkown_open"], theme="streamlit", use_container_width=True
+        )
+    with st.expander("Inspect and update time windows"):
+        st.write(unassigned_stops_tw.fillna(""))
+        # data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
+        # select_remove_dataframe(data)
+        # selected_df = return_selected()
+        # if selected_df.shape[0] > 0:
+        #     st.write("Currently the following stops will be EXCLUDED for routing.")
+        #     st.write(selected_df[STOP_VIEW_COLUMNS])
+        # else:
+        #     st.write("Currently all stops will be included for routing.")
+        # confirm_removal()
+
+
 def view_pre_selected_stops() -> None:
     if (
         "user_confirmed_removed_unassigned_stops"
@@ -201,6 +231,8 @@ with st.expander("Show/hide summaries", True):
     view_product_summary()
 
 view_all_stops()
+st.subheader("Confirm delivery time windows")
+confirm_update_timewindows()
 st.subheader("Exclude jobs from delivery")
 view_select_removal_stops()
 view_pre_selected_stops()
