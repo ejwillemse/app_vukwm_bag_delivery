@@ -21,7 +21,9 @@ AGGREGATION_IDs = ["Site Bk", "completed"]
 def add_excel_time_dates(df, excel_df):
     excel_df = excel_df.assign(
         **{
-            "Created Date": pd.to_datetime(excel_df["Created Date"], format="%d/%m/%Y"),
+            "Created Date": pd.to_datetime(
+                excel_df["Created Date"], format="%d/%m/%Y"
+            ).dt.strftime(OUTPUT_DATE_FORMAT),
             "Required Date": pd.to_datetime(
                 excel_df["Required Date"], format="%d/%m/%Y"
             ).dt.strftime(OUTPUT_DATE_FORMAT),
