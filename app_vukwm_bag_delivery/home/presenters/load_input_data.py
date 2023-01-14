@@ -26,7 +26,8 @@ def load_raw_data():
 
 def convert_intermediate_data():
     unassigned_jobs = raw_input_processing.process_input_data(
-        st.session_state.data_01_raw["unassigned_stops"]
+        st.session_state.data_01_raw["unassigned_stops"],
+        st.session_state.data_01_raw["raw_input"],
     )
     unassigned_stops = raw_input_processing.combine_orders(unassigned_jobs)
     st.session_state.data_02_intermediate = {
