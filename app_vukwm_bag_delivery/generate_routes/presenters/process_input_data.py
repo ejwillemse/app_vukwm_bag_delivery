@@ -7,6 +7,27 @@ from app_vukwm_bag_delivery.models.pipelines.convert_input_data import (
 )
 
 
+def add_time_windows(df):
+    time_windows = st.session_state.data_02_intermediate["unassigned_stops_tw"].copy()
+    if return_session_status.check_time_windows_update():
+        updated_time_windows = st.session_state.data_02_intermediate[
+            "save_updated_time_windows"
+        ]
+        updated = time_windows["Site Bk"].isin(updated_time_windows["Site Bk"])
+        time_windows.loc[
+            updated, ["Delivery open time", "Delivery close time"]
+        ] = updated_time_windows[updated]
+    time_windows = time_windows.assign(
+        stop_id=time_windows["Site Bk"].astype(str),
+        time_window_start=time_windows["Delivery open time"],
+        time_window_end=time_windows["Delivery close time"],
+    )[["stop_id", "time_window_start", "time_window_end"]]
+    df = df.drop(columns=["time_window_start", "time_window_end"]).merge(
+        time_windows, left_on="stop_id", right_on="stop_id", validate="1:1"
+    )
+    return df
+
+
 def process_input_data():
     unassigned_routes = convert_fleet.convert_fleet(
         st.session_state.data_02_intermediate["unassigned_routes"]
@@ -22,6 +43,7 @@ def process_input_data():
     unassigned_stops = convert_jobs.unassigned_stops_convert(
         st.session_state.data_02_intermediate["unassigned_jobs"], remove_stops
     )
+    unassigned_stops = add_time_windows(unassigned_stops)
     unassigned_stops = convert_jobs.add_skills(unassigned_stops, unassigned_routes)
 
     locations, unassigned_stops, unassigned_routes = convert_jobs.create_locations(

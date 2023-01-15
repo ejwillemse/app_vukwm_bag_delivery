@@ -18,8 +18,8 @@ def return_vehicle_default():
     dedicated_transport_zones = [None, None, None, 2, None, None]
     cost_per_km = [1, 1, 1, 0.5, 1, 1]
     cost_per_h = [10, 10, 10, 10, 10, 10]
-    shift_start_time = ["09:00"] * 6
-    shift_end_time = ["17:00"] * 6
+    shift_start_time = ["09:00:00"] * 6
+    shift_end_time = ["17:00:00"] * 6
     ave_duration = [5] * 6
 
     vehicle_df = pd.DataFrame(

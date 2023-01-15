@@ -563,9 +563,17 @@ def display_format(unassigned_stops):
 def display_format_unscheduled_stops(unassigned_stops, unserviced_stops):
     unassigned_stops_display = display_format(unassigned_stops)
     unscheduled_stops_display = unassigned_stops_display.merge(
-        unserviced_stops[["latitude", "longitude", "stop_id"]]
+        unserviced_stops[
+            ["latitude", "longitude", "stop_id", "time_window_start", "time_window_end"]
+        ]
         .assign(stop_id=unserviced_stops["stop_id"].astype(str))
-        .rename(columns={"stop_id": "Site Bk"}),
+        .rename(
+            columns={
+                "stop_id": "Site Bk",
+                "time_window_start": "Time window start",
+                "time_window_end": "Time window end",
+            }
+        ),
         how="inner",
         left_on="Site Bk",
         right_on="Site Bk",
@@ -644,6 +652,19 @@ def return_depot_display(unassigned_routes):
     return depots
 
 
+def add_time_windows(df):
+    unassigned_stops_formatted = st.session_state.data_03_primary["unassigned_stops"]
+    df = df.assign(**{"stop_id": df["stop_id"].astype(str)}).merge(
+        unassigned_stops_formatted.assign(
+            **{"stop_id": unassigned_stops_formatted["stop_id"].astype(str)}
+        )[["stop_id", "time_window_start", "time_window_end"]],
+        how="left",
+        left_on="stop_id",
+        right_on="stop_id",
+    )
+    return df
+
+
 def return_map():
     assigned_stops = st.session_state.data_07_reporting["assigned_stops"].copy()
     unassigned_routes = st.session_state.data_02_intermediate[
@@ -651,6 +672,9 @@ def return_map():
     ].copy()
     unassigned_stops = st.session_state.data_02_intermediate["unassigned_stops"].copy()
     unserviced_stops = st.session_state.data_07_reporting["unserviced_stops"].copy()
+    # unserviced_stops = add_time_windows(
+    #     unserviced_stops
+    # )
 
     if (
         "view_routes" in st.session_state
@@ -675,7 +699,7 @@ def return_map():
         assigned_stops_display["Activity type"] == "DEPOT_START_END", "latitude"
     ] = np.nan
     assigned_stops_display.loc[
-        assigned_stops_display["Activity type"] == "DEPOT_START_END", "longitude"
+        assigned_stops_display["Activity type"] == "DEPOT_START_END", "lon"
     ] = np.nan
     m = KeplerGl(
         data={

@@ -104,7 +104,7 @@ def show_route_sum():
     st.markdown("**Route summary**: high level route KPIs")
     st.write(extract_high_level_summary.extract_high_level_summary())
     with st.expander(
-        "Click here for insights into making the routes more balanced or reducing the fleet size"
+        "Click here for insights into making the routes more balanced, reducing the fleet size and why the vehicles may start their shift late"
     ):
         st.markdown(
             """
@@ -114,6 +114,10 @@ def show_route_sum():
             1. **Make the shifts start later or end sooner:** go back to the `Select Vehicles` page and reduce the shift durations of the selected vehicles. This will limit the number of jobs that can be assigned to each vehicle. The jobs will then be spread over better over available vehicles.
             2. **Extend the shift and reducing the fleet:** go back to the `Select Vehicles` page and extend the shift durations of the selected vehicles. This could result in one less vehicle reqiured and a better balance amongst the other vehicles.
             3. **Manual move jobs to the underutilised vehicle:** go to the `Update Routes` page and manually move some of the jobs to underutilised vehicles. The optimal route per vehicle can still be calculated, ensuring that the routes are efficient.
+
+            If there are some routes that have very jobs, it may be possible to increase the shift duration of the other routes to get rid of the short route all together.
+
+            If the vehicles are not fully utilised, it is sometimes better to start the routes later than prescriped. This is due to some sites opening up later in the day. Allowing the vehicles to start later means they avoid having to circle back to sites when they are opened, or waiting at sites to open.
             """
         )
 
