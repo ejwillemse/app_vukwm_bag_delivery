@@ -71,7 +71,27 @@ def extract_unused_routes():
 
 
 def extract_unscheduled_stops():
-    unassigned_jobs = st.session_state.data_02_intermediate["unassigned_jobs"]
+    # TODO: make time windows persistent
+    #  updated_time_windows = st.ses
+    unassigned_stops_formatted = st.session_state.data_03_primary["unassigned_stops"]
+    unassigned_jobs = st.session_state.data_02_intermediate["unassigned_jobs"].drop(
+        columns=["time_window_start", "time_window_end"]
+    )
+    unassigned_jobs = unassigned_jobs.assign(
+        **{"Site Bk": unassigned_jobs["Site Bk"].astype(str)}
+    ).merge(
+        unassigned_stops_formatted.assign(
+            **{"Site Bk": unassigned_stops_formatted["stop_id"].astype(str)}
+        )[["Site Bk", "time_window_start", "time_window_end"]].rename(
+            columns={
+                "time_window_start": "Time window start",
+                "time_window_end": "Time window end",
+            }
+        ),
+        how="left",
+        left_on="Site Bk",
+        right_on="Site Bk",
+    )
     unscheduled_stops = st.session_state.data_07_reporting["unserviced_stops"]
     return unassigned_jobs.loc[
         unassigned_jobs["Site Bk"].astype(str).isin(unscheduled_stops["stop_id"].values)
