@@ -1,6 +1,7 @@
 import streamlit as st
 
 import app_vukwm_bag_delivery.home.presenters.load_input_data as load_input_data
+import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.util_views.return_session_status import return_full_status
@@ -39,7 +40,7 @@ if not check_password():
 side_bar_status = side_bar_progress.view_sidebar()
 view_instructions()
 
-if "stop_data" not in st.session_state:
+if not return_session_status.check_raw_jobs_loaded():
     with st.spinner("Initiating session and loading data..."):
         load_input_data.load_data()
 

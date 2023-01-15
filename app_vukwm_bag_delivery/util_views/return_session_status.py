@@ -1,6 +1,15 @@
 import streamlit as st
 
 
+def check_raw_jobs_loaded():
+    return (
+        "data_01_raw" in st.session_state
+        and "raw_input" in st.session_state.data_01_raw
+        and "unassigned_stops" in st.session_state.data_01_raw
+        and "open_time" in st.session_state.data_01_raw
+    )
+
+
 def check_intermediate_unassigned_jobs_loaded():
     return (
         "data_02_intermediate" in st.session_state
