@@ -43,5 +43,6 @@ if "stop_data" not in st.session_state:
     with st.spinner("Initiating session and loading data..."):
         load_input_data.load_data()
 
+
 st.markdown(return_full_status())
 side_bar_progress.update_side_bar(side_bar_status)

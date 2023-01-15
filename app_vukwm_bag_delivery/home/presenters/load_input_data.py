@@ -1,9 +1,9 @@
 import streamlit as st
 
 from app_vukwm_bag_delivery.models.pipelines.process_input_data import (
-    download_s3_file,
-    raw_input_processing,
-)
+    download_s3_file, raw_input_processing)
+from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import \
+    return_time_window_info
 
 
 def load_raw_data():
@@ -38,3 +38,4 @@ def convert_intermediate_data():
 def load_data():
     load_raw_data()
     convert_intermediate_data()
+    return_time_window_info()
