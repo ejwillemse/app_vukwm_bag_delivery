@@ -8,8 +8,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 import app_vukwm_bag_delivery.models.pipelines.process_input_data.add_time_window_info as add_time_window_info
 
-OPEN_DEFAULT = "11:00:00"
-CLOSE_DEFAULT = "16:00:00"
+OPEN_DEFAULT = "10:00:00"
+CLOSE_DEFAULT = "17:00:00"
 OPEN_MAX = "15:00:00"
 
 INSPECT_ORDER = [

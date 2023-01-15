@@ -35,6 +35,9 @@ def add_vehicle_to_vroom(vroom_object, route_df):
             skill = None
         else:
             skill = set([int(route["skills"])])
+        print(
+            f'Route duration: {(route["time_window_end_seconds"] - route["time_window_start_seconds"])/ 3600}, start: {route["time_window_start_seconds"] / 3600}'
+        )
         vroom_object.add_vehicle(
             [
                 vroom.vehicle.Vehicle(
@@ -66,6 +69,9 @@ def add_stop_to_vroom(vroom_object, stop_df):
             skill = None
         else:
             skill = set([int(stop["skills"])])
+        print(
+            f'start: {stop["time_window_start_seconds"] / 3600} end {stop["time_window_end_seconds"] / 3600}'
+        )
         vroom_object.add_job(
             [
                 vroom.job.Job(

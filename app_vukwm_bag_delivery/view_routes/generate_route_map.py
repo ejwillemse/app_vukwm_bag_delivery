@@ -675,7 +675,7 @@ def return_map():
         assigned_stops_display["Activity type"] == "DEPOT_START_END", "latitude"
     ] = np.nan
     assigned_stops_display.loc[
-        assigned_stops_display["Activity type"] == "DEPOT_START_END", "longitude"
+        assigned_stops_display["Activity type"] == "DEPOT_START_END", "lon"
     ] = np.nan
     m = KeplerGl(
         data={

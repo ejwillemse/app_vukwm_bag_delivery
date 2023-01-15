@@ -49,7 +49,7 @@ def return_timewindow_grid(df):
         df,
         gridOptions=gridOptions,
         data_return_mode="AS_INPUT",
-        update_mode=GridUpdateMode.MODEL_CHANGED,
+        update_mode=GridUpdateMode.VALUE_CHANGED,
         columns_auto_size_mode="FIT_CONTENTS",
         fit_columns_on_grid_load=False,
         theme="streamlit",  # Add theme color to the table
