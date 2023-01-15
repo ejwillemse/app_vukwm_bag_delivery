@@ -1,7 +1,10 @@
+from io import BytesIO
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 import streamlit.components.v1 as components
+import xlsxwriter
 
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
@@ -114,7 +117,7 @@ st.write(to_scheduled_jobs)
 assigned_jobs = (
     to_scheduled_jobs.assign(**{"Site Bk": to_scheduled_jobs["Site Bk"].astype(str)})
     .merge(
-        assigned_stops[["route_id", "vehicle_profile", "arrival_time", "job_sequence"]]
+        assigned_stops[["route_id", "vehicle_profile", "job_sequence", "arrival_time"]]
         .rename(
             columns={
                 "stop_id": "Site Bk",
@@ -142,3 +145,32 @@ assigned_jobs = assigned_jobs.assign(
 
 st.write("assigned_jobs")
 st.write(assigned_jobs)
+
+from io import BytesIO
+
+import pandas as pd
+import streamlit as st
+from pyxlsb import open_workbook as open_xlsb
+
+
+def to_excel(df):
+    output = BytesIO()
+    writer = pd.ExcelWriter(output, engine="xlsxwriter")
+    df.to_excel(writer, index=False, sheet_name="Sheet1")
+    for column in df:
+        column_width = max(df[column].astype(str).map(len).max(), len(column))
+        col_idx = df.columns.get_loc(column)
+        writer.sheets["Sheet1"].set_column(col_idx, col_idx, column_width)
+    writer.save()
+    processed_data = output.getvalue()
+    return processed_data
+
+
+import datetime
+
+df_xlsx = to_excel(assigned_jobs)
+st.download_button(
+    label="📥 Download Current Result",
+    data=df_xlsx,
+    file_name=f"vukwm_bag_delivery_assigned_jobs_{datetime.datetime.now().strftime('%Y%m%d_%Hh%Mm%Ss')}.xlsx",
+)
