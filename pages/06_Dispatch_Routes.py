@@ -1,20 +1,12 @@
+import datetime
 from io import BytesIO
 
 import pandas as pd
-import plotly.express as px
 import streamlit as st
-import streamlit.components.v1 as components
-import xlsxwriter
 
-import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
-from app_vukwm_bag_delivery.view_routes.generate_route_display import (
-    return_assigned_stops_display,
-)
-from app_vukwm_bag_delivery.view_routes.generate_route_gant import return_gant
-from app_vukwm_bag_delivery.view_routes.generate_route_map import return_map
 
 
 def set_page_config():
@@ -64,93 +56,71 @@ def check_previous_steps_completed():
         st.stop()
 
 
-set_page_config()
-side_bar_status = side_bar_progress.view_sidebar()
-check_previous_steps_completed()
-view_instructions()
-side_bar_progress.update_side_bar(side_bar_status)
-
-original_jobs = st.session_state.data_01_raw["raw_input"]
-st.write("raw_inputs")
-st.write(original_jobs)
-
-unassigned_jobs = st.session_state.data_02_intermediate["unassigned_jobs"]
-st.write("unassigned_jobs")
-st.write(unassigned_jobs)
-
-if (
-    "user_confirmed_removed_unassigned_stops" in st.session_state.data_02_intermediate
-    and st.session_state.data_02_intermediate[
+def create_formatted_assigned_jobs():
+    original_jobs = st.session_state.data_01_raw["raw_input"]
+    unassigned_jobs = st.session_state.data_02_intermediate["unassigned_jobs"]
+    if (
         "user_confirmed_removed_unassigned_stops"
-    ].shape[0]
-    > 0
-):
-    deselected_jobs = st.session_state.data_02_intermediate[
-        "user_confirmed_removed_unassigned_stops"
-    ]
-else:
-    deselected_jobs = pd.DataFrame(columns=unassigned_jobs.columns)
-st.write("deselected_jobs")
-st.write(deselected_jobs)
+        in st.session_state.data_02_intermediate
+        and st.session_state.data_02_intermediate[
+            "user_confirmed_removed_unassigned_stops"
+        ].shape[0]
+        > 0
+    ):
+        deselected_jobs = st.session_state.data_02_intermediate[
+            "user_confirmed_removed_unassigned_stops"
+        ]
+    else:
+        deselected_jobs = pd.DataFrame(columns=unassigned_jobs.columns)
 
-assigned_stops = st.session_state.data_07_reporting["assigned_stops"]
-st.write("assigned_stops")
-st.write(assigned_stops)
+    assigned_stops = st.session_state.data_07_reporting["assigned_stops"]
 
-unserviced_stops = st.session_state.data_07_reporting["unserviced_stops"]
-st.write("unserviced_stops")
-st.write(unserviced_stops)
-
-
-to_scheduled_jobs = (
-    original_jobs.loc[
-        original_jobs["Ticket No"].isin(unassigned_jobs["Ticket No"])
-        & (~original_jobs["Ticket No"].isin(deselected_jobs["Ticket No"]))
-    ]
-    .drop(columns=["Site Latitude", "Site Longitude"])
-    .merge(unassigned_jobs[["Ticket No", "Site Latitude", "Site Longitude"]])
-)
-
-st.write("to_scheduled_jobs")
-st.write(to_scheduled_jobs)
-
-assigned_jobs = (
-    to_scheduled_jobs.assign(**{"Site Bk": to_scheduled_jobs["Site Bk"].astype(str)})
-    .merge(
-        assigned_stops[["route_id", "vehicle_profile", "job_sequence", "arrival_time"]]
-        .rename(
-            columns={
-                "stop_id": "Site Bk",
-                "route_id": "Vehicle Id",
-                "vehicle_profile": "Vehicle type",
-                "job_sequence": "Visit sequence",
-                "arrival_time": "Arrival time",
-            }
-        )
-        .assign(
-            **{
-                "Site Bk": assigned_stops["stop_id"].astype(str),
-                "Vehicle type": assigned_stops["vehicle_profile"].replace(
-                    {"auto": "Van", "bicycle": "Bicycle"}
-                ),
-            }
-        ),
-        how="left",
+    to_scheduled_jobs = (
+        original_jobs.loc[
+            original_jobs["Ticket No"].isin(unassigned_jobs["Ticket No"])
+            & (~original_jobs["Ticket No"].isin(deselected_jobs["Ticket No"]))
+        ]
+        .drop(columns=["Site Latitude", "Site Longitude"])
+        .merge(unassigned_jobs[["Ticket No", "Site Latitude", "Site Longitude"]])
     )
-    .sort_values(["Vehicle Id", "Visit sequence"])
-)
-assigned_jobs = assigned_jobs.assign(
-    **{"Visit sequence": (assigned_jobs["Visit sequence"] + 1).fillna(0).astype(int)}
-)
-
-st.write("assigned_jobs")
-st.write(assigned_jobs)
-
-from io import BytesIO
-
-import pandas as pd
-import streamlit as st
-from pyxlsb import open_workbook as open_xlsb
+    assigned_jobs = (
+        to_scheduled_jobs.assign(
+            **{"Site Bk": to_scheduled_jobs["Site Bk"].astype(str)}
+        )
+        .merge(
+            assigned_stops[
+                ["route_id", "vehicle_profile", "job_sequence", "arrival_time"]
+            ]
+            .rename(
+                columns={
+                    "stop_id": "Site Bk",
+                    "route_id": "Vehicle Id",
+                    "vehicle_profile": "Vehicle type",
+                    "job_sequence": "Visit sequence",
+                    "arrival_time": "Arrival time",
+                }
+            )
+            .assign(
+                **{
+                    "Site Bk": assigned_stops["stop_id"].astype(str),
+                    "Vehicle type": assigned_stops["vehicle_profile"].replace(
+                        {"auto": "Van", "bicycle": "Bicycle"}
+                    ),
+                }
+            ),
+            how="left",
+        )
+        .sort_values(["Vehicle Id", "Visit sequence"])
+        .reset_index(drop=True)
+    )
+    assigned_jobs = assigned_jobs.assign(
+        **{
+            "Visit sequence": (assigned_jobs["Visit sequence"] + 1)
+            .fillna(0)
+            .astype(int)
+        }
+    )
+    st.session_state.data_07_reporting["assigned_jobs_download"] = assigned_jobs.copy()
 
 
 def to_excel(df):
@@ -166,11 +136,30 @@ def to_excel(df):
     return processed_data
 
 
-import datetime
+def show_assigned_routes():
+    with st.expander(
+        "Click here to view job lists with vehicle and sequence assignments"
+    ):
+        st.write(st.session_state.data_07_reporting["assigned_jobs_download"])
 
-df_xlsx = to_excel(assigned_jobs)
-st.download_button(
-    label="📥 Download Current Result",
-    data=df_xlsx,
-    file_name=f"vukwm_bag_delivery_assigned_jobs_{datetime.datetime.now().strftime('%Y%m%d_%Hh%Mm%Ss')}.xlsx",
-)
+
+def download_results():
+    assigned_jobs = st.session_state.data_07_reporting["assigned_jobs_download"]
+    df_xlsx = to_excel(assigned_jobs)
+    st.download_button(
+        label="Download job list",
+        data=df_xlsx,
+        file_name=f"vukwm_bag_delivery_job_list_{datetime.datetime.now().strftime('%Y%m%d_%Hh%Mm%Ss')}.xlsx",
+    )
+
+
+set_page_config()
+side_bar_status = side_bar_progress.view_sidebar()
+check_previous_steps_completed()
+view_instructions()
+create_formatted_assigned_jobs()
+show_assigned_routes()
+download_results()
+side_bar_progress.update_side_bar(side_bar_status)
+
+
