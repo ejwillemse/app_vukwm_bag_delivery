@@ -5,7 +5,6 @@ import streamlit.components.v1 as components
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import (
     generate_known_unknown,
-    return_time_window_info,
 )
 from app_vukwm_bag_delivery.review_jobs_data.presenters.select_remove_stops import (
     return_selected,
@@ -187,7 +186,6 @@ def clear_selection():
 
 def confirm_update_timewindows() -> None:
     st.subheader("Confirm delivery time windows")
-    return_time_window_info()
     unassigned_stops_tw = st.session_state.data_02_intermediate["unassigned_stops_tw"]
     with st.expander("View time window gantt chart"):
         timelines = generate_known_unknown(unassigned_stops_tw)
