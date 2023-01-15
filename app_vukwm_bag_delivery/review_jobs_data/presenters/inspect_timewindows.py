@@ -8,8 +8,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 import app_vukwm_bag_delivery.models.pipelines.process_input_data.add_time_window_info as add_time_window_info
 
-OPEN_DEFAULT = "10:00:00"
-CLOSE_DEFAULT = "17:00:00"
+OPEN_DEFAULT = "09:00:00"
+CLOSE_DEFAULT = "16:00:00"
 OPEN_MAX = "15:00:00"
 
 INSPECT_ORDER = [
@@ -30,16 +30,19 @@ def add_min_open_time(df):
     df = df.assign(**{"Delivery open time": df["Typical open time"]})
     df.loc[df["Delivery open time"] < "01:00:00", "Delivery open time"] = "01:00:00"
     df = df.assign(
-        **{"Delivery open time": df["Delivery open time"].fillna(OPEN_DEFAULT)}
-    )
-    df.loc[df["Delivery open time"] >= OPEN_MAX, "Delivery open time"] = "16:00:00"
-    df = df.assign(
         **{
             "Delivery open time": (
                 pd.to_datetime(df["Delivery open time"]) - pd.Timedelta(hours=1)
             ).dt.strftime("%H:%M:%S")
         }
     )
+    df = df.assign(
+        **{
+            "Delivery open time": df["Delivery open time"].fillna(OPEN_DEFAULT),
+            "Deliver close time": df["Delivery open time"].fillna(CLOSE_DEFAULT),
+        }
+    )
+    df.loc[df["Delivery open time"] > OPEN_MAX, "Delivery open time"] = OPEN_MAX
     return df
 
 

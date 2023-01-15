@@ -49,7 +49,6 @@ def process_input_data():
     locations, unassigned_stops, unassigned_routes = convert_jobs.create_locations(
         unassigned_stops, unassigned_routes
     )
-    st.write(locations)
     st.session_state.data_03_primary = {"locations": locations}
     st.session_state.data_03_primary["unassigned_stops"] = unassigned_stops
     st.session_state.data_03_primary["unassigned_routes"] = unassigned_routes
