@@ -70,6 +70,13 @@ def check_time_windows_update():
     )
 
 
+def check_route_sheets_generated():
+    return (
+        "data_07_reporting" in st.session_state
+        and "route_sheet_urls" in st.session_state.data_07_reporting
+    )
+
+
 def return_full_status():
     warnings = False
     if check_intermediate_unassigned_jobs_loaded():
@@ -113,6 +120,11 @@ def return_full_status():
     else:
         check_unserviced_stops_tickbox = ""
 
+    if check_route_sheets_generated():
+        routes_sheet_generated_tickbox = " :white_check_mark: Route sheets have been generated. Go to `Dispatch Routes` to view their links.\n"
+    else:
+        routes_sheet_generated_tickbox = ""
+
     if "jobs_dispatched" in st.session_state:
         routes_dispatched_tickbox = (
             " :white_check_mark: Routes have been dispatched to the drivers.\n"
@@ -128,6 +140,7 @@ Status of session steps:\n
 {data_loaded_tickbox}
 {fleet_loaded_tickbox}
 {routes_generated_tickbox}
+{routes_sheet_generated_tickbox}
 {routes_dispatched_tickbox}
 {warning_heading}
 {data_time_windows_tickbox}
@@ -179,6 +192,11 @@ def return_short_status():
     else:
         check_unserviced_stops_tickbox = ""
 
+    if check_route_sheets_generated():
+        routes_sheet_generated_tickbox = " :white_check_mark: Route sheets generated\n"
+    else:
+        routes_sheet_generated_tickbox = ""
+
     if "jobs_dispatched" in st.session_state:
         routes_dispatched_tickbox = " :white_check_mark: Routes dispatched\n"
     else:
@@ -193,6 +211,7 @@ def return_short_status():
 {data_loaded_tickbox}
 {fleet_loaded_tickbox}
 {routes_generated_tickbox}
+{routes_sheet_generated_tickbox}
 {routes_dispatched_tickbox}
 {warning_heading}
 {data_time_windows_tickbox}
