@@ -21,7 +21,7 @@ def set_page_config():
         initial_sidebar_state="expanded",
     )
     st.title("Update routes")
-    st.subheader("Comming soon...")
+    st.subheader("Coming soon...")
 
 
 if not check_password():
