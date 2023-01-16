@@ -35,7 +35,14 @@ def create_formatted_assigned_jobs():
         )
         .merge(
             assigned_stops[
-                ["route_id", "vehicle_profile", "job_sequence", "arrival_time"]
+                [
+                    "route_id",
+                    "vehicle_profile",
+                    "job_sequence",
+                    "arrival_time",
+                    "time_window_start",
+                    "time_window_end",
+                ]
             ]
             .rename(
                 columns={
@@ -50,10 +57,14 @@ def create_formatted_assigned_jobs():
                 **{
                     "Site Bk": assigned_stops["stop_id"].astype(str),
                     "Vehicle type": assigned_stops["vehicle_profile"].replace(
-                        {"auto": "Van", "bicycle": "Bicycle"}
+                        {"auto": "Van", "bicycle": "Bicycle"},
                     ),
+                    "Delivery time window": assigned_stops["time_window_start"].str[:5]
+                    + " - "
+                    + assigned_stops["time_window_end"].str[:5],
                 }
-            ),
+            )
+            .drop(columns=["time_window_start", "time_window_end"]),
             how="left",
         )
         .sort_values(["Vehicle Id", "Visit sequence"])

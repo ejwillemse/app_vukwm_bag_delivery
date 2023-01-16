@@ -149,6 +149,9 @@ def create_stop_cells(stop_info):
                 ],
                 f"G:{get_row_number(stop_i, 0, page_i, start_row=6)}": stop_row[
                     "Arrival time"
+                ][:4],
+                f"G:{get_row_number(stop_i, 0, page_i, start_row=5)}": stop_row[
+                    "Delivery time window"
                 ],
             }
         ]
@@ -170,6 +173,7 @@ def return_stop_info(assigned_jobs):
                 "Transport Area Code",
                 "Visit sequence",
                 "stop_number",
+                "Delivery time window",
             ]
         ]
         .drop_duplicates()
@@ -210,7 +214,7 @@ def generate_vehicle_sheet_info(route_totals, product_totals, route_id):
             "The vehicle will deliver more than 9 different products. Only the first 9 will be written in the stock block."
         )
         st.write(product_total_route)
-    for i, product_quant in product_total_route.iterrows():
+    for i, product_quant in product_total_route.reset_index(drop=True).iterrows():
         route_cell[f"G:{4 + i}"] = product_quant["Product Name"]
         route_cell[f"I:{4 + i}"] = product_quant["Product totals"]
     return route_cell

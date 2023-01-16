@@ -95,27 +95,39 @@ def download():
 
 def create_route_sheet():
     st.subheader("Create printable route sheets")
-    st.markdown(
-        "Click on the button below to generate a printable route sheet. A google-sheet link will be created. From there, the route sheets can be further edited and printed "
-    )
-    gen_sheet = st.button(
-        "Create printable sheets",
-        help="A google-sheet link will be created and printed on screen. From there, the route sheets can be further edited and printed.",
-    )
-    if gen_sheet:
-        with st.spinner("Creating route-sheet values"):
-            generate_sheet_cells()
-        with st.spinner("Saving results to google-sheets"):
-            write_google_sheet()
-    if return_session_status.check_route_sheets_generated():
+    with st.expander("Click here to create printable route sheets"):
         st.markdown(
-            "The route sheet can be viewed, edited and printed at the link below:"
+            "Click on the button below to generate a printable route sheets. A google-sheet link will be created. From there, the route sheets can be further edited and printed. Each tab in the sheet contains the route plan for each vehicle."
         )
-        st.write(st.session_state.data_07_reporting["route_sheet_urls"][-1][1])
-        with st.expander(
-            "Click here to view links to previously generated route sheets"
-        ):
-            st.write(st.session_state.data_07_reporting["route_sheet_urls"])
+        gen_sheet = st.button(
+            "Create printable sheets",
+            help="A google-sheet link will be created and printed on screen. From there, the route sheets can be further edited and printed.",
+        )
+        if gen_sheet:
+            with st.spinner("Creating route-sheet values"):
+                generate_sheet_cells()
+            with st.spinner("Saving routes to google-sheets"):
+                write_google_sheet()
+        if return_session_status.check_route_sheets_generated():
+            latest = st.session_state.data_07_reporting["route_sheet_urls"][-1]
+            all = st.session_state.data_07_reporting["route_sheet_urls"]
+            mardown_list = "\n".join([f"* [{x[0]}]({x[1]})" for x in all])
+            st.markdown(
+                "The latest generated route sheet can be viewed, edited and printed from the link below:"
+            )
+            st.markdown(f"* [{latest[0]}]({latest[1]})")
+            st.markdown("")
+            st.markdown("Links to route sheets from the current session:")
+            st.markdown(mardown_list)
+            st.markdown("")
+        st.markdown(
+            "All previously generated route sheet can be viewed [here](https://drive.google.com/drive/folders/1dJqOU6zc_sZYyh5MUfJhEvMuXZ221wLS)."
+        )
+
+
+def dispatch_routes():
+    st.subheader("Dispatch routes to driver's mobile devices")
+    st.markdown("This is not currently available")
 
 
 set_page_config()
@@ -124,8 +136,10 @@ check_previous_steps_completed()
 view_instructions()
 create_formatted_assigned_jobs()
 get_route_totals()
+st.subheader("Dispatch summary")
 show_assigned_inventory()
 show_assigned_routes()
 download()
 create_route_sheet()
+dispatch_routes()
 side_bar_progress.update_side_bar(side_bar_status)
