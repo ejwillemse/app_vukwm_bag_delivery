@@ -17,7 +17,6 @@ def add_matrix_profiles(vroom_model, matrix):
 def add_midnight_seconds_time_windows(df):
     time_start = pd.to_datetime(df["time_window_start"])
     time_end = pd.to_datetime(df["time_window_end"])
-
     df = df.assign(
         time_window_start_seconds=(
             (time_start - time_start.dt.normalize()) / pd.Timedelta("1 second")
@@ -35,9 +34,6 @@ def add_vehicle_to_vroom(vroom_object, route_df):
             skill = None
         else:
             skill = set([int(route["skills"])])
-        print(
-            f'Route duration: {(route["time_window_end_seconds"] - route["time_window_start_seconds"])/ 3600}, start: {route["time_window_start_seconds"] / 3600}'
-        )
         vroom_object.add_vehicle(
             [
                 vroom.vehicle.Vehicle(
@@ -69,9 +65,6 @@ def add_stop_to_vroom(vroom_object, stop_df):
             skill = None
         else:
             skill = set([int(stop["skills"])])
-        print(
-            f'start: {stop["time_window_start_seconds"] / 3600} end {stop["time_window_end_seconds"] / 3600}'
-        )
         vroom_object.add_job(
             [
                 vroom.job.Job(
