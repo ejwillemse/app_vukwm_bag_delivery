@@ -149,7 +149,7 @@ def create_stop_cells(stop_info):
                 ],
                 f"G:{get_row_number(stop_i, 0, page_i, start_row=6)}": stop_row[
                     "Arrival time"
-                ][:4],
+                ][:5],
                 f"G:{get_row_number(stop_i, 0, page_i, start_row=5)}": stop_row[
                     "Delivery time window"
                 ],
