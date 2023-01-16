@@ -1,8 +1,14 @@
 import pandas as pd
 import streamlit as st
 
+import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
+import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
+
 
 def create_formatted_assigned_jobs():
+
+    locations = st.session_state.data_03_primary["locations"]
+
     original_jobs = st.session_state.data_01_raw["raw_input"]
     unassigned_jobs = st.session_state.data_02_intermediate["unassigned_jobs"]
     if (
@@ -29,6 +35,7 @@ def create_formatted_assigned_jobs():
         .drop(columns=["Site Latitude", "Site Longitude"])
         .merge(unassigned_jobs[["Ticket No", "Site Latitude", "Site Longitude"]])
     )
+
     assigned_jobs = (
         to_scheduled_jobs.assign(
             **{"Site Bk": to_scheduled_jobs["Site Bk"].astype(str)}
@@ -40,8 +47,6 @@ def create_formatted_assigned_jobs():
                     "vehicle_profile",
                     "job_sequence",
                     "arrival_time",
-                    "time_window_start",
-                    "time_window_end",
                 ]
             ]
             .rename(
@@ -59,17 +64,26 @@ def create_formatted_assigned_jobs():
                     "Vehicle type": assigned_stops["vehicle_profile"].replace(
                         {"auto": "Van", "bicycle": "Bicycle"},
                     ),
-                    "Delivery time window": assigned_stops["time_window_start"].str[:5]
-                    + " - "
-                    + assigned_stops["time_window_end"].str[:5],
                 }
-            )
-            .drop(columns=["time_window_start", "time_window_end"]),
+            ),
             how="left",
         )
         .sort_values(["Vehicle Id", "Visit sequence"])
         .reset_index(drop=True)
+        .merge(
+            locations.assign(**{"Site Bk": locations["stop_id"].astype(str)})[
+                ["Site Bk", "time_window_start", "time_window_end"]
+            ],
+            how="left",
+        )
     )
+    assigned_jobs = assigned_jobs.assign(
+        **{
+            "Delivery time window": assigned_jobs["time_window_start"].str[:5]
+            + " - "
+            + assigned_jobs["time_window_end"].str[:5]
+        }
+    ).drop(columns=["time_window_start", "time_window_end"])
     assigned_jobs = assigned_jobs.assign(
         **{
             "Visit sequence": (assigned_jobs["Visit sequence"] + 1)

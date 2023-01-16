@@ -74,9 +74,7 @@ def extract_unscheduled_stops():
     # TODO: make time windows persistent
     #  updated_time_windows = st.ses
     unassigned_stops_formatted = st.session_state.data_03_primary["unassigned_stops"]
-    unassigned_jobs = st.session_state.data_02_intermediate["unassigned_jobs"].drop(
-        columns=["time_window_start", "time_window_end"]
-    )
+    unassigned_jobs = st.session_state.data_02_intermediate["unassigned_jobs"]
     unassigned_jobs = unassigned_jobs.assign(
         **{"Site Bk": unassigned_jobs["Site Bk"].astype(str)}
     ).merge(
