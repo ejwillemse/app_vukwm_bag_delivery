@@ -126,3 +126,13 @@ def initiate_data():
         "kpis_orig": kpis.copy(),
         "kpi_difference": kpis,
     }
+
+
+def return_filtered_route_id_data(route_id="Vehicle Id"):
+    if st.session_state.route_filters:
+        filtered = st.session_state.data.loc[
+            st.session_state.data[route_id].isin(st.session_state.route_filters)
+        ]
+    else:
+        filtered = st.session_state.data
+    return filtered

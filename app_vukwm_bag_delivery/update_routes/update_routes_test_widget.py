@@ -14,15 +14,13 @@ This is a comprehensive and last update. See issue [16](https://github.com/Waste
 
 import datetime
 import logging
-from typing import Dict, Set, Tuple
 
 import numpy as np
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objs as go
 import streamlit as st
-from st_aggrid import AgGrid, DataReturnMode, GridOptionsBuilder, GridUpdateMode
-from streamlit_plotly_mapbox_events import plotly_mapbox_events
+
+from app_vukwm_bag_delivery.update_routes.interactive_map import render_plotly_map_ui
+from app_vukwm_bag_delivery.update_routes.select_dataframe import selection_dataframe
 
 PLOTLY_HEIGHT = 500
 LAT_COL = "latitude"
@@ -140,16 +138,6 @@ def initialize_state(clear_all=False):
         st.session_state.route_filters = []
 
 
-def return_filtered_route_id_data():
-    if st.session_state.route_filters:
-        filtered = st.session_state.data.loc[
-            st.session_state.data[ROUTE_ID].isin(st.session_state.route_filters)
-        ]
-    else:
-        filtered = st.session_state.data
-    return filtered
-
-
 def reset_state_callback():
     """Resets all filters and increments counter in Streamlit Session State"""
     st.session_state.counter += 1
@@ -191,216 +179,6 @@ def query_data_map() -> pd.DataFrame:
     st.session_state.selected_data = st.session_state.data.loc[
         st.session_state.data["selected"]
     ].copy()
-
-
-def build_map() -> go.Figure:
-    """Build a scatter plot on map of selected and normal elements."""
-
-    def return_map_layout_params(df: pd.DataFrame) -> tuple[dict, int]:
-        """check if the map layout has been changed, and adjust accordingly"""
-        if st.session_state.map_layout:
-            logging.info("logging::::zoom level already present")
-            center = st.session_state.map_layout["center"]
-            zoom = st.session_state.map_layout["zoom"]
-        else:
-            logging.info("logging::::zoom not present")
-            center = {"lat": df[LAT_COL].median(), "lon": df[LON_COL].median()}
-            zoom = MAP_ZOOM
-        return center, zoom
-
-    def generate_main_scatter_plot(
-        df: pd.DataFrame, center: dict, zoom: int
-    ) -> go.Figure:
-        """Generate main scatter plot"""
-        logging.info("logging::::generating scatter plot")
-        fig = px.scatter_mapbox(
-            df.assign(
-                **{
-                    "stop_sequence_txt": df["Stop sequence"]
-                    .astype(str)
-                    .str.replace(".0", ""),
-                    " ": df[ROUTE_ID],
-                }
-            ),
-            lat=LAT_COL,
-            lon=LON_COL,
-            color=" ",
-            color_discrete_sequence=px.colors.qualitative.Plotly,
-            hover_name=ROUTE_ID,
-            hover_data={
-                ROUTE_ID: False,
-                " ": False,
-                "Vehicle profile": True,
-                "Skills": True,
-                "Site Name": True,
-                "Stop sequence": True,
-                "Arrival time": True,
-                "Departure time": True,
-                "Time window start": True,
-                "Time window end": True,
-                "Transport Area Code": True,
-                "stop_sequence_txt": False,
-                "latitude": False,
-                "longitude": False,
-                LAT_LON_ID: False,
-            },
-            text="stop_sequence_txt",
-            size_max=20,
-            zoom=zoom,
-            center=center,
-        )
-        fig.update_traces(marker={"size": 20})
-        return fig
-
-    def add_selected_data_trace(df: pd.DataFrame, fig: go.Figure) -> None:
-        """Adds selected data as red dots on top of existing figure"""
-        logging.info("logging::::adding selection traces")
-        selected_data = df.loc[df["selected"]]
-        fig.add_trace(
-            go.Scattermapbox(
-                lat=selected_data[LAT_COL],
-                lon=selected_data[LON_COL],
-                mode="markers",
-                marker=go.scattermapbox.Marker(
-                    size=10, color="rgb(242, 0, 0)", opacity=1
-                ),
-                hoverinfo="none",
-                name="Selected",
-            )
-        )
-
-    def update_layout(fig: go.Figure) -> None:
-        """Some basic layout updates."""
-        logging.info("logging::::updating map config")
-        fig.update_layout(
-            mapbox=dict(
-                accesstoken=st.secrets["map_box_access_token"],
-                style="dark",
-            ),
-            # legend_title=None,
-            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            height=PLOTLY_HEIGHT,
-            legend=dict(
-                orientation="h",
-                yanchor="top",
-                y=0.0,
-                xanchor="left",
-                x=0.0,
-                font=dict(color="white"),
-                bgcolor="rgba(0,0,0,0.25)",
-            ),
-            paper_bgcolor="rgba(0,0,0,0)",
-            plot_bgcolor="rgba(0,0,0,0)",
-        )
-
-    logging.info("logging::::generating map layout")
-    center, zoom = return_map_layout_params(return_filtered_route_id_data())
-    fig = generate_main_scatter_plot(return_filtered_route_id_data(), center, zoom)
-    add_selected_data_trace(return_filtered_route_id_data(), fig)
-    # add_text(return_filtered_route_id_data(), fig)
-    update_layout(fig)
-    logging.info("logging::::map layout completed")
-    return fig
-
-
-def render_plotly_map_ui() -> None:
-    """Renders all Plotly figures.
-
-    Returns a Dict of filter to set of row identifiers to keep, built from the
-    click/select events from Plotly figures.
-
-    The return will be then stored into Streamlit Session State next.
-    """
-
-    def return_query_selections(map_selected: tuple) -> None:
-        """Unpack events from plotly mapbox events"""
-        logging.info("logging::::unpack map query events")
-        i = 0
-        for query in LAT_LON_QUERIES:  # search for point selections on map
-            if LAT_LON_QUERIES_ACTIVE[query] is True:
-                st.session_state.current_query[query] = {
-                    f"{x['lon']}-{x['lat']}" for x in map_selected[i]
-                }
-                i += 1
-            else:
-                st.session_state.current_query[query] = set()
-
-        if map_selected[-1]:  # there was a layout update
-            logging.info("logging::::unpack map layout change query")
-            st.session_state.map_layout["center"] = map_selected[-1]["raw"][
-                "mapbox.center"
-            ]
-            st.session_state.map_layout["zoom"] = map_selected[-1]["zoom"]
-            st.session_state.current_query["map_move_query"] = {
-                map_selected[-1]["raw"]["mapbox.center"]["lat"],
-                map_selected[-1]["raw"]["mapbox.center"]["lon"],
-                map_selected[-1]["zoom"],
-            }
-        else:
-            st.session_state.current_query["map_move_query"] = set()
-        logging.info("logging::::unpack map query events completed")
-
-    logging.info("logging::::start plotly map render")
-    fig = build_map()
-    # map_selected event is not being run, guess because there hasn't been a change on the physical map...
-    logging.info("logging::::monitor mapbox events")
-    map_selected = plotly_mapbox_events(
-        fig,
-        click_event=LAT_LON_QUERIES_ACTIVE["lat_lon_click_query"],
-        select_event=LAT_LON_QUERIES_ACTIVE["lat_lon_select_query"],
-        hover_event=LAT_LON_QUERIES_ACTIVE["lat_lon_hover_query"],
-        relayout_event=True,
-        key=f"lat_lon_query{st.session_state.counter}",
-        override_height=PLOTLY_HEIGHT + st.session_state.counter,
-        override_width="%100",
-    )
-    logging.info("logging::::map monitoring complete")
-    return_query_selections(map_selected)
-
-
-def selection_dataframe() -> None:
-    logging.info(f"logging::::selecting dataframe")
-    data = return_filtered_route_id_data().copy()
-    data = data.assign(temp_index=np.arange(data.shape[0]))
-
-    pre_selected_rows = data.loc[data["selected"]]["temp_index"].tolist()
-
-    gb = GridOptionsBuilder.from_dataframe(data)
-    gb.configure_pagination(
-        paginationAutoPageSize=False, paginationPageSize=data.shape[0]
-    )  # Add pagination
-    gb.configure_column("index", headerCheckboxSelection=True)
-    gb.configure_side_bar()  # Add a sidebar
-    gb.configure_selection(
-        "multiple",
-        use_checkbox=True,
-        groupSelectsChildren="Group checkbox select children",
-        pre_selected_rows=pre_selected_rows,
-    )  # Enable multi-row selection
-    gridOptions = gb.build()
-
-    grid_response = AgGrid(
-        data,
-        gridOptions=gridOptions,
-        data_return_mode="AS_INPUT",
-        update_mode="MANUAL",
-        columns_auto_size_mode="FIT_CONTENTS",
-        fit_columns_on_grid_load=False,
-        theme="streamlit",  # Add theme color to the table
-        enable_enterprise_modules=True,
-        height=PLOTLY_HEIGHT,
-        width="100%",
-        reload_data=False,
-    )
-    selected = grid_response["selected_rows"]
-    selected_df = pd.DataFrame(selected)
-    if selected_df.shape[0] > 0:
-        logging.info(f"logging::::data selected for update")
-        selected_index = set(selected_df["index"].tolist())
-    else:
-        logging.info(f"logging::::no data selected for update")
-        selected_index = set()
-    st.session_state.current_query["aggrid_select"] = selected_index
 
 
 def update_state():
