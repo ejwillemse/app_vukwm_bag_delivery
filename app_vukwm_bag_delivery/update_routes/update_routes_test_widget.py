@@ -284,17 +284,38 @@ def main():
     else:
         load_transform_data()
     activate_side_bar()
-    c1, c2 = st.columns(2)
-    query_data_map()
-    with c1:
+    side_by_side = st.checkbox(
+        "Side-by-side layout",
+        help="Deselect to change the orientation to a top-bottom layout",
+        value=False,
+    )
+
+    if not side_by_side:
+        query_data_map()
         render_plotly_map_ui()
+        selection_dataframe()
         st.write("Selection summary:")
         summary = return_selection_summary().T
         summary.columns = summary.iloc[0].values
         summary = summary.iloc[1:]
         st.dataframe(summary, use_container_width=True)
-    with c2:
-        selection_dataframe()
+
         st.write("Selected stops:")
         st.write(st.session_state.selected_data)
+        update_state()
+    else:
+        c1, c2 = st.columns(2)
+        query_data_map()
+
+        with c1:
+            render_plotly_map_ui()
+            st.write("Selection summary:")
+            summary = return_selection_summary().T
+            summary.columns = summary.iloc[0].values
+            summary = summary.iloc[1:]
+            st.dataframe(summary, use_container_width=True)
+        with c2:
+            selection_dataframe()
+            st.write("Selected stops:")
+            st.write(st.session_state.selected_data)
     update_state()
