@@ -101,10 +101,13 @@ def restart_all():
 set_page_config()
 check_previous_steps_completed()
 view_instructions()
-with st.expander("View route KPIs", True):
-    st.write("KPI table goes here")
+process_assigned_stops.initiate_data()
 
-process_assigned_stops.process_assigned_stops()
+with st.expander("View route KPIs", True):
+    st.dataframe(
+        st.session_state.edit_routes["kpi_difference"], use_container_width=True
+    )
+
 
 st.session_state.edit_data = {"original_data": return_all_stops_display()}
 update_routes_test_widget.main()

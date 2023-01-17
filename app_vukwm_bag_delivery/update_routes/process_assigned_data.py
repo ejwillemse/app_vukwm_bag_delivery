@@ -3,64 +3,50 @@ import pandas as pd
 import streamlit as st
 
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
-    return_all_stops_display,
-    return_assigned_stops_display,
+    gen_assigned_stops_display,
 )
 
 
-def process_assigned_stops():
-    unused_routes = st.session_state.data_07_reporting["unused_routes"][
-        ["route_id", "profile"]
-    ]
-    unused_routes = unused_routes.rename(
-        columns={"route_id": "Vehicle Id", "profile": "Vehicle profile"}
+def return_stops_display():
+    unserviced_stops = st.session_state.data_07_reporting["unserviced_stops"].copy()
+    unserviced_stops["route_id"] = "Unassigned"
+    unserviced_stops["service_issue"] = "UNSERVICED"
+    assigned_stops = st.session_state.data_07_reporting["assigned_stops"].copy()
+    unassigned_stops = st.session_state.data_02_intermediate["unassigned_stops"].copy()
+    assigned_stops = pd.concat([assigned_stops, unserviced_stops]).reset_index(
+        drop=True
     )
-    unused_routes = unused_routes.assign(
-        **{
-            "Vehicle profile": unused_routes["Vehicle profile"].replace(
-                {"auto": "Van", "bicycle": "Bicycle"}
-            )
-        }
+    assigned_stops = gen_assigned_stops_display(
+        assigned_stops, unassigned_stops, fillna=False
     )
-    assigned_stops = return_all_stops_display()
-    assigned_stops = pd.concat([assigned_stops, unused_routes])
-    kpis = gen_kpis(assigned_stops)
-    st.session_state.edit_routes = {
-        "assigned_stops": assigned_stops.copy(),
-        "assigned_stops_orig": kpis.copy(),
-        "kpis": kpis.copy(),
-        "kpis_orig": kpis.copy(),
-    }
-    st.write(kpis)
+    return assigned_stops
 
 
-def update_kpis():
-    assigned_stops = st.session_state.edit_routes["assigned_stops"]
-    st.session_state.edit_routes = {
-        "assigned_stops": assigned_stops.copy(),
-        "kpis": gen_kpis(assigned_stops),
-    }
-
-
-def update_assigned_stop():
-    assigned_stops = st.session_state.edit_routes["assigned_stops"]
-    st.session_state.edit_routes = {
-        "assigned_stops": assigned_stops.copy(),
-        "kpis": gen_kpis(assigned_stops),
-    }
+def update_stops_display(assigned_stops, unserviced_stops):
+    unassigned_stops = st.session_state.data_02_intermediate["unassigned_stops"].copy()
+    assigned_stops = pd.concat([assigned_stops, unserviced_stops]).reset_index(
+        drop=True
+    )
+    assigned_stops = gen_assigned_stops_display(
+        assigned_stops, unassigned_stops, fillna=False
+    )
+    return assigned_stops
 
 
 def gen_kpis(assigned_stops):
+    deliver = assigned_stops["Activity type"] == "DELIVERY"
     route_kpis = (
         assigned_stops.assign(
             **{
                 "Duration (h)": assigned_stops["Travel duration to stop (minutes)"] / 60
                 + assigned_stops["Service duration (minutes)"] / 60
                 + assigned_stops["Waiting time (minutes)"] / 60,
-                "ontime": assigned_stops["Service issues"] == "ON-TIME",
-                "early": assigned_stops["Service issues"] == "EARLY",
-                "late": assigned_stops["Service issues"] == "LATE",
-                "UNSERVICED": assigned_stops["Service issues"] == "UNSERVICED",
+                "deliver": deliver,
+                "ontime": (assigned_stops["Service issues"] == "ON-TIME") & deliver,
+                "early": (assigned_stops["Service issues"] == "EARLY") & deliver,
+                "late": (assigned_stops["Service issues"] == "LATE") & deliver,
+                "UNSERVICED": (assigned_stops["Service issues"] == "UNSERVICED")
+                & deliver,
             }
         )
         .groupby(["Vehicle Id"])
@@ -68,7 +54,7 @@ def gen_kpis(assigned_stops):
             **{
                 "Duration (h)": ("Duration (h)", "sum"),
                 "Distance (km)": ("Travel distance to stops (km)", "sum"),
-                "Stops": ("Job sequence", "max"),
+                "Stops": ("deliver", "sum"),
                 "Unserviced": ("UNSERVICED", "sum"),
                 "On-time": ("ontime", "sum"),
                 "Early": ("early", "sum"),
@@ -79,17 +65,7 @@ def gen_kpis(assigned_stops):
     return route_kpis
 
 
-# def get_kpi_difference():
-#     st.session_state["kpis"] =
-
-#         "assigned_stops": assigned_stops.copy(),
-#         "assigned_stops_orig": kpis.copy(),
-#         "kpis": kpis.copy(),
-#         "kpis_orig": kpis.copy(),
-#     }
-
-
-def add_difference(kpi, kpi_prev):
+def calc_difference(kpi, kpi_prev):
     delta = kpi.fillna(0) - kpi_prev.fillna(0)
     delta = delta.reset_index()
     delta = delta.assign(
@@ -107,3 +83,46 @@ def add_difference(kpi, kpi_prev):
         .drop(columns=["sort_columns"])
     )
     return route_kpis
+
+
+def calc_kpi_difference():
+    return calc_difference(
+        st.session_state.edit_routes["kpis"], st.session_state.edit_routes["kpis_orig"]
+    )
+
+
+def update_assigned_stop(assigned_stops):
+    st.session_state.edit_routes["assigned_stops"] = assigned_stops
+    st.session_state.edit_routes["kpis"] = gen_kpis(assigned_stops)
+    st.session_state.edit_routes["kpi_difference"] = calc_kpi_difference()
+
+
+def store_new_assigned_stops(assigned_stops, unserviced_stops):
+    assigned_stops = update_stops_display(assigned_stops, unserviced_stops)
+    update_assigned_stop(store_new_assigned_stops)
+
+
+def initiate_data():
+    unused_routes = st.session_state.data_07_reporting["unused_routes"][
+        ["route_id", "profile"]
+    ]
+    unused_routes = unused_routes.rename(
+        columns={"route_id": "Vehicle Id", "profile": "Vehicle profile"}
+    )
+    unused_routes = unused_routes.assign(
+        **{
+            "Vehicle profile": unused_routes["Vehicle profile"].replace(
+                {"auto": "Van", "bicycle": "Bicycle"}
+            )
+        }
+    )
+    assigned_stops = return_stops_display()
+    assigned_stops = pd.concat([assigned_stops, unused_routes])
+    kpis = gen_kpis(assigned_stops)
+    st.session_state.edit_routes = {
+        "assigned_stops": assigned_stops.copy(),
+        "assigned_stops_orig": kpis.copy(),
+        "kpis": kpis.copy(),
+        "kpis_orig": kpis.copy(),
+        "kpi_difference": kpis,
+    }
