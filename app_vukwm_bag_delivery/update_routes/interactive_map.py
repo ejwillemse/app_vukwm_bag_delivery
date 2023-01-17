@@ -49,8 +49,9 @@ def build_map() -> go.Figure:
     ) -> go.Figure:
         """Generate main scatter plot"""
         logging.info("logging::::generating scatter plot")
+        df = df.loc[df["Activity type"] == "DELIVERY"]
         fig = px.scatter_mapbox(
-            df.assign(
+            df.fillna("").assign(
                 **{
                     "stop_sequence_txt": df["Stop sequence"]
                     .astype(str)
