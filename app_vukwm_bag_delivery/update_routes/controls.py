@@ -33,6 +33,7 @@ def activate_side_bar():
     routes = list(
         st.session_state.edit_routes["assigned_stops_orig"][ROUTE_ID].unique()
     )
+    routes.sort()
     with st.sidebar:
         st.button(key="button0", label="CLEAR SELECTION", on_click=reset_state_callback)
         st.session_state.route_filters = st.multiselect("Show routes", routes, routes)

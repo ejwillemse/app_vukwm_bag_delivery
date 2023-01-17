@@ -49,7 +49,7 @@ def build_map() -> go.Figure:
     ) -> go.Figure:
         """Generate main scatter plot"""
         logging.info("logging::::generating scatter plot")
-        df = df.loc[df["Activity type"] == "DELIVERY"]
+        df = df.loc[df["Activity type"] == "DELIVERY"].sort_values([ROUTE_ID])
         fig = px.scatter_mapbox(
             df.fillna("").assign(
                 **{
@@ -178,7 +178,7 @@ def render_plotly_map_ui() -> None:
 
     logging.info("logging::::start plotly map render")
     fig = build_map()
-    # map_selected event is not being run, guess because there hasn't been a change on the physical map...
+
     logging.info("logging::::monitor mapbox events")
     map_selected = plotly_mapbox_events(
         fig,
