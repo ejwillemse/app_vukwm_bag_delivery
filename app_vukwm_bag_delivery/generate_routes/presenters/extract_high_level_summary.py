@@ -3,6 +3,7 @@ import streamlit as st
 
 from app_vukwm_bag_delivery.models.pipelines.summarise.sum_routes import route_summary
 
+
 SUMMARY_VIEW_MAPPING = {
     "route_id": "Vehicle id",
     "vehicle_profile": "Vehicle type",

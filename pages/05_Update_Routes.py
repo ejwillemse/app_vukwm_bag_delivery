@@ -1,9 +1,15 @@
+import datetime
+import logging
+import logging.config
+import sys
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
+import app_vukwm_bag_delivery.update_routes.update_routes_test_widget as update_routes_test_widget
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
@@ -13,13 +19,15 @@ from app_vukwm_bag_delivery.view_routes.generate_route_display import (
 from app_vukwm_bag_delivery.view_routes.generate_route_gant import return_gant
 from app_vukwm_bag_delivery.view_routes.generate_route_map import return_map
 
+# create logger
+
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Update routes",
-        initial_sidebar_state="expanded",
-    )
+    # st.set_page_config(
+    #     layout="wide",
+    #     page_title="Update routes",
+    #     initial_sidebar_state="expanded",
+    # )
     st.title("Update routes")
     st.subheader("Coming soon...")
 
@@ -62,8 +70,38 @@ def check_previous_steps_completed():
         st.stop()
 
 
+if "restarts" not in st.session_state:
+    st.session_state["restarts"] = 0
+
+
+if "event_clock" not in st.session_state:
+    st.session_state["event_clock"] = datetime.datetime.now()
+
+
+def save_session():
+    st.header("Save changes")
+    clicked1 = st.button("Click here to save edits")
+
+
+def restart_all():
+    st.header("Restart session")
+    clicked2 = st.button(
+        "Click here to restart editing session. ALL EDITS WILL BE LOST."
+    )
+    if clicked2:
+        logging.info(
+            "\n\n\nlogging::::restarting editor sessions-----------------------"
+        )
+        update_routes_test_widget.reset_state_callback()
+        update_routes_test_widget.initialize_state(clear_all=True)
+        st.experimental_rerun()
+
+
 set_page_config()
-side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
-side_bar_progress.update_side_bar(side_bar_status)
+update_routes_test_widget.main()
+save_session()
+restart_all()
+# side_bar_status = side_bar_progress.view_sidebar()
+# side_bar_progress.update_side_bar(side_bar_status)
