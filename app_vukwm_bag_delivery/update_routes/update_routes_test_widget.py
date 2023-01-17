@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+from app_vukwm_bag_delivery.update_routes.controls import activate_side_bar
 from app_vukwm_bag_delivery.update_routes.interactive_map import render_plotly_map_ui
 from app_vukwm_bag_delivery.update_routes.select_dataframe import selection_dataframe
 
@@ -222,31 +223,6 @@ def update_state():
         st.experimental_rerun()
     else:
         logging.info(f"logging::::no query updates found, not rerunning")
-
-
-def activate_side_bar():
-    routes = st.session_state.data[ROUTE_ID].unique()
-    with st.sidebar:
-        st.button(key="button0", label="CLEAR SELECTION", on_click=reset_state_callback)
-        st.session_state.route_filters = st.multiselect("Show routes", routes, routes)
-        st.markdown("**Update route assignments**")
-        new_route_id = st.selectbox("Change selected stops to route", routes)
-        cap_button = st.button(
-            key="button1",
-            label=f"Confirm change",
-        )
-        if cap_button:
-            update_selected_points(new_route_id)
-
-
-def update_selected_points(new_route_id):
-    if len(st.session_state.selected_data) > 0:
-        st.session_state.data.loc[
-            st.session_state.data["selected"], ROUTE_ID
-        ] = new_route_id
-        st.experimental_rerun()
-    else:
-        st.warning(f"No points were selected...")
 
 
 def return_selection_summary():
