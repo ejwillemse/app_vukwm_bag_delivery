@@ -27,7 +27,8 @@ from streamlit_plotly_mapbox_events import plotly_mapbox_events
 PLOTLY_HEIGHT = 500
 LAT_COL = "latitude"
 LON_COL = "longitude"
-
+ROUTE_ID = "Vehicle Id"
+LAT_LON_ID = "_lon-lat__id"
 LAT_LON_QUERIES = [
     "lat_lon_click_query",
     "lat_lon_select_query",
@@ -43,18 +44,18 @@ MAP_ZOOM = 11
 
 COLUMN_ORDER = [
     "index",
-    "route_id",
+    ROUTE_ID,
     "peak_hour",
     "car_hours",
     "latitude",
     "longitude",
     "selected",
-    "lon-lat__id",
+    LAT_LON_ID,
 ]
 
 COLUMN_ORDER2 = [
     "index",
-    "route_id",
+    ROUTE_ID,
     "stop_id",
     "vehicle_profile",
     "arrival_time",
@@ -63,8 +64,20 @@ COLUMN_ORDER2 = [
     "longitude",
     "selected",
     "stop_sequence",
-    "lon-lat__id",
+    LAT_LON_ID,
 ]
+
+
+def create_lat_lon_id(data):
+    return data.assign(
+        **{
+            LAT_LON_ID: lambda data: data[LON_COL].astype(str)
+            + "-"
+            + data[LAT_COL].astype(str)
+        },
+        index=np.arange(0, data.shape[0]),
+        selected=False,
+    )
 
 
 @st.experimental_singleton
@@ -72,63 +85,11 @@ def load_transform_data():
     """Load data and do some basic transformation. The `st.experimental_singleton`
     decorator prevents the data from being continously reloaded.
     """
-    data = px.data.carshare()
-    data = data.rename(
-        columns={"centroid_lat": "latitude", "centroid_lon": "longitude"}
-    )
-    data = data.assign(
-        **{
-            "lon-lat__id": lambda data: data[LON_COL].astype(str)
-            + "-"
-            + data[LAT_COL].astype(str)
-        },
-        route_id="R" + data["peak_hour"].astype(str).str.zfill(2),
-        index=data.index,
-        selected=False,
-    ).sort_values(["route_id"])[COLUMN_ORDER]
-    st.session_state.data = data.copy()
-
-
-@st.experimental_singleton
-def load_transform_data2():
-    """Load data and do some basic transformation. The `st.experimental_singleton`
-    decorator prevents the data from being continously reloaded.
-    """
     logging.info("logging::::data being loaded with chaching")
-    data = st.session_state.data_07_reporting["assigned_stops"]
-    data = data.assign(
-        **{
-            "lon-lat__id": lambda data: data["longitude"].astype(str)
-            + "-"
-            + data["latitude"].astype(str)
-        },
-        route=data["route_id"],
-        index=np.arange(0, data.shape[0]),
-        selected=False,
-    ).sort_values(["route_id", "stop_sequence"])[COLUMN_ORDER2]
+    data = st.session_state.edit_data["original_data"]
+    data = create_lat_lon_id(data)
     st.session_state.data = data.copy()
     logging.info("logging::::data being loaded with chaching completed")
-    return data
-
-
-def load_transform_data_full2():
-    """Load data and do some basic transformation. The `st.experimental_singleton`
-    decorator prevents the data from being continously reloaded.
-    """
-    logging.info("logging::::data being loaded without chaching")
-    data = st.session_state.data_07_reporting["assigned_stops"]
-    data = data.assign(
-        **{
-            "lon-lat__id": lambda data: data["longitude"].astype(str)
-            + "-"
-            + data["latitude"].astype(str)
-        },
-        route=data["route_id"],
-        index=np.arange(0, data.shape[0]),
-        selected=False,
-    ).sort_values(["route_id", "stop_sequence"])[COLUMN_ORDER2]
-    st.session_state.data = data.copy()
-    logging.info("logging::::data being loaded without chaching completed")
     return data
 
 
@@ -136,18 +97,12 @@ def load_transform_data_full():
     """Load data and do some basic transformation. The `st.experimental_singleton`
     decorator prevents the data from being continously reloaded.
     """
-    data = px.data.carshare()
-    data = data.assign(
-        **{
-            "lon-lat__id": lambda data: data[LON_COL].astype(str)
-            + "-"
-            + data[LAT_COL].astype(str)
-        },
-        route="R" + data["peak_hour"].astype(str).str.zfill(2),
-        index=data.index,
-        selected=False,
-    ).sort_values(["route"])[COLUMN_ORDER]
+    logging.info("logging::::data being loaded without chaching")
+    data = st.session_state.edit_data["original_data"]
+    data = create_lat_lon_id(data)
     st.session_state.data = data.copy()
+    logging.info("logging::::data being loaded without chaching completed")
+    return data
 
 
 def initialize_state(clear_all=False):
@@ -188,7 +143,7 @@ def initialize_state(clear_all=False):
 def return_filtered_route_id_data():
     if st.session_state.route_filters:
         filtered = st.session_state.data.loc[
-            st.session_state.data["route_id"].isin(st.session_state.route_filters)
+            st.session_state.data[ROUTE_ID].isin(st.session_state.route_filters)
         ]
     else:
         filtered = st.session_state.data
@@ -200,8 +155,6 @@ def reset_state_callback():
     st.session_state.counter += 1
     for query in LAT_LON_QUERIES:
         st.session_state[query] = set()
-    # st.session_state.map_move_query = set()
-    # st.session_state.map_layout = {}
     st.session_state.aggrid_select = set()
     st.session_state.current_query = {}
     st.session_state.data = st.session_state.data.assign(selected=False)
@@ -221,7 +174,7 @@ def query_data_map() -> pd.DataFrame:
     if query_update:
         logging.info(f"logging::::update selected values found map query to True")
         st.session_state.data.loc[
-            st.session_state.data["lon-lat__id"].isin(selected_ids),
+            st.session_state.data[LAT_LON_ID].isin(selected_ids),
             "selected",
         ] = True
 
@@ -261,23 +214,36 @@ def build_map() -> go.Figure:
         """Generate main scatter plot"""
         logging.info("logging::::generating scatter plot")
         fig = px.scatter_mapbox(
-            df.assign(stop_sequence_txt=df["stop_sequence"].astype(str)),
+            df.assign(
+                **{
+                    "stop_sequence_txt": df["Stop sequence"]
+                    .astype(str)
+                    .str.replace(".0", ""),
+                    " ": df[ROUTE_ID],
+                }
+            ),
             lat=LAT_COL,
             lon=LON_COL,
-            color="route_id",
+            color=" ",
             color_discrete_sequence=px.colors.qualitative.Plotly,
-            hover_name="index",
+            hover_name=ROUTE_ID,
             hover_data={
-                "route_id": True,
-                "stop_id": True,
+                ROUTE_ID: False,
+                " ": False,
+                "Vehicle profile": True,
+                "Skills": True,
+                "Site Name": True,
+                "Stop sequence": True,
+                "Arrival time": True,
+                "Departure time": True,
+                "Time window start": True,
+                "Time window end": True,
+                "Transport Area Code": True,
                 "stop_sequence_txt": False,
-                "stop_sequence": True,
-                "selected": False,
                 "latitude": False,
                 "longitude": False,
-                "lon-lat__id": False,
+                LAT_LON_ID: False,
             },
-            # size=17,  # "car_hours",
             text="stop_sequence_txt",
             size_max=20,
             zoom=zoom,
@@ -311,8 +277,20 @@ def build_map() -> go.Figure:
                 accesstoken=st.secrets["map_box_access_token"],
                 style="dark",
             ),
+            # legend_title=None,
             margin={"r": 0, "t": 0, "l": 0, "b": 0},
             height=PLOTLY_HEIGHT,
+            legend=dict(
+                orientation="h",
+                yanchor="top",
+                y=0.0,
+                xanchor="left",
+                x=0.0,
+                font=dict(color="white"),
+                bgcolor="rgba(0,0,0,0.25)",
+            ),
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
         )
 
     logging.info("logging::::generating map layout")
@@ -409,7 +387,7 @@ def selection_dataframe() -> None:
         columns_auto_size_mode="FIT_CONTENTS",
         fit_columns_on_grid_load=False,
         theme="streamlit",  # Add theme color to the table
-        enable_enterprise_modules=False,
+        enable_enterprise_modules=True,
         height=PLOTLY_HEIGHT,
         width="100%",
         reload_data=False,
@@ -469,7 +447,7 @@ def update_state():
 
 
 def activate_side_bar():
-    routes = st.session_state.data["route_id"].unique()
+    routes = st.session_state.data[ROUTE_ID].unique()
     with st.sidebar:
         st.button(key="button0", label="CLEAR SELECTION", on_click=reset_state_callback)
         st.session_state.route_filters = st.multiselect("Show routes", routes, routes)
@@ -486,7 +464,7 @@ def activate_side_bar():
 def update_selected_points(new_route_id):
     if len(st.session_state.selected_data) > 0:
         st.session_state.data.loc[
-            st.session_state.data["selected"], "route_id"
+            st.session_state.data["selected"], ROUTE_ID
         ] = new_route_id
         st.experimental_rerun()
     else:
@@ -496,25 +474,46 @@ def update_selected_points(new_route_id):
 def return_selection_summary():
     df = st.session_state.selected_data
     df_sum = (
-        df.groupby(["route_id"])
+        df.sort_values([ROUTE_ID, "Transport Area Code"])
+        .assign(**{"Transport Area Code": df["Transport Area Code"]})
+        .groupby([ROUTE_ID])
         .agg(
-            n_selected=("route_id", "count"),
-            # average_car_hours=("car_hours", "mean"),
-            # peak_hours=("peak_hour", "unique"),
+            **{
+                "#Stops": (ROUTE_ID, "count"),
+                "Skills": ("Skills", "unique"),
+                "Transport areas": ("Transport Area Code", "unique"),
+                "Travel distance (km)": ("Travel distance to stops (km)", "sum"),
+                "Travel time (min)": ("Travel duration to stop (minutes)", "sum"),
+                "Service time (min)": ("Service duration (minutes)", "sum"),
+            },
         )
         .reset_index()
+    )
+    df_sum = df_sum.assign(
+        **{
+            "Skills": df_sum["Skills"].apply(
+                lambda x: [y for y in x if y is not pd.np.nan]
+            ),
+            "Transport areas": df_sum["Transport areas"].apply(
+                lambda x: [y for y in x if y is not pd.np.nan]
+            ),
+        }
     )
     if df_sum.shape[0] > 0:
         total_row = (
             df_sum.assign(temp_id=1)
             .groupby("temp_id")
-            .agg(route=("route_id", "count"), n_selected=("n_selected", "sum"))
+            .agg(
+                **{
+                    ROUTE_ID: (ROUTE_ID, "count"),
+                    "#Stops": ("#Stops", "sum"),
+                    "Travel distance (km)": ("Travel distance (km)", "sum"),
+                    "Travel time (min)": ("Travel time (min)", "sum"),
+                    "Service time (min)": ("Service time (min)", "sum"),
+                }
+            )
         )
-        # .assign(
-        #     average_car_hours=df["car_hours"].mean(),
-        #     peak_hours=df["peak_hour"].nunique(),
-        # )
-        total_row.index = ["Total/average"]
+        total_row["Vehicle Id"] = ["Total"]
         df_sum = pd.concat([df_sum, total_row])
     return df_sum
 
@@ -525,18 +524,21 @@ def main():
             "logging::::session data not yet loaded, initialising state and load data"
         )
         initialize_state()
-        load_transform_data_full2()
+        load_transform_data_full()
     elif st.session_state.data is None:
-        load_transform_data_full2()
+        load_transform_data_full()
     else:
-        load_transform_data2()
+        load_transform_data()
     activate_side_bar()
     c1, c2 = st.columns(2)
     query_data_map()
     with c1:
         render_plotly_map_ui()
         st.write("Selection summary:")
-        st.write(return_selection_summary())
+        summary = return_selection_summary().T
+        summary.columns = summary.iloc[0].values
+        summary = summary.iloc[1:]
+        st.dataframe(summary, use_container_width=True)
     with c2:
         selection_dataframe()
         st.write("Selected stops:")

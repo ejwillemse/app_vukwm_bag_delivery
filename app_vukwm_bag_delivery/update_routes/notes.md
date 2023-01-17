@@ -29,3 +29,4 @@ Locations
 ```python
 locations = st.session_state.data_03_primary["locations"]
 ```
+

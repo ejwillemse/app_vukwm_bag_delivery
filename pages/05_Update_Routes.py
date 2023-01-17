@@ -9,11 +9,13 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
+import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_assigned_stops
 import app_vukwm_bag_delivery.update_routes.update_routes_test_widget as update_routes_test_widget
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
+    return_all_stops_display,
     return_assigned_stops_display,
 )
 from app_vukwm_bag_delivery.view_routes.generate_route_gant import return_gant
@@ -101,6 +103,10 @@ check_previous_steps_completed()
 view_instructions()
 with st.expander("View route KPIs", True):
     st.write("KPI table goes here")
+
+process_assigned_stops.process_assigned_stops()
+
+st.session_state.edit_data = {"original_data": return_all_stops_display()}
 update_routes_test_widget.main()
 save_session()
 restart_all()

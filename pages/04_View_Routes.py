@@ -8,6 +8,7 @@ import app_vukwm_bag_delivery.util_views.return_session_status as return_session
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
+    return_all_stops_display,
     return_assigned_stops_display,
 )
 from app_vukwm_bag_delivery.view_routes.generate_route_gant import return_gant
@@ -148,7 +149,8 @@ def show_route_summary():
 def show_detailed_stop_info():
     st.subheader("Detailed stop info")
     with st.expander("Click here for detailed stop info and sequences", True):
-        st.write(return_assigned_stops_display())
+        st.write(return_all_stops_display())
+        # st.write(return_assigned_stops_display())
 
 
 def filter_routes():
