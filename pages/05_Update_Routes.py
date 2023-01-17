@@ -29,7 +29,6 @@ def set_page_config():
     #     initial_sidebar_state="expanded",
     # )
     st.title("Update routes")
-    st.subheader("Coming soon...")
 
 
 if not check_password():
@@ -100,6 +99,8 @@ def restart_all():
 set_page_config()
 check_previous_steps_completed()
 view_instructions()
+with st.expander("View route KPIs", True):
+    st.write("KPI table goes here")
 update_routes_test_widget.main()
 save_session()
 restart_all()

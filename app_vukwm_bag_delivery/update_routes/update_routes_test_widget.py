@@ -14,14 +14,6 @@ This is a comprehensive and last update. See issue [16](https://github.com/Waste
 
 import datetime
 import logging
-
-logging.config.dictConfig(
-    {
-        "version": 1,
-        "disable_existing_loggers": True,
-    }
-)
-
 from typing import Dict, Set, Tuple
 
 import numpy as np
@@ -64,6 +56,9 @@ COLUMN_ORDER2 = [
     "index",
     "route_id",
     "stop_id",
+    "vehicle_profile",
+    "arrival_time",
+    "departure_time",
     "latitude",
     "longitude",
     "selected",
@@ -110,7 +105,7 @@ def load_transform_data2():
         route=data["route_id"],
         index=np.arange(0, data.shape[0]),
         selected=False,
-    ).sort_values(["route_id"])[COLUMN_ORDER2]
+    ).sort_values(["route_id", "stop_sequence"])[COLUMN_ORDER2]
     st.session_state.data = data.copy()
     logging.info("logging::::data being loaded with chaching completed")
     return data
@@ -131,7 +126,7 @@ def load_transform_data_full2():
         route=data["route_id"],
         index=np.arange(0, data.shape[0]),
         selected=False,
-    ).sort_values(["route_id"])[COLUMN_ORDER2]
+    ).sort_values(["route_id", "stop_sequence"])[COLUMN_ORDER2]
     st.session_state.data = data.copy()
     logging.info("logging::::data being loaded without chaching completed")
     return data
@@ -266,7 +261,7 @@ def build_map() -> go.Figure:
         """Generate main scatter plot"""
         logging.info("logging::::generating scatter plot")
         fig = px.scatter_mapbox(
-            df,
+            df.assign(stop_sequence_txt=df["stop_sequence"].astype(str)),
             lat=LAT_COL,
             lon=LON_COL,
             color="route_id",
@@ -274,13 +269,16 @@ def build_map() -> go.Figure:
             hover_name="index",
             hover_data={
                 "route_id": True,
+                "stop_id": True,
+                "stop_sequence_txt": False,
+                "stop_sequence": True,
                 "selected": False,
                 "latitude": False,
                 "longitude": False,
                 "lon-lat__id": False,
             },
             # size=17,  # "car_hours",
-            # text="index",
+            text="stop_sequence_txt",
             size_max=20,
             zoom=zoom,
             center=center,
@@ -309,7 +307,10 @@ def build_map() -> go.Figure:
         """Some basic layout updates."""
         logging.info("logging::::updating map config")
         fig.update_layout(
-            mapbox_style="carto-positron",
+            mapbox=dict(
+                accesstoken=st.secrets["map_box_access_token"],
+                style="dark",
+            ),
             margin={"r": 0, "t": 0, "l": 0, "b": 0},
             height=PLOTLY_HEIGHT,
         )
@@ -318,6 +319,7 @@ def build_map() -> go.Figure:
     center, zoom = return_map_layout_params(return_filtered_route_id_data())
     fig = generate_main_scatter_plot(return_filtered_route_id_data(), center, zoom)
     add_selected_data_trace(return_filtered_route_id_data(), fig)
+    # add_text(return_filtered_route_id_data(), fig)
     update_layout(fig)
     logging.info("logging::::map layout completed")
     return fig
@@ -362,7 +364,6 @@ def render_plotly_map_ui() -> None:
 
     logging.info("logging::::start plotly map render")
     fig = build_map()
-
     # map_selected event is not being run, guess because there hasn't been a change on the physical map...
     logging.info("logging::::monitor mapbox events")
     map_selected = plotly_mapbox_events(
@@ -473,10 +474,10 @@ def activate_side_bar():
         st.button(key="button0", label="CLEAR SELECTION", on_click=reset_state_callback)
         st.session_state.route_filters = st.multiselect("Show routes", routes, routes)
         st.markdown("**Update route assignments**")
-        new_route_id = st.selectbox("Change selected points to route", routes)
+        new_route_id = st.selectbox("Change selected stops to route", routes)
         cap_button = st.button(
             key="button1",
-            label=f"Confirm selection change to {new_route_id}",
+            label=f"Confirm change",
         )
         if cap_button:
             update_selected_points(new_route_id)
@@ -535,9 +536,9 @@ def main():
     with c1:
         render_plotly_map_ui()
         st.write("Selection summary:")
-        st.table(return_selection_summary())
+        st.write(return_selection_summary())
     with c2:
         selection_dataframe()
-        st.write("Selected points:")
-        st.table(st.session_state.selected_data)
+        st.write("Selected stops:")
+        st.write(st.session_state.selected_data)
     update_state()
