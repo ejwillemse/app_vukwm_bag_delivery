@@ -112,7 +112,6 @@ def return_assigned_stops_display(assigned_stops, unassigned_stops):
 
 
 def generate_timeline(df, detailed):
-
     hovertemplate1 = (
         "<b>Stop no.: %{customdata[0]}</b><br>"
         + "Site: %{customdata[1]}</b><br>"
@@ -155,6 +154,7 @@ def generate_timeline(df, detailed):
         + " "
         + assigned_stops_route_paths_plot["Departure time"]
     )
+    st.write(assigned_stops_route_paths_plot)
     fig = px.timeline(
         assigned_stops_route_paths_plot,
         x_start="Arrival time",

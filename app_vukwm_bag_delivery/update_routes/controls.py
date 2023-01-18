@@ -4,6 +4,7 @@ import numpy as np
 import streamlit as st
 
 import app_vukwm_bag_delivery.update_routes.create_routing_objects as create_routing_objects
+import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_assigned_data
 from app_vukwm_bag_delivery.update_routes import update_routes_test_widget
 
 ROUTE_ID = "Vehicle Id"
@@ -50,21 +51,21 @@ def activate_side_bar():
         st.markdown("**Update route assignments**")
         routes_select = [""] + routes
         new_route_id = st.selectbox("Change selected stops to route", routes_select)
-        if new_route_id != "":
-            cap_button = st.button(
-                key="button1",
-                label=f"Confirm change",
-            )
-            if cap_button:
-                update_selected_points(new_route_id)
+        cap_button = st.button(
+            key="button1",
+            label=f"Confirm change",
+        )
+        if cap_button:
+            update_selected_points(new_route_id)
         st.markdown("**Save/restart edits**")
         clicked3 = st.button("Save edits")
         if clicked3:
             logging.info(
                 "\n\n\nlogging::::saving editor sessions-----------------------"
             )
-            # TODO: updates required
-            # everything used by view routes and dispatch routes and complete session restart here as well...
+            process_assigned_data.update_unsused_routes()
+            process_assigned_data.update_unserviced_stops()
+            process_assigned_data.update_assigned_stops()
         clicked2 = st.button("Restart")
         if clicked2:
             logging.info(

@@ -285,7 +285,7 @@ def update_assigned_stops():
     assigned_stops = assigned_stops.assign(
         arrival_time=assigned_stops["arrival_time"].fillna(method="ffill"),
         service_start_time=assigned_stops["service_start_time"].fillna(method="ffill"),
-        departure_time=assigned_stops["arrival_time"].fillna(method="ffill"),
+        departure_time=assigned_stops["departure_time"].fillna(method="ffill"),
         waiting_duration__seconds=assigned_stops["waiting_duration__seconds"].fillna(0),
         travel_duration_to_stop__seconds=assigned_stops[
             "travel_duration_to_stop__seconds"
@@ -317,5 +317,4 @@ def add_sequences(assigned_stops: pd.DataFrame, job_activities=None) -> pd.DataF
     assigned_stops = assigned_stops.drop(columns=["job_sequence"]).merge(
         job_stops[["route_id", "stop_sequence", "job_sequence"]], how="left"
     )
-    st.write(assigned_stops)
     return assigned_stops
