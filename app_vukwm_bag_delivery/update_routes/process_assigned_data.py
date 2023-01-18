@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+import app_vukwm_bag_delivery.models.vroom_wrappers.decode_vroom_solution as decode
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
     gen_assigned_stops_display,
 )
@@ -198,3 +199,123 @@ def update_unserviced_stops():
         location["stop_id"].isin(stops_unserviced["Site Bk"].values)
     ]
     st.session_state.data_07_reporting["unserviced_stops"] = stops_unserviced.copy()
+
+
+def update_assigned_stops():
+    stops = st.session_state.edit_routes["assigned_stops"]
+    unassigned_routes = st.session_state.data_03_primary["unassigned_routes"]
+    unassigned_stops = st.session_state.data_03_primary["unassigned_stops"]
+    matrix = st.session_state.data_04_model_input["matrix"]
+    locations = st.session_state.data_03_primary["locations"]
+
+    solution = stops  # .loc[stops["Service issues"] != "UNSERVICED"]
+    solution = (
+        solution.merge(
+            unassigned_routes[["route_id", "route_index", "profile"]],
+            how="left",
+            left_on="Vehicle Id",
+            right_on="route_id",
+        )
+        .merge(
+            locations[["stop_id", "location_index"]],
+            left_on="Site Bk",
+            right_on="stop_id",
+        )
+        .sort_values(["Vehicle Id", "Stop sequence"])
+    )
+    time_start = pd.to_datetime(solution["Arrival time"])
+    solution = solution.assign(
+        **{
+            "arrival_time__seconds": (
+                (time_start - time_start.dt.normalize()) / pd.Timedelta("1 second")
+            ),
+            "service_duration__seconds": solution["Service duration (minutes)"] * 60,
+            "waiting_duration__seconds": solution["Waiting time (minutes)"] * 60,
+        }
+    ).rename(
+        columns={
+            "Service issues": "service_issue",
+            "Activity type": "activity_type",
+            "profile": "vehicle_profile",
+            "stop_id": "stop_id",
+        }
+    )[
+        [
+            "route_id",
+            "route_index",
+            "activity_type",
+            "location_index",
+            "arrival_time__seconds",
+            "service_duration__seconds",
+            "waiting_duration__seconds",
+            "service_issue",
+            "vehicle_profile",
+            "stop_id",
+        ]
+    ]
+    solution = solution.dropna(subset=["route_id"])
+    route_unassigned = (
+        solution.loc[
+            (solution["route_id"] != "Unassigned")
+            & (solution["service_issue"] == "UNSERVICED")
+        ][["route_id", "service_issue", "vehicle_profile", "stop_id"]]
+        .merge(locations)
+        .drop(columns=["location_index"])
+    )
+    solution = (
+        solution.loc[solution["service_issue"] != "UNSERVICED"]
+        .drop(columns=["route_id", "service_issue", "stop_id"])
+        .reset_index(drop=True)
+    )
+    decoder = decode.DecodeVroomSolution(
+        solution,
+        locations,
+        unassigned_routes,
+        unassigned_stops,
+        matrix,
+        st.secrets["osrm_port_mapping"],
+    )
+
+    assigned_stops = decoder.convert_solution()
+    assigned_stops = (
+        pd.concat([assigned_stops, route_unassigned])
+        .sort_values(["route_id", "stop_sequence"])
+        .reset_index(drop=True)
+    )
+    assigned_stops = assigned_stops.assign(
+        arrival_time=assigned_stops["arrival_time"].fillna(method="ffill"),
+        service_start_time=assigned_stops["service_start_time"].fillna(method="ffill"),
+        departure_time=assigned_stops["arrival_time"].fillna(method="ffill"),
+        waiting_duration__seconds=assigned_stops["waiting_duration__seconds"].fillna(0),
+        travel_duration_to_stop__seconds=assigned_stops[
+            "travel_duration_to_stop__seconds"
+        ].fillna(0),
+        travel_distance_to_stop__meters=assigned_stops[
+            "travel_distance_to_stop__meters"
+        ].fillna(0),
+    )
+    assigned_stops = add_sequences(assigned_stops)
+    st.session_state.data_07_reporting["assigned_stops"] = assigned_stops.copy()
+
+
+def add_sequences(assigned_stops: pd.DataFrame, job_activities=None) -> pd.DataFrame:
+    """Add stop and job only visit sequences"""
+
+    def cal_route_sequences(df):
+        return df.groupby(["route_id"]).cumcount()
+
+    if job_activities is None:
+        job_activities = ["JOB"]
+
+    assigned_stops = assigned_stops.assign(
+        stop_sequence=cal_route_sequences(assigned_stops)
+    )
+    job_stops = assigned_stops.loc[
+        assigned_stops["location_type"].isin(job_activities)
+    ].copy()
+    job_stops = job_stops.assign(job_sequence=cal_route_sequences(job_stops))
+    assigned_stops = assigned_stops.drop(columns=["job_sequence"]).merge(
+        job_stops[["route_id", "stop_sequence", "job_sequence"]], how="left"
+    )
+    st.write(assigned_stops)
+    return assigned_stops

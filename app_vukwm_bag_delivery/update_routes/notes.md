@@ -100,6 +100,6 @@ Missing features:
 
 Steps when saving:
 
-1. Add missing features to assigned stops object (leave unassigned stops empty)
+1. Add missing features to assigned stops object (leave unassigned stops empty) -> one option is to just recall the solver decoder?
 2. Add empty routes to unused routes (excluding unserviced)
 3. Add unserviced stops (what to do about those assigned to stops but not included in the routes??) Should be added, but will include doubles when going back to unserviced jobs again?? Will also cause issues with sheet generation... but this should be easier to counter.

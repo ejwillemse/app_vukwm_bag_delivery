@@ -83,6 +83,7 @@ def save_session():
     if clicked1:
         process_assigned_stops.update_unsused_routes()
         process_assigned_stops.update_unserviced_stops()
+        process_assigned_stops.update_assigned_stops()
 
 
 def restart_all():
