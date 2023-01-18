@@ -18,8 +18,7 @@ from app_vukwm_bag_delivery.view_routes.generate_route_display import (
     return_all_stops_display,
     return_assigned_stops_display,
 )
-from app_vukwm_bag_delivery.view_routes.generate_route_gant import return_gant
-from app_vukwm_bag_delivery.view_routes.generate_route_map import return_map
+
 
 # create logger
 

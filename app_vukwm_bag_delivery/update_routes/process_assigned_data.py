@@ -7,6 +7,28 @@ from app_vukwm_bag_delivery.view_routes.generate_route_display import (
 )
 
 
+def add_empty_routes(assigned_stops, add_unassigned_route=True):
+    """Empty routes are added to the stop objects (maybe this should be the default?)"""
+    all_routes = st.session_state.data_02_intermediate["unassigned_routes"]
+    unused_routes = all_routes.loc[
+        ~all_routes["Vehicle id"].isin(assigned_stops["Vehicle Id"])
+    ][["Vehicle id"]].rename(columns={"Vehicle id": "Vehicle Id"})
+    if unused_routes.shape[0] == 0:
+        unused_routes = pd.DataFrame([{"Vehicle Id": "Unassigned"}])
+    if (
+        add_unassigned_route is True
+        and (unused_routes["Vehicle Id"] != "Unassigend").all() == True
+    ):
+        unassigned = pd.DataFrame([{"Vehicle Id": "Unassigned"}])
+        unused_routes = pd.concat([unused_routes, unassigned])
+    assigned_stops = (
+        pd.concat([assigned_stops, unused_routes])
+        .reset_index(drop=True)
+        .sort_values(["Vehicle Id", "Stop sequence", "Site Name"])
+    )
+    return assigned_stops
+
+
 def return_stops_display():
     unserviced_stops = st.session_state.data_07_reporting["unserviced_stops"].copy()
     if st.session_state.data_07_reporting["unserviced_stops"].shape[0] == 0:

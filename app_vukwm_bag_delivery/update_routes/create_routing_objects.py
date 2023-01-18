@@ -5,6 +5,7 @@ import pandas as pd
 import streamlit as st
 from vroom.input import input
 
+import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_assigned_data
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 from app_vukwm_bag_delivery.models.vroom_wrappers import (
     decode_vroom_solution,
@@ -114,6 +115,7 @@ def find_changed_routes():
 
 def generate_new_routes(vehicle_updates):
     new_assigned_stops = []
+    new_assigned_stops_df = pd.DataFrame()
     if vehicle_updates:
         for vehicle_id in vehicle_updates:
             route_info, stop_info = filter_stop_info(vehicle_id)
@@ -128,10 +130,32 @@ def generate_new_routes(vehicle_updates):
                     assigned_stops, unserviced_stops, route_info
                 )
                 new_assigned_stops.append(assigned_stops)
-        new_assigned_stops = pd.concat(new_assigned_stops)
-        return new_assigned_stops
+        new_assigned_stops_df = pd.concat(new_assigned_stops)
+    return new_assigned_stops_df
+
+
+def return_unchanged_routes(vehicle_updates):
+    preivous_routes = st.session_state.data
+    unchaned_routes = preivous_routes.loc[
+        ~preivous_routes["Vehicle Id"].isin(vehicle_updates)
+    ]
+    return unchaned_routes
 
 
 def reroute():
     vehicle_updates = find_changed_routes()
-    new_routes = generate_new_routes(vehicle_updates)
+    st.header("New routes")
+    st.write("routes chagend")
+    st.write(vehicle_updates)
+    if vehicle_updates:
+        new_routes = generate_new_routes(vehicle_updates)
+        unchanged_routes = return_unchanged_routes(vehicle_updates)
+        full_routes = pd.concat([new_routes, unchanged_routes])
+        st.write("new routes")
+        st.write(new_routes)
+        full_routes = process_assigned_data.add_empty_routes(full_routes)
+    else:
+        full_routes = st.session_state.data
+    st.header("Full routes")
+    st.write(full_routes)
+    return full_routes

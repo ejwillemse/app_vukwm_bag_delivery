@@ -67,4 +67,4 @@ def activate_side_bar():
 
 
 def reroute():
-    create_routing_objects.find_changed_routes()
+    create_routing_objects.reroute()
