@@ -96,6 +96,28 @@ def return_stops_display(assigned_stops, unserviced_stops, route_info):
     return assigned_stops
 
 
+def make_stops_unassigned(vehicle_id):
+    drop_columns = [
+        "Stop sequence",
+        "Job sequence",
+        "Arrival time",
+        "Service start time",
+        "Departure time",
+        "Waiting time (minutes)",
+        "Travel duration to stop (minutes)",
+        "Travel distance to stops (km)",
+        "Travel speed (km/h)",
+        "Service duration (minutes)",
+    ]
+    unassigned_data = st.session_state.data
+    unassigned_data = (
+        unassigned_data.loc[unassigned_data["Vehicle Id"] == vehicle_id]
+        .drop(columns=drop_columns)
+        .assign(**{"Service issues": "UNSERVICED"})
+    )
+    return unassigned_data
+
+
 def find_changed_routes():
     # TODO: this causes empty routes...
     current_assignment = drop_non_deliveries(st.session_state.data)
@@ -115,18 +137,21 @@ def generate_new_routes(vehicle_updates):
     if vehicle_updates:
         for vehicle_id in vehicle_updates:
             route_info, stop_info = filter_stop_info(vehicle_id)
-            if vehicle_id == "Unassigned":
-                continue
             if stop_info.shape[0] > 0:
-                problem_instance = generate_vroom_input(route_info, stop_info)
-                with st.spinner("Solving"):
-                    solution = problem_instance.solve(exploration_level=5, nb_threads=4)
-                (assigned_stops, unserviced_stops) = decode_solution(
-                    route_info, stop_info, solution
-                )
-                assigned_stops = return_stops_display(
-                    assigned_stops, unserviced_stops, route_info
-                )
+                if vehicle_id == "Unassigned":
+                    assigned_stops = make_stops_unassigned(vehicle_id)
+                else:
+                    problem_instance = generate_vroom_input(route_info, stop_info)
+                    with st.spinner("Solving"):
+                        solution = problem_instance.solve(
+                            exploration_level=5, nb_threads=4
+                        )
+                    (assigned_stops, unserviced_stops) = decode_solution(
+                        route_info, stop_info, solution
+                    )
+                    assigned_stops = return_stops_display(
+                        assigned_stops, unserviced_stops, route_info
+                    )
                 new_assigned_stops.append(assigned_stops)
             else:
                 new_assigned_stops.append(
