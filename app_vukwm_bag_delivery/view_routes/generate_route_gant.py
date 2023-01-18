@@ -154,7 +154,6 @@ def generate_timeline(df, detailed):
         + " "
         + assigned_stops_route_paths_plot["Departure time"]
     )
-    st.write(assigned_stops_route_paths_plot)
     fig = px.timeline(
         assigned_stops_route_paths_plot,
         x_start="Arrival time",
