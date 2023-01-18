@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
@@ -182,6 +183,8 @@ def routing():
         st.session_state.data = None
         st.session_state.edit_routes = None
         update_routes_test_widget.initialize_state(clear_all=True)
+        st.session_state.routes_manually_edits = False
+        st.session_state.data_07_reporting["unserviced_in_route_stops"] = pd.DataFrame()
 
 
 set_page_config()

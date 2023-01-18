@@ -139,11 +139,31 @@ def show_unscheduled_stops():
         st.markdown("All stops are scheduled for service in the routes.")
 
 
+def show_unassinged_stops():
+    if return_session_status.check_unserviced_stops_in_routes():
+        st.markdown(
+            "**Unserviced stops in routes**: the following stops were allocated to routes, but cannot be completed."
+        )
+        with st.expander("Click here to show/hide the stops", True):
+            st.write(extract_high_level_summary.extract_unscheduled_route_stops())
+        with st.expander("Click here for insights into avoiding unserviced stops"):
+            st.markdown(
+                """
+                Stops in routes that cannot be completed are due to manual edits via the `Update Routes` page. 
+                This occurs when stops that require only certain skills (like bicycle stops) are manually allocated to vans. 
+                Or if stops are allocated to a vehicle that is near it's service capacity or cannot meet the stops' time windows.
+                """
+            )
+    else:
+        st.markdown("All stops in routes can be completed.")
+
+
 def show_route_summary():
     st.subheader("Route summary")
     show_route_sum()
     show_unused_vehicles()
     show_unscheduled_stops()
+    show_unassinged_stops()
 
 
 def show_detailed_stop_info():

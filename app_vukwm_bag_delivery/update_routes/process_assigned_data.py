@@ -296,6 +296,12 @@ def update_assigned_stops():
     )
     assigned_stops = add_sequences(assigned_stops)
     st.session_state.data_07_reporting["assigned_stops"] = assigned_stops.copy()
+    st.session_state.data_07_reporting[
+        "unserviced_in_route_stops"
+    ] = assigned_stops.loc[
+        (assigned_stops["route_id"] != "Unassigned")
+        & (assigned_stops["service_issue"] == "UNSERVICED")
+    ]
 
 
 def add_sequences(assigned_stops: pd.DataFrame, job_activities=None) -> pd.DataFrame:

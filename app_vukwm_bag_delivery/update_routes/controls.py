@@ -63,6 +63,7 @@ def activate_side_bar():
             logging.info(
                 "\n\n\nlogging::::saving editor sessions-----------------------"
             )
+            st.session_state.routes_manually_edits = True
             process_assigned_data.update_unsused_routes()
             process_assigned_data.update_unserviced_stops()
             process_assigned_data.update_assigned_stops()
