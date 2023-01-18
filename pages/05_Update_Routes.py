@@ -80,6 +80,9 @@ if "event_clock" not in st.session_state:
 def save_session():
     st.header("Save changes")
     clicked1 = st.button("Click here to save edits")
+    if clicked1:
+        process_assigned_stops.update_unsused_routes()
+        process_assigned_stops.update_unserviced_stops()
 
 
 def restart_all():

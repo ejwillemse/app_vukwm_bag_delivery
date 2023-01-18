@@ -33,7 +33,6 @@ def generate_vroom_input(unassigned_routes, unassigned_stops):
 
 def drop_non_deliveries(df):
     return df
-    return df.loc[df["Activity type"] == "DELIVERY"]
 
 
 def stop_assignment_id(df):
@@ -98,6 +97,7 @@ def return_stops_display(assigned_stops, unserviced_stops, route_info):
 
 def make_stops_unassigned(vehicle_id):
     drop_columns = [
+        "Vehicle profile",
         "Stop sequence",
         "Job sequence",
         "Arrival time",

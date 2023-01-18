@@ -3,7 +3,6 @@ import streamlit as st
 
 from app_vukwm_bag_delivery.models.pipelines.summarise.sum_routes import route_summary
 
-
 SUMMARY_VIEW_MAPPING = {
     "route_id": "Vehicle id",
     "vehicle_profile": "Vehicle type",
@@ -94,4 +93,4 @@ def extract_unscheduled_stops():
     unscheduled_stops = st.session_state.data_07_reporting["unserviced_stops"]
     return unassigned_jobs.loc[
         unassigned_jobs["Site Bk"].astype(str).isin(unscheduled_stops["stop_id"].values)
-    ]
+    ].reset_index(drop=True)

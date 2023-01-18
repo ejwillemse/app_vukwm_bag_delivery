@@ -57,7 +57,7 @@ def activate_side_bar():
             )
             if cap_button:
                 update_selected_points(new_route_id)
-        st.markdown("**Save/undo edits**")
+        st.markdown("**Save/restart edits**")
         clicked3 = st.button("Save edits")
         if clicked3:
             logging.info(
@@ -65,7 +65,7 @@ def activate_side_bar():
             )
             # TODO: updates required
             # everything used by view routes and dispatch routes and complete session restart here as well...
-        clicked2 = st.button("Undo all edits")
+        clicked2 = st.button("Restart")
         if clicked2:
             logging.info(
                 "\n\n\nlogging::::restarting editor sessions-----------------------"

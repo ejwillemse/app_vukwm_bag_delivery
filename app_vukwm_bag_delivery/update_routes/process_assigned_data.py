@@ -138,9 +138,15 @@ def clear_route_edit_data():
 
 def initiate_data():
     if "edit_routes" not in st.session_state or not st.session_state.edit_routes:
-        unused_routes = st.session_state.data_07_reporting["unused_routes"][
-            ["route_id", "profile"]
-        ]
+        unassigned_routes = st.session_state.data_03_primary["unassigned_routes"]
+        unused_routes = unassigned_routes.loc[
+            ~unassigned_routes["route_id"].isin(
+                st.session_state.data_07_reporting["assigned_stops"]["route_id"]
+            )
+        ][["route_id", "profile"]]
+        # unused_routes = st.session_state.data_07_reporting["unused_routes"][
+        #     ["route_id", "profile"]
+        # ]
         unused_routes = unused_routes.rename(
             columns={"route_id": "Vehicle Id", "profile": "Vehicle profile"}
         )
@@ -172,3 +178,23 @@ def return_filtered_route_id_data(route_id="Vehicle Id"):
     else:
         filtered = st.session_state.data
     return filtered
+
+
+def update_unsused_routes():
+    stops = st.session_state.edit_routes["assigned_stops"]
+    empty_routes = stops.loc[stops["Site Bk"].isna()]["Vehicle Id"]
+    unassigned_routes = st.session_state.data_03_primary["unassigned_routes"]
+    empty_routes = unassigned_routes.loc[
+        unassigned_routes["route_id"].isin(empty_routes.values)
+    ]
+    st.session_state.data_07_reporting["unused_routes"] = empty_routes.copy()
+
+
+def update_unserviced_stops():
+    location = st.session_state.data_03_primary["locations"]
+    stops = st.session_state.edit_routes["assigned_stops"]
+    stops_unserviced = stops.loc[stops["Vehicle Id"] == "Unassigned"]
+    stops_unserviced = location.loc[
+        location["stop_id"].isin(stops_unserviced["Site Bk"].values)
+    ]
+    st.session_state.data_07_reporting["unserviced_stops"] = stops_unserviced.copy()
