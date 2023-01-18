@@ -30,3 +30,14 @@ Locations
 locations = st.session_state.data_03_primary["locations"]
 ```
 
+For routing
+
+```
+unassigned_routes = st.session_state.data_03_primary["unassigned_routes"]
+```
+
+```
+unassigned_stops = st.session_state.data_03_primary["unassigned_stops"]
+```
+
+And then just filter

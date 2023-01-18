@@ -19,6 +19,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 
+import app_vukwm_bag_delivery.update_routes.controls as controls
 from app_vukwm_bag_delivery.update_routes.controls import activate_side_bar
 from app_vukwm_bag_delivery.update_routes.interactive_map import render_plotly_map_ui
 from app_vukwm_bag_delivery.update_routes.select_dataframe import selection_dataframe
@@ -284,12 +285,12 @@ def main():
     else:
         load_transform_data()
     activate_side_bar()
+    controls.reroute()
     side_by_side = st.checkbox(
         "Side-by-side layout",
         help="Deselect to change the orientation to a top-bottom layout",
         value=False,
     )
-
     if not side_by_side:
         query_data_map()
         render_plotly_map_ui()

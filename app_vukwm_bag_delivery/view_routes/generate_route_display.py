@@ -80,8 +80,12 @@ def gen_assigned_stops_display(assigned_stops, unassigned_stops, fillna=True):
         MAPPING.values()
     ]
     unassigned_stops_display = display_format(unassigned_stops)
-    assigned_stops_display = assigned_stops_display.merge(
-        unassigned_stops_display, left_on="Site Bk", right_on="Site Bk", how="left"
+    assigned_stops_display = (
+        assigned_stops_display.merge(
+            unassigned_stops_display, left_on="Site Bk", right_on="Site Bk", how="left"
+        )
+        .sort_values(["Vehicle Id", "Stop sequence", "Site Name"])
+        .reset_index(drop=True)
     )
     if fillna:
         assigned_stops_display = assigned_stops_display.fillna(" ")
@@ -119,6 +123,3 @@ def return_all_stops_display():
         assigned_stops, unassigned_stops, fillna=False
     )
     return assigned_stops
-
-
-

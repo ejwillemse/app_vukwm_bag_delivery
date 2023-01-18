@@ -131,6 +131,7 @@ def initiate_data():
         "kpis": kpis.copy(),
         "kpis_orig": kpis.copy(),
         "kpi_difference": kpis,
+        "previous_assigned": assigned_stops.copy(),
     }
 
 
