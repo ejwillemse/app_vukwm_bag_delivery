@@ -121,7 +121,5 @@ with st.expander("View route KPIs and changes from manual updates", True):
 
 st.session_state.edit_data = {"original_data": return_all_stops_display()}
 update_routes_test_widget.main()
-save_session()
-restart_all()
 # side_bar_status = side_bar_progress.view_sidebar()
 # side_bar_progress.update_side_bar(side_bar_status)

@@ -66,6 +66,11 @@ def activate_side_bar():
             process_assigned_data.update_unsused_routes()
             process_assigned_data.update_unserviced_stops()
             process_assigned_data.update_assigned_stops()
+            update_routes_test_widget.reset_state_callback()
+            st.session_state.data = None
+            st.session_state.edit_routes = None
+            update_routes_test_widget.initialize_state(clear_all=True)
+            st.experimental_rerun()
         clicked2 = st.button("Restart")
         if clicked2:
             logging.info(

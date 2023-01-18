@@ -1,5 +1,6 @@
 import logging
 
+import numpy as np
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
@@ -50,6 +51,7 @@ def build_map() -> go.Figure:
         """Generate main scatter plot"""
         logging.info("logging::::generating scatter plot")
         df = df.loc[df["Activity type"] == "DELIVERY"].sort_values([ROUTE_ID])
+        df.loc[df["Service issues"] == "UNSERVICED", "Stop sequence"] = np.nan
         fig = px.scatter_mapbox(
             df.fillna("").assign(
                 **{
@@ -80,6 +82,7 @@ def build_map() -> go.Figure:
                 "stop_sequence_txt": False,
                 "latitude": False,
                 "longitude": False,
+                "Service issues": True,
                 LAT_LON_ID: False,
             },
             text="stop_sequence_txt",
