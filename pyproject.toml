@@ -31,6 +31,7 @@ streamlit-plotly-events = "^0.0.6"
 pyvroom = "^0.0.14"
 gspread = "^5.7.2"
 google-api-python-client = "^2.72.0"
+streamlit-plotly-mapboxevents = "^0.0.4"
 
 
 [build-system]

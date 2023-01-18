@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 import streamlit as st
 
 MAPPING = {
@@ -50,7 +52,7 @@ def unit_conversions(assigned_stops):
     assigned_stops = assigned_stops.assign(
         vehicle_profile=assigned_stops["vehicle_profile"].replace(VEHICLE_TYPE_MAPPING),
         waiting_duration__seconds=(
-            assigned_stops["waiting_duration__seconds"] / 60
+            assigned_stops["waiting_duration__seconds"].fillna(0) / 60
         )  # to minutes
         .round(0)
         .astype(int),
@@ -58,12 +60,12 @@ def unit_conversions(assigned_stops):
             assigned_stops["travel_distance_to_stop__meters"] / 1000
         ).round(2),
         travel_duration_to_stop__seconds=(
-            assigned_stops["travel_duration_to_stop__seconds"] / 60
+            assigned_stops["travel_duration_to_stop__seconds"].fillna(0) / 60
         )  # to minutes
         .round(0)
         .astype(int),
         service_duration__seconds=(
-            assigned_stops["service_duration__seconds"] / 60
+            assigned_stops["service_duration__seconds"].fillna(0) / 60
         )  # to minutes
         .round(0)
         .astype(int),
@@ -72,15 +74,21 @@ def unit_conversions(assigned_stops):
     return assigned_stops
 
 
-def gen_assigned_stops_display(assigned_stops, unassigned_stops):
+def gen_assigned_stops_display(assigned_stops, unassigned_stops, fillna=True):
     assigned_stops_display = unit_conversions(assigned_stops)
     assigned_stops_display = assigned_stops_display.rename(columns=MAPPING)[
         MAPPING.values()
     ]
     unassigned_stops_display = display_format(unassigned_stops)
-    assigned_stops_display = assigned_stops_display.merge(
-        unassigned_stops_display, left_on="Site Bk", right_on="Site Bk", how="left"
-    ).fillna(" ")
+    assigned_stops_display = (
+        assigned_stops_display.merge(
+            unassigned_stops_display, left_on="Site Bk", right_on="Site Bk", how="left"
+        )
+        .sort_values(["Vehicle Id", "Stop sequence", "Site Name"])
+        .reset_index(drop=True)
+    )
+    if fillna:
+        assigned_stops_display = assigned_stops_display.fillna(" ")
     return assigned_stops_display
 
 
@@ -98,4 +106,20 @@ def return_assigned_stops_display():
                 assigned_stops["route_id"].isin(filter_routes)
             ]
     assigned_stops = gen_assigned_stops_display(assigned_stops, unassigned_stops)
+    return assigned_stops
+
+
+def return_all_stops_display():
+    unserviced_stops = st.session_state.data_07_reporting["unserviced_stops"].copy()
+    unserviced_stops["route_id"] = "Unassigned"
+    unserviced_stops["service_issue"] = "UNSERVICED"
+    assigned_stops = st.session_state.data_07_reporting["assigned_stops"].copy()
+    unassigned_stops = st.session_state.data_02_intermediate["unassigned_stops"].copy()
+    unassigned_stops = st.session_state.data_02_intermediate["unassigned_stops"].copy()
+    assigned_stops = pd.concat([assigned_stops, unserviced_stops]).reset_index(
+        drop=True
+    )
+    assigned_stops = gen_assigned_stops_display(
+        assigned_stops, unassigned_stops, fillna=False
+    )
     return assigned_stops

@@ -611,6 +611,7 @@ def unit_conversions(assigned_stops):
         .round(0)
         .astype(int),
         travel_speed__kmh=(assigned_stops["travel_speed__kmh"]).round(1),
+        service_problems=assigned_stops["service_issue"] == "ON-TIME",
     )
     return assigned_stops
 

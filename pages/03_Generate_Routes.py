@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
@@ -16,6 +17,7 @@ from app_vukwm_bag_delivery.generate_routes.presenters.process_input_data import
     process_input_data,
 )
 from app_vukwm_bag_delivery.generate_routes.presenters.solve_vroom_instace import solve
+from app_vukwm_bag_delivery.update_routes import update_routes_test_widget
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
@@ -178,6 +180,11 @@ def routing():
     start = st.button("Generate routes")
     if start:
         routing_steps()
+        st.session_state.data = None
+        st.session_state.edit_routes = None
+        update_routes_test_widget.initialize_state(clear_all=True)
+        st.session_state.routes_manually_edits = False
+        st.session_state.data_07_reporting["unserviced_in_route_stops"] = pd.DataFrame()
 
 
 set_page_config()

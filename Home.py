@@ -1,3 +1,6 @@
+import logging
+
+logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 import streamlit as st
 
 import app_vukwm_bag_delivery.home.presenters.load_input_data as load_input_data

@@ -1,6 +1,7 @@
 """
 Decode vroom solution
 """
+import logging
 import sys
 
 import numpy as np
@@ -119,9 +120,9 @@ def add_route_info(
     assigned_stops: pd.DataFrame, unassigned_routes: pd.DataFrame
 ) -> pd.DataFrame:
     """Add minimum route info (profile and capacity) for further processing"""
-    unassigned_routes = unassigned_routes.assign(
-        route_index=np.arange(unassigned_routes.shape[0])
-    )
+    # unassigned_routes = unassigned_routes.assign(
+    #     route_index=np.arange(unassigned_routes.shape[0])
+    # )
     assigned_stops = assigned_stops.merge(
         unassigned_routes.assign(vehicle_skills=unassigned_routes["skills"])[
             ["route_index", "route_id", "profile", "capacity", "vehicle_skills"]
@@ -307,10 +308,15 @@ class DecodeVroomSolution:
         self.assigned_stops.loc[early_flag, "service_issue"] = "EARLY"
         self.assigned_stops.loc[late_flag, "service_issue"] = "LATE"
 
-    def format_assigned_stops(self):
-        self.assigned_stops = self.assigned_stops.rename(columns=MAPPING)[
-            MAPPING.values()
-        ]
+    def format_assigned_stops(self, ignore_missing_columns=False):
+        self.assigned_stops = self.assigned_stops.rename(columns=MAPPING)
+        if not ignore_missing_columns:
+            self.assigned_stops = self.assigned_stops.rename(columns=MAPPING)[
+                MAPPING.values()
+            ]
+        else:
+            values = [x for x in MAPPING.values() if x in self.assigned_stops.columns]
+            self.assigned_stops = self.assigned_stops[values]
 
     def convert_solution(self):
         self.format_solution_routes()
@@ -323,6 +329,16 @@ class DecodeVroomSolution:
         self.add_road_snap_info()
         self.add_duration_capacity_cumsum()
         self.format_assigned_stops()
+        return self.assigned_stops
+
+    def speed_convert_solution(self):
+        self.format_solution_routes()
+        self.assign_service_issues()
+        self.extract_unused_routes()
+        self.extract_unserviced_stops()
+        self.add_matrix_info()
+        self.add_duration_capacity_cumsum()
+        self.format_assigned_stops(True)
         return self.assigned_stops
 
 

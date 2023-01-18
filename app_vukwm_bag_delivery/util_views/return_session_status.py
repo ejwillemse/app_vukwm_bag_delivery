@@ -61,12 +61,27 @@ def check_unserviced_stops():
     )
 
 
+def check_unserviced_stops_in_routes():
+    return (
+        "data_07_reporting" in st.session_state
+        and "unserviced_in_route_stops" in st.session_state.data_07_reporting
+        and st.session_state.data_07_reporting["unserviced_in_route_stops"].shape[0] > 0
+    )
+
+
 def check_time_windows_update():
     return (
         "data_02_intermediate" in st.session_state
         and "save_updated_time_windows" in st.session_state.data_02_intermediate
         and st.session_state.data_02_intermediate["save_updated_time_windows"].shape[0]
         > 0
+    )
+
+
+def check_manual_edits():
+    return (
+        "routes_manually_edits" in st.session_state
+        and st.session_state["routes_manually_edits"] is True
     )
 
 
@@ -120,6 +135,18 @@ def return_full_status():
     else:
         check_unserviced_stops_tickbox = ""
 
+    if check_unserviced_stops_in_routes():
+        warnings = True
+        check_unserviced_stops_in_routes_tickbox = " :large_orange_diamond: Some of the routes have jobs that cannot be completed. Go to `View Routes` for more details.\n"
+    else:
+        check_unserviced_stops_in_routes_tickbox = ""
+
+    if check_manual_edits():
+        warnings = True
+        manual_edit_tickbox = " :large_orange_diamond: Routes have been manually edited via the `Update routes` page.\n"
+    else:
+        manual_edit_tickbox = ""
+
     if check_route_sheets_generated():
         routes_sheet_generated_tickbox = " :white_check_mark: Route sheets have been generated. Go to `Dispatch Routes` to view their links.\n"
     else:
@@ -147,6 +174,8 @@ Status of session steps:\n
 {data_excluded_tickbox}
 {check_unserviced_stops_tickbox}
 {unused_routes_tickbox}
+{manual_edit_tickbox}
+{check_unserviced_stops_in_routes_tickbox}
 """
     return mark_down
 
@@ -192,6 +221,20 @@ def return_short_status():
     else:
         check_unserviced_stops_tickbox = ""
 
+    if check_unserviced_stops_in_routes():
+        warnings = True
+        check_unserviced_stops_in_routes_tickbox = (
+            " :large_orange_diamond: Routes with unscheduled stops\n"
+        )
+    else:
+        check_unserviced_stops_in_routes_tickbox = ""
+
+    if check_manual_edits():
+        warnings = True
+        manual_edit_tickbox = " :large_orange_diamond: Routes manually edited\n"
+    else:
+        manual_edit_tickbox = ""
+
     if check_route_sheets_generated():
         routes_sheet_generated_tickbox = " :white_check_mark: Route sheets generated\n"
     else:
@@ -218,5 +261,7 @@ def return_short_status():
 {data_excluded_tickbox}
 {check_unserviced_stops_tickbox}
 {unused_routes_tickbox}
+{manual_edit_tickbox}
+{check_unserviced_stops_in_routes_tickbox}
 """
     return mark_down

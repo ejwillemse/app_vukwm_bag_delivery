@@ -1,27 +1,34 @@
+import datetime
+import logging
+import logging.config
+import sys
+
 import pandas as pd
 import plotly.express as px
 import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
+import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_assigned_stops
+import app_vukwm_bag_delivery.update_routes.update_routes_test_widget as update_routes_test_widget
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
+    return_all_stops_display,
     return_assigned_stops_display,
 )
-from app_vukwm_bag_delivery.view_routes.generate_route_gant import return_gant
-from app_vukwm_bag_delivery.view_routes.generate_route_map import return_map
+
+# create logger
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Update routes",
-        initial_sidebar_state="expanded",
-    )
+    # st.set_page_config(
+    #     layout="wide",
+    #     page_title="Update routes",
+    #     initial_sidebar_state="expanded",
+    # )
     st.title("Update routes")
-    st.subheader("Coming soon...")
 
 
 if not check_password():
@@ -62,8 +69,57 @@ def check_previous_steps_completed():
         st.stop()
 
 
+if "restarts" not in st.session_state:
+    st.session_state["restarts"] = 0
+
+
+if "event_clock" not in st.session_state:
+    st.session_state["event_clock"] = datetime.datetime.now()
+
+
+def save_session():
+    st.header("Save changes")
+    clicked1 = st.button("Click here to save edits")
+    if clicked1:
+        process_assigned_stops.update_unsused_routes()
+        process_assigned_stops.update_unserviced_stops()
+        process_assigned_stops.update_assigned_stops()
+
+
+def restart_all():
+    st.header("Restart session")
+    clicked2 = st.button(
+        "Click here to restart editing session. ALL EDITS WILL BE LOST."
+    )
+    if clicked2:
+        logging.info(
+            "\n\n\nlogging::::restarting editor sessions-----------------------"
+        )
+        update_routes_test_widget.reset_state_callback()
+        st.session_state.data = None
+        st.session_state.edit_routes = None
+        update_routes_test_widget.initialize_state(clear_all=True)
+        st.experimental_rerun()
+
+
 set_page_config()
-side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
-side_bar_progress.update_side_bar(side_bar_status)
+process_assigned_stops.initiate_data()
+
+with st.expander("View route KPIs and changes from manual updates", True):
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("Fleet KPIs")
+        st.dataframe(st.session_state.edit_routes["kpis"], use_container_width=True)
+    with c2:
+        st.markdown("KPI changes from manual updates")
+        st.dataframe(
+            st.session_state.edit_routes["kpi_difference"], use_container_width=True
+        )
+
+
+st.session_state.edit_data = {"original_data": return_all_stops_display()}
+update_routes_test_widget.main()
+# side_bar_status = side_bar_progress.view_sidebar()
+# side_bar_progress.update_side_bar(side_bar_status)

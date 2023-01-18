@@ -3775,6 +3775,22 @@ plotly = ">=4.14.3"
 streamlit = ">=0.63"
 
 [[package]]
+name = "streamlit-plotly-mapboxevents"
+version = "0.0.4"
+description = "Plotly mapbox component for Streamlit that also allows for events to bubble back up to Streamlit."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "streamlit-plotly-mapboxEvents-0.0.4.tar.gz", hash = "sha256:ef3d98bc04cc150054a1790f7393319d77b259d307f939fc57a013c4c2128241"},
+    {file = "streamlit_plotly_mapboxEvents-0.0.4-py3-none-any.whl", hash = "sha256:d69555d76d0d82b7f402ac04c94be94639fcf1ae591ef08844d30d9021c41dae"},
+]
+
+[package.dependencies]
+plotly = ">=4.14.3"
+streamlit = ">=0.63"
+
+[[package]]
 name = "tenacity"
 version = "8.1.0"
 description = "Retry code until it succeeds"
@@ -4317,4 +4333,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a0dcde6f246b4cbf2e4edd7b77285c1c730f8e3130d9bfa7d48403a32b689c04"
+content-hash = "8e822060cd304faf9c2ab956bcc68e1a001caaf2571ff4da3bd006d12a4c75ba"
