@@ -55,7 +55,8 @@ def build_map() -> go.Figure:
                 **{
                     "stop_sequence_txt": df["Stop sequence"]
                     .astype(str)
-                    .str.replace(".0", ""),
+                    .str[:-2]
+                    .replace("n", "x"),
                     " ": df[ROUTE_ID],
                 }
             ),

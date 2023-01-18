@@ -1,12 +1,8 @@
-import datetime
-import logging
-
 import pandas as pd
 import streamlit as st
 from vroom.input import input
 
 import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_assigned_data
-import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 from app_vukwm_bag_delivery.models.vroom_wrappers import (
     decode_vroom_solution,
     generate_vroom_object,
@@ -35,7 +31,8 @@ def generate_vroom_input(unassigned_routes, unassigned_stops):
     return problem_instance
 
 
-def drop_deliveries(df):
+def drop_non_deliveries(df):
+    return df
     return df.loc[df["Activity type"] == "DELIVERY"]
 
 
@@ -46,8 +43,6 @@ def stop_assignment_id(df):
 def route_changed_flag(df_new, df_orign):
     lost_ids = ~df_orign["assignmnet_id"].isin(df_new["assignmnet_id"])
     new_ids = ~df_new["assignmnet_id"].isin(df_orign["assignmnet_id"])
-    st.write(df_orign.loc[lost_ids])
-    st.write(df_new.loc[new_ids])
     vehicle_updates = set(
         list(df_orign.loc[lost_ids]["Vehicle Id"].unique())
         + list(df_new.loc[new_ids]["Vehicle Id"].unique())
@@ -102,8 +97,9 @@ def return_stops_display(assigned_stops, unserviced_stops, route_info):
 
 
 def find_changed_routes():
-    current_assignment = drop_deliveries(st.session_state.data)
-    previous_assignment = drop_deliveries(
+    # TODO: this causes empty routes...
+    current_assignment = drop_non_deliveries(st.session_state.data)
+    previous_assignment = drop_non_deliveries(
         st.session_state.edit_routes["previous_assigned"]
     )
 
@@ -119,6 +115,8 @@ def generate_new_routes(vehicle_updates):
     if vehicle_updates:
         for vehicle_id in vehicle_updates:
             route_info, stop_info = filter_stop_info(vehicle_id)
+            if vehicle_id == "Unassigned":
+                continue
             if stop_info.shape[0] > 0:
                 problem_instance = generate_vroom_input(route_info, stop_info)
                 with st.spinner("Solving"):
@@ -130,6 +128,12 @@ def generate_new_routes(vehicle_updates):
                     assigned_stops, unserviced_stops, route_info
                 )
                 new_assigned_stops.append(assigned_stops)
+            else:
+                new_assigned_stops.append(
+                    route_info[["route_id", "profile"]].rename(
+                        {"route_id": "Vehicle Id", "profile": "Vehicle profile"}
+                    )
+                )
         new_assigned_stops_df = pd.concat(new_assigned_stops)
     return new_assigned_stops_df
 
@@ -144,18 +148,12 @@ def return_unchanged_routes(vehicle_updates):
 
 def reroute():
     vehicle_updates = find_changed_routes()
-    st.header("New routes")
-    st.write("routes chagend")
-    st.write(vehicle_updates)
     if vehicle_updates:
         new_routes = generate_new_routes(vehicle_updates)
         unchanged_routes = return_unchanged_routes(vehicle_updates)
         full_routes = pd.concat([new_routes, unchanged_routes])
-        st.write("new routes")
-        st.write(new_routes)
         full_routes = process_assigned_data.add_empty_routes(full_routes)
+        process_assigned_data.update_assigned_stop(full_routes)
     else:
         full_routes = st.session_state.data
-    st.header("Full routes")
-    st.write(full_routes)
     return full_routes

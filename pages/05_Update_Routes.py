@@ -19,7 +19,6 @@ from app_vukwm_bag_delivery.view_routes.generate_route_display import (
     return_assigned_stops_display,
 )
 
-
 # create logger
 
 
@@ -93,6 +92,8 @@ def restart_all():
             "\n\n\nlogging::::restarting editor sessions-----------------------"
         )
         update_routes_test_widget.reset_state_callback()
+        st.session_state.data = None
+        st.session_state.edit_routes = None
         update_routes_test_widget.initialize_state(clear_all=True)
         st.experimental_rerun()
 
@@ -102,10 +103,16 @@ check_previous_steps_completed()
 view_instructions()
 process_assigned_stops.initiate_data()
 
-with st.expander("View route KPIs", True):
-    st.dataframe(
-        st.session_state.edit_routes["kpi_difference"], use_container_width=True
-    )
+with st.expander("View route KPIs and changes from manual updates", True):
+    c1, c2 = st.columns(2)
+    with c1:
+        st.markdown("Fleet KPIs")
+        st.dataframe(st.session_state.edit_routes["kpis"], use_container_width=True)
+    with c2:
+        st.markdown("KPI changes from manual updates")
+        st.dataframe(
+            st.session_state.edit_routes["kpi_difference"], use_container_width=True
+        )
 
 
 st.session_state.edit_data = {"original_data": return_all_stops_display()}

@@ -24,26 +24,16 @@ def reset_state_callback():
 
 def update_selected_points(new_route_id):
     """also need to update profiles..."""
-    # profiles = st.session_state.data_02_intermediate["unassigned_routes"]
-    # st.write(profiles)
-    # st.write(ROUTE_ID)
-    # profiles = profiles.loc[profiles["Vehicle id"] == ROUTE_ID]
-    # st.write(profiles)
-    # if profiles.shape[0] > 0:
-    #     st.write(profiles)
-    #     new_profile = profiles.iloc[0]["Type"]
-    # else:
-    #     new_profile = np.nan
     if len(st.session_state.selected_data) > 0:
         st.session_state.data.loc[
             st.session_state.data["selected"], ROUTE_ID
         ] = new_route_id
-        # st.session_state.data.loc[
-        #     st.session_state.data["selected"], "Vehicle profile"
-        # ] = new_profile
+        create_routing_objects.reroute()
+        st.session_state.data = None
         st.experimental_rerun()
     else:
         st.warning(f"No points were selected...")
+    return
 
 
 def activate_side_bar():
@@ -64,7 +54,3 @@ def activate_side_bar():
             )
             if cap_button:
                 update_selected_points(new_route_id)
-
-
-def reroute():
-    create_routing_objects.reroute()

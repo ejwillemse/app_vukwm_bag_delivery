@@ -12,14 +12,12 @@ streamlit run examples/plotly_mapbox_aggrid_multi_select_change_update.py
 This is a comprehensive and last update. See issue [16](https://github.com/WasteLabs/streamlit_bi_comms_plotly_map_component/issues/16) for more details.
 """
 
-import datetime
 import logging
 
 import numpy as np
 import pandas as pd
 import streamlit as st
 
-import app_vukwm_bag_delivery.update_routes.controls as controls
 from app_vukwm_bag_delivery.update_routes.controls import activate_side_bar
 from app_vukwm_bag_delivery.update_routes.interactive_map import render_plotly_map_ui
 from app_vukwm_bag_delivery.update_routes.select_dataframe import selection_dataframe
@@ -86,7 +84,7 @@ def load_transform_data():
     decorator prevents the data from being continously reloaded.
     """
     logging.info("logging::::data being loaded with chaching")
-    data = st.session_state.edit_data["original_data"]
+    data = st.session_state.edit_routes["assigned_stops"]
     data = create_lat_lon_id(data)
     st.session_state.data = data.copy()
     logging.info("logging::::data being loaded with chaching completed")
@@ -98,7 +96,7 @@ def load_transform_data_full():
     decorator prevents the data from being continously reloaded.
     """
     logging.info("logging::::data being loaded without chaching")
-    data = st.session_state.edit_data["original_data"]
+    data = st.session_state.edit_routes["assigned_stops"]
     data = create_lat_lon_id(data)
     st.session_state.data = data.copy()
     logging.info("logging::::data being loaded without chaching completed")
@@ -285,7 +283,6 @@ def main():
     else:
         load_transform_data()
     activate_side_bar()
-    controls.reroute()
     side_by_side = st.checkbox(
         "Side-by-side layout",
         help="Deselect to change the orientation to a top-bottom layout",
