@@ -1,7 +1,10 @@
+import logging
+
 import numpy as np
 import streamlit as st
 
 import app_vukwm_bag_delivery.update_routes.create_routing_objects as create_routing_objects
+from app_vukwm_bag_delivery.update_routes import update_routes_test_widget
 
 ROUTE_ID = "Vehicle Id"
 
@@ -54,3 +57,21 @@ def activate_side_bar():
             )
             if cap_button:
                 update_selected_points(new_route_id)
+        st.markdown("**Save/undo edits**")
+        clicked3 = st.button("Save edits")
+        if clicked3:
+            logging.info(
+                "\n\n\nlogging::::saving editor sessions-----------------------"
+            )
+            # TODO: updates required
+            # everything used by view routes and dispatch routes and complete session restart here as well...
+        clicked2 = st.button("Undo all edits")
+        if clicked2:
+            logging.info(
+                "\n\n\nlogging::::restarting editor sessions-----------------------"
+            )
+            update_routes_test_widget.reset_state_callback()
+            st.session_state.data = None
+            st.session_state.edit_routes = None
+            update_routes_test_widget.initialize_state(clear_all=True)
+            st.experimental_rerun()
