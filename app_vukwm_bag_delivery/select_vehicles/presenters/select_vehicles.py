@@ -24,6 +24,7 @@ def return_vehicle_grid(df):
         cellEditor="agSelectCellEditor",
         cellEditorParams={"values": ["Van", "Bicycle"]},
     )
+    gb.configure_column("Dedicated transport zones", editable=True)
     gb.configure_column(
         "lat",
         editable=True,

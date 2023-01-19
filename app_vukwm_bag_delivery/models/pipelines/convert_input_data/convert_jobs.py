@@ -85,9 +85,16 @@ def unassigned_stops_convert(df, df_remove=None):
     return df
 
 
+import streamlit as st
+
+
 def add_skills(stops, routes):
-    skills = routes["skills"].dropna()
-    stops.loc[~stops["skills"].isin(skills), "skills"] = np.nan
+    skills = routes["skills"].dropna().unique()
+    full_skills = set()
+    for skill in skills:
+        skill = set(skill.strip().lower().split(","))
+        full_skills.update(skill)
+    stops.loc[~stops["skills"].astype(str).isin(full_skills), "skills"] = np.nan
     return stops
 
 
