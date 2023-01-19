@@ -31,9 +31,10 @@ def add_midnight_seconds_time_windows(df):
 def add_vehicle_to_vroom(vroom_object, route_df):
     for i, route in route_df.iterrows():
         if pd.isna(route["skills"]):
-            skill = None
+            skills = None
         else:
-            skill = set([int(route["skills"])])
+            skills = route["skills"].split(",")
+            skills = {int(x) for x in skills}
         vroom_object.add_vehicle(
             [
                 vroom.vehicle.Vehicle(
@@ -42,7 +43,7 @@ def add_vehicle_to_vroom(vroom_object, route_df):
                     end=route["location_index"],
                     description=route["route_id"],
                     profile=route["profile"],
-                    skills=skill,
+                    skills=skills,
                     time_window=vroom.time_window.TimeWindow(
                         route["time_window_start_seconds"],
                         route["time_window_end_seconds"],

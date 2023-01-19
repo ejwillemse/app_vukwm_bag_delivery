@@ -91,9 +91,10 @@ def extract_unscheduled_stops():
         right_on="Site Bk",
     )
     unscheduled_stops = st.session_state.data_07_reporting["unserviced_stops"]
-    return unassigned_jobs.loc[
+    unscheduled_stops_full = unassigned_jobs.loc[
         unassigned_jobs["Site Bk"].astype(str).isin(unscheduled_stops["stop_id"].values)
     ].reset_index(drop=True)
+    return unscheduled_stops_full
 
 
 def extract_unscheduled_route_stops():
@@ -115,6 +116,12 @@ def extract_unscheduled_route_stops():
         right_on="Site Bk",
     )
     unscheduled_stops = st.session_state.data_07_reporting["unserviced_in_route_stops"]
-    return unassigned_jobs.loc[
+    unscheduled_stops_full = unassigned_jobs.loc[
         unassigned_jobs["Site Bk"].astype(str).isin(unscheduled_stops["stop_id"].values)
     ].reset_index(drop=True)
+    unscheduled_stops = (
+        unscheduled_stops[["route_id", "stop_id"]]
+        .rename(columns={"route_id": "Vehicle id", "stop_id": "Site Bk"})
+        .merge(unscheduled_stops_full, how="left")
+    )
+    return unscheduled_stops
