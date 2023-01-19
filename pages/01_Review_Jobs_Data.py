@@ -64,19 +64,26 @@ def set_page_config():
     st.title("Review delivery jobs")
 
 
-@st.experimental_memo
 def view_instructions():
     with st.expander("Instructions"):
+        st.markdown("### Using the map")
+        st.markdown("Scroll in and out with a mouse wheel for zooming.")
+        st.markdown(
+            "Note: the map view is not saved and will reset when you leave the page."
+        )
+        st.video(st.secrets["videos"]["video2"])
+        st.markdown("### Inspecting and updating time-windows")
         st.markdown(
             """
-        Perform the following steps to edit vehicle information and select the vehicles to be routed. If no vehicles are selected, it is assumed that the entire fleet is available for routing.
-
-        * Step 1: Inspect the vehicle information in the table.
-        * Step 2: Edit the vehicle informaiton where required.
-        * Step 3: Select active vehicles by clicking on the boxes next to the vehicle ID.
-        * Step 4: Click on "Update" to load the vehicles.
-        """
+        Note: Filtering some tables results in records dissapearing, even when removing the filter. 
+        To get all the records back, go to antoher page, and then back to the current one."""
         )
+        st.video(st.secrets["videos"]["video3"])
+        st.markdown("### Searching and excluding stops from routing")
+        st.markdown(
+            "Also shown are some special filtering and other table commande. Note that this is not available in all tables."
+        )
+        st.video(st.secrets["videos"]["video4"])
 
 
 def check_previous_steps_completed():

@@ -429,6 +429,7 @@ def return_config():
                         "fieldsToShow": {
                             "assigned_stops": [
                                 {"name": "Vehicle Id", "format": None},
+                                {"name": "Skills", "format": None},
                                 {"name": "Vehicle profile", "format": None},
                                 {"name": "Stop sequence", "format": None},
                                 {"name": "Site Bk", "format": None},
@@ -454,6 +455,7 @@ def return_config():
                             ],
                             "unserviced_stops": [
                                 {"name": "Vehicle Id", "format": None},
+                                {"name": "Skills", "format": None},
                                 {"name": "Vehicle profile", "format": None},
                                 {"name": "Stop sequence", "format": None},
                                 {"name": "Site Bk", "format": None},

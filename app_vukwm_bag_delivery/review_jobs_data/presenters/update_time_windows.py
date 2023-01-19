@@ -53,7 +53,7 @@ def return_timewindow_grid(df):
         columns_auto_size_mode="FIT_CONTENTS",
         fit_columns_on_grid_load=False,
         theme="streamlit",  # Add theme color to the table
-        enable_enterprise_modules=False,
+        enable_enterprise_modules=True,
         width="100%",
         reload_data=False,
     )

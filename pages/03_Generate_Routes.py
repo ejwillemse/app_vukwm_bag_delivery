@@ -37,16 +37,14 @@ if not check_password():
 
 def view_instructions():
     with st.expander("Instructions"):
+        st.markdown("### Generating routes")
         st.markdown(
             """
-        Perform the following steps to edit vehicle information and select the vehicles to be routed. If no vehicles are selected, it is assumed that the entire fleet is available for routing.
-
-        * Step 1: Inspect the vehicle information in the table.
-        * Step 2: Edit the vehicle informaiton where required.
-        * Step 3: Select active vehicles by clicking on the boxes next to the vehicle ID.
-        * Step 4: Click on "Update" to load the vehicles.
+        The shift start and end times can be edited by clicking on the cell values in the table.
+        Some basic hints are given as to avoid unsused routes, or when jobs cannot be assigned to any routes. These involve going back and editing the vehicles, or manually adjusting the routes.
         """
         )
+        st.video(st.secrets["videos"]["video6"])
 
 
 def check_previous_steps_completed():
