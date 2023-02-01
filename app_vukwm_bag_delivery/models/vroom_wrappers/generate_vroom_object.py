@@ -17,7 +17,6 @@ def add_matrix_profiles(vroom_model, matrix):
 def add_midnight_seconds_time_windows(df):
     time_start = pd.to_datetime(df["time_window_start"])
     time_end = pd.to_datetime(df["time_window_end"])
-
     df = df.assign(
         time_window_start_seconds=(
             (time_start - time_start.dt.normalize()) / pd.Timedelta("1 second")
@@ -29,34 +28,22 @@ def add_midnight_seconds_time_windows(df):
     return df
 
 
-def add_vehicles_info(route_df, matrix_df):
-    route_df = add_midnight_seconds_time_windows(route_df)
-    route_df = route_df.merge(
-        matrix_df.loc[matrix_df["stop_type"] == "route_depot"][
-            ["stop_id", "matrix_index"]
-        ],
-        left_on="route_id",
-        right_on="stop_id",
-        how="left",
-    )
-    return route_df
-
-
 def add_vehicle_to_vroom(vroom_object, route_df):
     for i, route in route_df.iterrows():
         if pd.isna(route["skills"]):
-            skill = None
+            skills = None
         else:
-            skill = set([int(route["skills"])])
+            skills = route["skills"].split(",")
+            skills = {int(x) for x in skills}
         vroom_object.add_vehicle(
             [
                 vroom.vehicle.Vehicle(
-                    i,
-                    start=route["matrix_index"],
-                    end=route["matrix_index"],
+                    route["route_index"],
+                    start=route["location_index"],
+                    end=route["location_index"],
                     description=route["route_id"],
                     profile=route["profile"],
-                    skills=skill,
+                    skills=skills,
                     time_window=vroom.time_window.TimeWindow(
                         route["time_window_start_seconds"],
                         route["time_window_end_seconds"],
@@ -67,9 +54,8 @@ def add_vehicle_to_vroom(vroom_object, route_df):
     return vroom_object
 
 
-def add_vehicles(vroom_object, route_df, matrix_df):
-    route_df = route_df.copy()
-    route_df = add_vehicles_info(route_df, matrix_df)
+def add_vehicles(vroom_object, route_df):
+    route_df = add_midnight_seconds_time_windows(route_df)
     vroom_object = add_vehicle_to_vroom(vroom_object, route_df)
     return vroom_object
 
@@ -83,10 +69,10 @@ def add_stop_to_vroom(vroom_object, stop_df):
         vroom_object.add_job(
             [
                 vroom.job.Job(
-                    i,
-                    location=stop["matrix_index"],
+                    stop["location_index"],
+                    location=stop["location_index"],
                     skills=skill,
-                    service=stop["duration"],
+                    service=stop["service_duration__seconds"],
                     time_windows=[
                         vroom.time_window.TimeWindow(
                             stop["time_window_start_seconds"],
@@ -99,10 +85,9 @@ def add_stop_to_vroom(vroom_object, stop_df):
     return vroom_object
 
 
-def add_stops(vroom_object, stops_df, matrix_df):
+def add_stops(vroom_object, stops_df):
     stops_df = stops_df.copy()
     stops_df = add_midnight_seconds_time_windows(stops_df)
     stops_df["stop_id"] = stops_df["stop_id"].astype(str)
-    stops_df = stops_df.merge(matrix_df[["stop_id", "matrix_index"]], how="left")
     add_stop_to_vroom(vroom_object, stops_df)
     return vroom_object

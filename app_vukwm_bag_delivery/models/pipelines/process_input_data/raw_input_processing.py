@@ -3,10 +3,11 @@ Process input data, simple pipeline, converts to data-time and does some high-le
 """
 import numpy as np
 import pandas as pd
+import streamlit as st
 
 INPUT_DATE_COLUMNS_FORMAT = {
-    "Created Date": "%Y-%d-%m",
-    "Required Date": "%Y-%d-%m",
+    "Created Date": "%%d/%m/%Y",
+    "Required Date": "%%d/%m/%Y",
     "Scheduled Date": "%d/%m/%Y",
     "Completed Date": "%d/%m/%Y",
 }
@@ -17,16 +18,38 @@ UNASSIGNED_NAN_COLUMN = (
 AGGREGATION_IDs = ["Site Bk", "completed"]
 
 
-def date_to_string(df):
-    """Convert all date columns to correct string formatting"""
-    for date_column in INPUT_DATE_COLUMNS_FORMAT:
-        df = df.assign(
-            **{
-                date_column: lambda x: pd.to_datetime(
-                    df[date_column], format=INPUT_DATE_COLUMNS_FORMAT[date_column]
-                ).dt.strftime(OUTPUT_DATE_FORMAT)
-            }
-        )
+def add_excel_time_dates(df, excel_df):
+    excel_df = excel_df.assign(
+        **{
+            "Created Date": pd.to_datetime(
+                excel_df["Created Date"], format="%d/%m/%Y"
+            ).dt.strftime(OUTPUT_DATE_FORMAT),
+            "Required Date": pd.to_datetime(
+                excel_df["Required Date"], format="%d/%m/%Y"
+            ).dt.strftime(OUTPUT_DATE_FORMAT),
+            "Scheduled Date": pd.to_datetime(
+                excel_df["Scheduled Date"], format="%d/%m/%Y"
+            ).dt.strftime(OUTPUT_DATE_FORMAT),
+            "Completed Date": pd.to_datetime(
+                excel_df["Completed Date"], format="%d/%m/%Y"
+            ).dt.strftime(OUTPUT_DATE_FORMAT),
+        }
+    )
+    df[
+        [
+            "Required Date",
+            "Created Date",
+            "Scheduled Date",
+            "Completed Date",
+        ]
+    ] = excel_df[
+        [
+            "Required Date",
+            "Created Date",
+            "Scheduled Date",
+            "Completed Date",
+        ]
+    ]
     return df
 
 
@@ -85,11 +108,11 @@ def combine_orders(df):
     return orders_grouped
 
 
-def process_input_data(df):
+def process_input_data(df, excel_df):
     df = df.copy()
+    df = add_excel_time_dates(df, excel_df)
     df = add_completed_flag(df)
     df = filter_unassigned(df)
-    df = date_to_string(df)
     df = extract_transport_number(df)
     df = assign_bicycle_skills(df)
     return df
