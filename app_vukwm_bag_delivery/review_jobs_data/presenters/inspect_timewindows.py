@@ -160,6 +160,6 @@ def return_time_window_info():
     unassigned_stops_tw = add_min_open_time(unassigned_stops_tw)
     unassigned_stops_tw = add_max_close_time(unassigned_stops_tw)
     unassigned_stops_tw = unassigned_stops_tw.sort_values(
-        ["Notes", "Site Name"], key=lambda col: col.str.lower()
+        ["Notes", "Site Name"], key=lambda col: col.fillna("").str.lower()
     )[INSPECT_ORDER]
     st.session_state.data_02_intermediate["unassigned_stops_tw"] = unassigned_stops_tw
