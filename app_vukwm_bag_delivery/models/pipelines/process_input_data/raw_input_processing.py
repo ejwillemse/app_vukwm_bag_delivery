@@ -1,6 +1,8 @@
 """
 Process input data, simple pipeline, converts to data-time and does some high-level aggregation.
 """
+import logging
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -62,8 +64,12 @@ def extract_transport_number(df):
     """Extract transport area number, which is first part of transport area code.
     This is used to assign bicycle skills.
     """
+    logging.critical(df["Transport Area Code"])
     return df.assign(
-        transport_area_number=df["Transport Area Code"].str[:-1].astype(int)
+        transport_area_number=df["Transport Area Code"]
+        .fillna("-1A")
+        .str[:-1]
+        .astype(int)
     )
 
 
