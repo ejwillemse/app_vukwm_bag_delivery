@@ -51,16 +51,15 @@ def check_previous_steps_completed():
 
 def view_instructions():
     with st.expander("Instructions"):
+        st.markdown("### Selecting and editing vehicles")
         st.markdown(
             """
-        Perform the following steps to edit vehicle information and select the vehicles to be routed. If no vehicles are selected, it is assumed that the entire fleet is available for routing.
-
-        * Step 1: Inspect the vehicle information in the table.
-        * Step 2: Edit the vehicle informaiton where required.
-        * Step 3: Select active vehicles by clicking on the boxes next to the vehicle ID.
-        * Step 4: Click on "Update" to load the vehicles.
+        Multiple transport zones can be assigned to a vehicle by entering the area numbers, seperated with a commma. 
+        Areas not specified in the in the dedicated tranpsort zones can be allocated to any vehicle. 
+        By default W04 is the bicycle and is assigned to zone 2. This can be manually changed.
         """
         )
+        st.video(st.secrets["videos"]["video5"])
 
 
 def clear_selection_removal():

@@ -160,4 +160,4 @@ def return_order_map_html(df):
         str
     ).str.zfill(2)
     m = KeplerGl(data={"orders": df_map}, config=return_order_config())
-    return m._repr_html_(center_map=True, read_only=True)
+    return m._repr_html_(center_map=True, read_only=False)

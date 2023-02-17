@@ -130,7 +130,6 @@ class OsrmRoutePathNormalizer:
                 {
                     "total_distance_km": total_distance_km,
                     "total_travel_duration_hours": total_duration_hours,
-                    # "route_path": route_path,
                     "geometry": geometry,
                 }
             ]
@@ -139,38 +138,3 @@ class OsrmRoutePathNormalizer:
             route_summary, geometry=route_summary["geometry"], crs=EPSG
         )
         return route_summary
-
-
-if __name__ == "__main__":
-    FILE_NAME = "data/testing/osrm_route_json_response.json"
-    with open(FILE_NAME, mode="r", encoding="utf-8") as file:
-        test_info = json.load(file)
-    normalizer = OsrmRoutePathNormalizer(test_info, "routes")
-    test_leg_info = normalizer.extract_travel_leg_info()
-    test_road_snap_info = normalizer.extract_road_snap_info()
-    test_road_summary = normalizer.extract_travel_summary_info()
-    test_road_snap_info.to_csv("data/testing/osrm_route_road_snapping.csv", index=False)
-    test_leg_info.to_file(
-        "data/testing/osrm_route_travel_legs.geojson", driver="GeoJSON"
-    )
-    test_road_summary.to_file(
-        "data/testing/osrm_route_summary.geojson", driver="GeoJSON"
-    )
-
-    FILE_NAME = "data/testing/osrm_trip_json_response.json"
-    with open(FILE_NAME, mode="r", encoding="utf-8") as file:
-        test_info = json.load(file)
-    normalizer = OsrmRoutePathNormalizer(test_info, "trips")
-    test_leg_info = normalizer.extract_travel_leg_info()
-    test_road_snap_info = normalizer.extract_road_snap_info()
-    test_road_summary = normalizer.extract_travel_summary_info()
-    test_road_snap_info.to_csv("data/testing/osrm_trip_road_snapping.csv", index=False)
-    test_leg_info.to_file("data/testing/osrm_route_trip_legs.geojson", driver="GeoJSON")
-    test_road_summary.to_file(
-        "data/testing/osrm_trip_summary.geojson", driver="GeoJSON"
-    )
-
-    # "osrm_trip_road_snapping": "data/testing/osrm_trip_road_snapping.csv",
-    # "osrm_trip_travel_legs": "data/testing/osrm_trip_travel_legs.geojson",
-    # "osrm_route_road_snapping": "data/testing/osrm_route_road_snapping.csv",
-    # "osrm_route_travel_legs": "data/testing/osrm_route_travel_legs.geojson"
