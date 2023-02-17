@@ -10,7 +10,7 @@ UNASSIGNED_ROUTE_COLUMN_MAPPING = [
     {"new_column": "skills", "old_column": "Dedicated transport zones"},
     {"new_column": "latitude", "old_column": "lat"},
     {"new_column": "longitude", "old_column": "lon"},
-    {"new_column": "capacity", "old_column": "Capacity (#boxes)"},
+    {"new_column": "capacity", "old_column": "Capacity (kg)"},
     {
         "new_column": "activity_type",
         "old_column": "activity_type",

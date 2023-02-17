@@ -11,7 +11,7 @@ SUMMARY_VIEW_MAPPING = {
     "total_distance__meters": "Distance travelled (km)",
     "total_duration__seconds": "Duration (h)",
     "stops": "No. stops",
-    "demand": "Products delivered",
+    "demand": "Total order weight (kg)",
     "early_stops": "No. early stop arrivals",
     "late_stops": "No. late stop arrivals",
     "waiting_duration__seconds": "Waiting time (minutes) for customers to open",
