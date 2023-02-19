@@ -5,13 +5,14 @@ from app_vukwm_bag_delivery.models.pipelines.summarise.sum_routes import route_s
 
 SUMMARY_VIEW_MAPPING = {
     "route_id": "Vehicle id",
+    "trip_id": "Trip id",
     "vehicle_profile": "Vehicle type",
     "start_time": "Route start",
     "end_time": "Route end",
     "total_distance__meters": "Distance travelled (km)",
     "total_duration__seconds": "Duration (h)",
     "stops": "No. stops",
-    "demand": "Products delivered",
+    "demand": "Total order weight (kg)",
     "early_stops": "No. early stop arrivals",
     "late_stops": "No. late stop arrivals",
     "waiting_duration__seconds": "Waiting time (minutes) for customers to open",
@@ -24,8 +25,8 @@ def unit_conversions(assigned_stops):
     assigned_stops = assigned_stops.assign(
         vehicle_profile=assigned_stops["vehicle_profile"].replace(VEHICLE_TYPE_MAPPING),
         total_distance__meters=(assigned_stops["total_distance__meters"] / 1000)
-        .round(0)
-        .astype(int),
+        .round(1)
+        .astype(float),
         total_duration__seconds=(
             assigned_stops["total_duration__seconds"] / 3600
         ).round(1),
@@ -37,6 +38,7 @@ def unit_conversions(assigned_stops):
         .astype(int),
         early_stops=assigned_stops["early_stops"].astype(int),
         late_stops=assigned_stops["late_stops"].astype(int),
+        trip_id=assigned_stops["trip_id"].astype(int),
     )
     return assigned_stops
 

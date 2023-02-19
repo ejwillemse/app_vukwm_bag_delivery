@@ -6,6 +6,7 @@ import sys
 
 import numpy as np
 import pandas as pd
+import streamlit as st
 from shapely import wkt
 
 sys.path.insert(0, ".")
@@ -14,6 +15,7 @@ import app_vukwm_bag_delivery.models.osrm_wrappers.osrm_get_routes as osrm_get_r
 
 VROOM_ROUTES_MAPPING_OLD_TO_NEW = {
     "vehicle_id": "route_index",
+    "trip_id": "trip_id",
     "type": "activity_type",
     "location_index": "location_index",
     "arrival": "arrival_time__seconds",
@@ -27,12 +29,15 @@ VROOM_ACTIVITY_TYPE_MAPPING = {
     "start": "DEPOT_START_END",
     "end": "DEPOT_START_END",
     "job": "DELIVERY",
+    "delivery": "DELIVERY",
+    "pickup": "DEPOT_START_END",
 }
 JOB_ACTIVITIES = ["JOB"]
 
 # REQUIRED FUNCTIONS
 MAPPING = {
     "route_id": "route_id",
+    "trip_id": "trip_id",
     "profile": "vehicle_profile",
     "stop_id": "stop_id",
     "stop_sequence": "stop_sequence",
@@ -40,7 +45,6 @@ MAPPING = {
     "arrival_time": "arrival_time",
     "service_start_time": "service_start_time",
     "departure_time": "departure_time",
-    "waiting_duration__seconds": "waiting_duration_seconds",
     "travel_duration_to_stop__seconds": "travel_duration_to_stop__seconds",
     "travel_distance_to_stop__meters": "travel_distance_to_stop__meters",
     "service_duration__seconds": "service_duration__seconds",
@@ -63,6 +67,23 @@ MAPPING = {
     "travel_speed__kmh": "travel_speed__kmh",
     "location_type": "location_type",
 }
+
+
+def process_pickups(solution_routes):
+    solution_routes = solution_routes.assign(
+        service=solution_routes["service"] + solution_routes["setup"]
+    )
+    # drop pickup stops without setup costs
+    solution_routes = solution_routes[
+        (solution_routes["setup"] > 0) | (solution_routes["type"] != "pickup")
+    ]
+    solution_routes = solution_routes.assign(
+        new_trip=solution_routes["type"] == "pickup"
+    )
+    solution_routes = solution_routes.assign(
+        trip_id=solution_routes.groupby("vehicle_id")["new_trip"].cumsum() + 1
+    )
+    return solution_routes
 
 
 def convert_solution_routes(
@@ -163,6 +184,7 @@ def format_vroom_solution_routes(
     unassigned_routes: pd.DataFrame,
 ) -> pd.DataFrame:
     """Convert solution into correct format"""
+    solution_routes = process_pickups(solution_routes)
     assigned_stops = convert_solution_routes(solution_routes)
     assigned_stops = calc_times(assigned_stops)
     assigned_stops = add_location_info(assigned_stops, locations)

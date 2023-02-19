@@ -8,7 +8,7 @@ def route_summary(assigned_stops):
             early=assigned_stops["service_issue"] == "EARLY",
             late=assigned_stops["service_issue"] == "LATE",
         )
-        .groupby(["route_id", "vehicle_profile"])
+        .groupby(["route_id", "trip_id", "vehicle_profile"])
         .agg(
             start_time=("arrival_time", "min"),
             end_time=("departure_time", "max"),

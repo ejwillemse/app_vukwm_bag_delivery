@@ -119,6 +119,7 @@ def generate_timeline(df, detailed):
         + "Address: %{customdata[3]}<br>"
         + "Delivery products: %{customdata[4]}<br>"
         + "Arrival time: %{customdata[5]}<br>"
+        + "Actvitity type: %{customdata[6]}<br>"
     )
 
     custom_data = [
@@ -128,6 +129,7 @@ def generate_timeline(df, detailed):
         "Site Address",
         "Product description",
         "Arrival time",
+        "Activity type",
     ]
 
     assigned_stops_route_paths_plot = df.copy()
