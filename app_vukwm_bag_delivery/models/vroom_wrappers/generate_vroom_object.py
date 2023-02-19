@@ -152,6 +152,14 @@ def add_bicycle_shipment_to_vroom(vroom_object, deliver_stop_df, pickup_stops_df
 
 
 def filter_bicycles(stops_df, route_df):
+    """If only one route is being passed, there's no point in filtering the stops."""
+    if route_df.shape[0] == 1:
+        logging.warning(
+            "Just one route passed, assume all stops are to be assigned to the route type."
+        )
+        assign_all_stops_to_route_type = True
+    else:
+        assign_all_stops_to_route_type = False
     bicycle_route_df = route_df[route_df["profile"] == "bicycle"].copy()
     normal_route_df = route_df[route_df["profile"] != "bicycle"].copy()
     if bicycle_route_df.shape[0] > 1:
@@ -166,6 +174,15 @@ def filter_bicycles(stops_df, route_df):
     stops_normal = stops_df[
         ~stops_df["stop_id"].isin(stops_bicycle_df["stop_id"].values)
     ].copy()
+    if assign_all_stops_to_route_type is True:
+        if bicycle_route_df.shape[0] > 0:
+            logging.warning("All stops will be assigned to the bicycle route type.")
+            stops_bicycle_df = stops_df.copy()
+            stops_normal = pd.DataFrame()
+        elif normal_route_df.shape[0] > 0:
+            logging.warning("All stops will be assigned to the normal route type.")
+            stops_normal = stops_df.copy()
+            stops_bicycle_df = pd.DataFrame()
     return stops_bicycle_df, stops_normal, bicycle_route_df, normal_route_df
 
 
