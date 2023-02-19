@@ -153,21 +153,17 @@ def add_bicycle_shipment_to_vroom(vroom_object, deliver_stop_df, pickup_stops_df
 
 def filter_bicycles(stops_df, route_df):
     bicycle_route_df = route_df[route_df["profile"] == "bicycle"].copy()
+    normal_route_df = route_df[route_df["profile"] != "bicycle"].copy()
     if bicycle_route_df.shape[0] > 1:
         logging.warning(
             "Multiple bicycle routes are not supported, only the first one will be used."
         )
     skills = [float(x) for x in bicycle_route_df.iloc[0]["skills"].split(",")]
     stops_bicycle_df = stops_df[stops_df["skills"].isin(skills)].copy()
-    stops_bicycle_df = stops_bicycle_df.assign(
-        service_duration__seconds=bicycle_route_df.iloc[0][
-            "service_duration_default__seconds"
-        ]
-    )
     stops_normal = stops_df[
         ~stops_df["stop_id"].isin(stops_bicycle_df["stop_id"].values)
     ].copy()
-    return stops_bicycle_df, stops_normal, bicycle_route_df
+    return stops_bicycle_df, stops_normal, bicycle_route_df, normal_route_df
 
 
 def add_bicycle_stops(vroom_object, stops_df, route_df):
@@ -187,15 +183,27 @@ def add_normal_stops(vroom_object, stops_df):
     add_stop_to_vroom(vroom_object, stops_df)
 
 
+def assign_service_defaults(route_df, stops_df):
+    service_default = route_df["service_duration_default__seconds"].unique()
+    if len(service_default) > 0:
+        logging.warning("Multiple service defaults found, only first one will be used.")
+    service_default = service_default[0]
+    stops_df = stops_df.assign(service_duration__seconds=service_default)
+    return stops_df
+
+
 def add_stops(vroom_object, stops_df, route_df, seperate_bicycle_stops=True):
     if seperate_bicycle_stops is True:
-        stops_bicycle, stops_normal, route_bicyle_df = filter_bicycles(
+        stops_bicycle, stops_normal, route_bicyle_df, normal_route_df = filter_bicycles(
             stops_df, route_df
         )
+        stops_bicycle = assign_service_defaults(route_bicyle_df, stops_bicycle)
+        stops_normal = assign_service_defaults(normal_route_df, stops_normal)
     else:
         stops_bicycle = pd.DataFrame()
         route_bicyle_df = pd.DataFrame()
         stops_normal = stops_df.copy()
+        stops_normal = assign_service_defaults(route_df, stops_normal)
     if stops_normal.shape[0] > 0:
         logging.info("Adding bicycle stops")
         add_normal_stops(vroom_object, stops_normal)
