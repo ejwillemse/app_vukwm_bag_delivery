@@ -50,7 +50,6 @@ def download_return_latest_file(my_bucket, file_info, driver):
     latest_file = file_info.sort_values(["last_modified"], ascending=False).iloc[0][
         "filename"
     ]
-    print(latest_file)
     download_file(my_bucket, latest_file, "data/" + latest_file)
     return driver("data/" + latest_file)
 
@@ -68,6 +67,7 @@ def return_routing_files(
     geocoded_prefix_path,
     unassgined_stops_prefix_path,
     time_windows_prefix_path,
+    bag_weights_prefix_path,
 ):
     my_bucket = get_s3_bucket_session(s3_cred, bucket)
 
@@ -90,9 +90,14 @@ def return_routing_files(
     latest_time_windows_file = download_return_latest_file(
         my_bucket, time_windows_files, pd.read_csv
     )
+    weight_files = get_latest_bucket_files(my_bucket, bag_weights_prefix_path)
+    latest_weight_files = download_return_latest_file(
+        my_bucket, weight_files, pd.read_csv
+    )
     return (
         latest_excel_file,
         latest_geo_file,
         latest_unassigned_stops_file,
         latest_time_windows_file,
+        latest_weight_files,
     )

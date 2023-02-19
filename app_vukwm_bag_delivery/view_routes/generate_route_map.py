@@ -429,6 +429,7 @@ def return_config():
                         "fieldsToShow": {
                             "assigned_stops": [
                                 {"name": "Vehicle Id", "format": None},
+                                {"name": "Trip Id", "format": None},
                                 {"name": "Skills", "format": None},
                                 {"name": "Vehicle profile", "format": None},
                                 {"name": "Stop sequence", "format": None},
@@ -517,6 +518,7 @@ def return_config():
 
 MAPPING = {
     "route_id": "Vehicle Id",
+    "trip_id": "Trip Id",
     "vehicle_profile": "Vehicle profile",
     "stop_id": "Site Bk",
     "stop_sequence": "Stop sequence",

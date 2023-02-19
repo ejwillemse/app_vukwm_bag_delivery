@@ -23,17 +23,12 @@ from app_vukwm_bag_delivery.view_routes.generate_route_display import (
 
 
 def set_page_config():
-    # st.set_page_config(
-    #     layout="wide",
-    #     page_title="Update routes",
-    #     initial_sidebar_state="expanded",
-    # )
     st.title("Update routes")
 
 
 if not check_password():
     st.warning("Please log-in to continue.")
-    st.stop()  # App won't run anything after this line
+    st.stop()
 
 
 def view_instructions():
@@ -127,5 +122,3 @@ with st.expander("View route KPIs and changes from manual updates", True):
 
 st.session_state.edit_data = {"original_data": return_all_stops_display()}
 update_routes_test_widget.main()
-# side_bar_status = side_bar_progress.view_sidebar()
-# side_bar_progress.update_side_bar(side_bar_status)

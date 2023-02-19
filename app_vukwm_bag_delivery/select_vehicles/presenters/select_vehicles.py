@@ -38,7 +38,7 @@ def return_vehicle_grid(df):
         editable=True,
     )
     gb.configure_column(
-        "Capacity (#boxes)",
+        "Capacity (kg)",
         editable=True,
     )
     gb.configure_column(
