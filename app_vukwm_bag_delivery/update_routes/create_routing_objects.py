@@ -25,9 +25,8 @@ def generate_vroom_input(unassigned_routes, unassigned_stops):
     )
 
     problem_instance = generate_vroom_object.add_stops(
-        problem_instance, unassigned_stops
+        problem_instance, unassigned_stops, unassigned_routes
     )
-
     return problem_instance
 
 
