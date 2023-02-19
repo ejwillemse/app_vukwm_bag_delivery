@@ -158,6 +158,9 @@ def filter_bicycles(stops_df, route_df):
         logging.warning(
             "Multiple bicycle routes are not supported, only the first one will be used."
         )
+    if bicycle_route_df.shape[0] == 0:
+        logging.info("No bicycle route found, no bicycle stops will be added.")
+        return pd.DataFrame(), stops_df, pd.DataFrame(), route_df
     skills = [float(x) for x in bicycle_route_df.iloc[0]["skills"].split(",")]
     stops_bicycle_df = stops_df[stops_df["skills"].isin(skills)].copy()
     stops_normal = stops_df[
@@ -197,8 +200,10 @@ def add_stops(vroom_object, stops_df, route_df, seperate_bicycle_stops=True):
         stops_bicycle, stops_normal, route_bicyle_df, normal_route_df = filter_bicycles(
             stops_df, route_df
         )
-        stops_bicycle = assign_service_defaults(route_bicyle_df, stops_bicycle)
-        stops_normal = assign_service_defaults(normal_route_df, stops_normal)
+        if stops_bicycle.shape[0] > 0:
+            stops_bicycle = assign_service_defaults(route_bicyle_df, stops_bicycle)
+        if stops_normal.shape[0] > 0:
+            stops_normal = assign_service_defaults(normal_route_df, stops_normal)
     else:
         stops_bicycle = pd.DataFrame()
         route_bicyle_df = pd.DataFrame()
