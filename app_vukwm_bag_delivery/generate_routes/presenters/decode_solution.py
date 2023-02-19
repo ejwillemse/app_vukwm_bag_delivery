@@ -7,6 +7,7 @@ def decode_solution():
     unassigned_routes = st.session_state.data_03_primary["unassigned_routes"]
     unassigned_stops = st.session_state.data_03_primary["unassigned_stops"]
     solution = st.session_state.data_06_model_output["vroom_solution"]
+    st.write(solution.routes)
     matrix = st.session_state.data_04_model_input["matrix"]
     locations = st.session_state.data_03_primary["locations"]
     decoder = decode.DecodeVroomSolution(

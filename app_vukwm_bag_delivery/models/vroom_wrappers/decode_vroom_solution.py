@@ -27,6 +27,8 @@ VROOM_ACTIVITY_TYPE_MAPPING = {
     "start": "DEPOT_START_END",
     "end": "DEPOT_START_END",
     "job": "DELIVERY",
+    "delivery": "DELIVERY",
+    "pickup": "PICKUP",
 }
 JOB_ACTIVITIES = ["JOB"]
 
@@ -40,7 +42,6 @@ MAPPING = {
     "arrival_time": "arrival_time",
     "service_start_time": "service_start_time",
     "departure_time": "departure_time",
-    "waiting_duration__seconds": "waiting_duration_seconds",
     "travel_duration_to_stop__seconds": "travel_duration_to_stop__seconds",
     "travel_distance_to_stop__meters": "travel_distance_to_stop__meters",
     "service_duration__seconds": "service_duration__seconds",

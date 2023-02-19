@@ -10,6 +10,10 @@ UNASSIGNED_ROUTE_COLUMN_MAPPING = [
     {"new_column": "skills", "old_column": "Dedicated transport zones"},
     {"new_column": "latitude", "old_column": "lat"},
     {"new_column": "longitude", "old_column": "lon"},
+    {
+        "new_column": "service_duration_default__seconds",
+        "old_column": "Average TAT per delivery (min)",
+    },
     {"new_column": "capacity", "old_column": "Capacity (kg)"},
     {
         "new_column": "activity_type",
@@ -30,6 +34,14 @@ UNASSIGNED_ROUTE_COLUMN_MAPPING = [
 PROFILE_MAPPING = {"Van": "auto", "Bicycle": "bicycle"}
 
 
+def convert_tat(df):
+    df = df.copy()
+    df["service_duration_default__seconds"] = (
+        df["service_duration_default__seconds"].astype(float) * 60
+    )
+    return df
+
+
 def unassigned_route_convert(df, drop_columns=True):
     columns = df.columns
     new_columns = []
@@ -47,6 +59,7 @@ def unassigned_route_convert(df, drop_columns=True):
 def convert_fleet(df):
     df = df.copy()
     df = unassigned_route_convert(df)
+    df = convert_tat(df)
     df = df.assign(
         profile=df["profile"].replace(PROFILE_MAPPING),
         stop_id=df["route_id"],
