@@ -43,6 +43,7 @@ MAP_ZOOM = 11
 COLUMN_ORDER = [
     "index",
     ROUTE_ID,
+    "Trip Id",
     "peak_hour",
     "car_hours",
     "latitude",
@@ -54,6 +55,7 @@ COLUMN_ORDER = [
 COLUMN_ORDER2 = [
     "index",
     ROUTE_ID,
+    "trip_id",
     "stop_id",
     "vehicle_profile",
     "arrival_time",

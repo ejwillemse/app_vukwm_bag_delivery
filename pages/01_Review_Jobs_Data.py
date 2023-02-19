@@ -32,6 +32,7 @@ STOP_VIEW_COLUMNS = [
     "Transport Area Code",
     "Product Name",
     "Quantity",
+    "Order Weight (kg)",
     "Created Date",
     "Required Date",
     "Notes",

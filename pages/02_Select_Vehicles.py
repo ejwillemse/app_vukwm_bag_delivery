@@ -12,7 +12,7 @@ from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 VEHICLE_VIEW_COLUMNS = [
     "Vehicle id",
     "Type",
-    "Capacity (#boxes)",
+    "Capacity (kg)",
     "Depot",
     "Shift start time",
     "Shift end time",

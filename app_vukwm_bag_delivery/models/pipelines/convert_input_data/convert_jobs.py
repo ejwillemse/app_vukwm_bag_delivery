@@ -13,7 +13,7 @@ UNASSIGNED_STOPS_COLUMN_MAPPING = [
     {"new_column": "stop_id", "old_column": "Site Bk"},
     {"new_column": "latitude", "old_column": "Site Latitude"},
     {"new_column": "longitude", "old_column": "Site Longitude"},
-    {"new_column": "demand", "old_column": "Quantity", "default": 0},
+    {"new_column": "demand", "old_column": "Order Weight (kg)", "default": 0},
     {"new_column": "skills", "old_column": "transport_area_number", "default": np.nan},
     {
         "new_column": "activity_type",
@@ -83,9 +83,6 @@ def unassigned_stops_convert(df, df_remove=None):
     df = df.assign(stop_id=df["stop_id"].astype(str))
     df = combine_orders(df)
     return df
-
-
-import streamlit as st
 
 
 def add_skills(stops, routes):
