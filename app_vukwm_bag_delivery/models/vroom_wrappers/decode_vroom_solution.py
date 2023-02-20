@@ -69,6 +69,16 @@ MAPPING = {
 }
 
 
+def add_trip_index(solution_routes):
+    """Add trip index to solution routes"""
+    pickups = solution_routes["activity_type"] == "PICKUP"
+    solution_routes = solution_routes.assign(new_trip=pickups)
+    solution_routes = solution_routes.assign(
+        trip_id=solution_routes.groupby("route_index")["new_trip"].cumsum() + 1
+    )
+    return solution_routes
+
+
 def process_pickups(solution_routes):
     pickups = solution_routes["type"] == "pickup"
     solution_routes = solution_routes.assign(
@@ -184,6 +194,21 @@ def format_vroom_solution_routes(
     """Convert solution into correct format"""
     solution_routes = process_pickups(solution_routes)
     assigned_stops = convert_solution_routes(solution_routes)
+    assigned_stops = calc_times(assigned_stops)
+    assigned_stops = add_location_info(assigned_stops, locations)
+    assigned_stops = add_route_info(assigned_stops, unassigned_routes)
+    assigned_stops = add_sequences(assigned_stops)
+    return assigned_stops
+
+
+def partial_format_vroom_solution_routes(
+    solution_routes: pd.DataFrame,
+    locations: pd.DataFrame,
+    unassigned_routes: pd.DataFrame,
+) -> pd.DataFrame:
+    """Convert solution into correct format"""
+    assigned_stops = add_trip_index(solution_routes)
+    assigned_stops = convert_solution_routes(assigned_stops)
     assigned_stops = calc_times(assigned_stops)
     assigned_stops = add_location_info(assigned_stops, locations)
     assigned_stops = add_route_info(assigned_stops, unassigned_routes)
@@ -364,7 +389,9 @@ class DecodeVroomSolution:
         return self.assigned_stops
 
     def extend_solution(self):
-        self.format_solution_routes()
+        self.assigned_stops = partial_format_vroom_solution_routes(
+            self.solution_routes, self.locations, self.unassigned_routes
+        )
         self.assign_service_issues()
         self.extract_unused_routes()
         self.extract_unserviced_stops()

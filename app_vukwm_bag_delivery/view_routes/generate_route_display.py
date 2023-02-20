@@ -7,6 +7,7 @@ MAPPING = {
     "trip_id": "Trip Id",
     "vehicle_profile": "Vehicle profile",
     "stop_id": "Site Bk",
+    "demand": "Demand (kg)",
     "stop_sequence": "Stop sequence",
     "job_sequence": "Job sequence",
     "arrival_time": "Arrival time",
@@ -24,6 +25,7 @@ MAPPING = {
     "time_window_start": "Time window start",
     "time_window_end": "Time window end",
     "service_issue": "Service issues",
+    "demand_cum": "Cumulative demand (kg)",
 }
 VEHICLE_TYPE_MAPPING = {"auto": "Van", "bicycle": "Bicycle"}
 

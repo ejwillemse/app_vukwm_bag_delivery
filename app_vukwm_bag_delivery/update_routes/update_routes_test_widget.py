@@ -213,6 +213,7 @@ def return_selection_summary():
                 "Travel distance (km)": ("Travel distance to stops (km)", "sum"),
                 "Travel time (min)": ("Travel duration to stop (minutes)", "sum"),
                 "Service time (min)": ("Service duration (minutes)", "sum"),
+                "Demand (kg)": ("Demand (kg)", "sum"),
             },
         )
         .reset_index()
@@ -238,6 +239,7 @@ def return_selection_summary():
                     "Travel distance (km)": ("Travel distance (km)", "sum"),
                     "Travel time (min)": ("Travel time (min)", "sum"),
                     "Service time (min)": ("Service time (min)", "sum"),
+                    "Demand (kg)": ("Demand (kg)", "sum"),
                 }
             )
         )

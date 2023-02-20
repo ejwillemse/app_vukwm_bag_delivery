@@ -83,16 +83,20 @@ def gen_kpis(assigned_stops):
                 "Distance (km)": ("Travel distance to stops (km)", "sum"),
                 "Stops": ("deliver", "sum"),
                 "Unserviced": ("UNSERVICED", "sum"),
-                # "On-time": ("ontime", "sum"),
+                "Demand (kg)": ("Demand (kg)", "sum"),
                 "Early": ("early", "sum"),
                 "Late": ("late", "sum"),
             }
         )
     )
     route_kpis.loc["Total"] = route_kpis.sum()
-    route_kpis[["Distance (km)", "Stops", "Unserviced", "Early", "Late"]] = route_kpis[
-        ["Distance (km)", "Stops", "Unserviced", "Early", "Late"]
-    ].astype(int)
+    route_kpis[
+        ["Distance (km)", "Stops", "Unserviced", "Demand (kg)", "Early", "Late"]
+    ] = route_kpis[
+        ["Distance (km)", "Stops", "Unserviced", "Demand (kg)", "Early", "Late"]
+    ].astype(
+        int
+    )
     return route_kpis
 
 
