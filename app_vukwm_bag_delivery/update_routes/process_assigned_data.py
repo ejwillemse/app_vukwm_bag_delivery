@@ -276,7 +276,7 @@ def update_assigned_stops():
         st.secrets["osrm_port_mapping"],
     )
 
-    assigned_stops = decoder.convert_solution()
+    assigned_stops = decoder.extend_solution()
     assigned_stops = (
         pd.concat([assigned_stops, route_unassigned])
         .sort_values(["route_id", "stop_sequence"])
