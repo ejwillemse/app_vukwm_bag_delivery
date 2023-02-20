@@ -50,7 +50,7 @@ def get_osrm_request(
 ) -> Union[Dict, str]:
     """Get OSRM response"""
     request = f"{port}/route/v1/driving/{coordinates}?{defaults()}"
-    logging.info("OSRM request: `%s`" % request)
+    logging.debug("OSRM request: `%s`" % request)
     with requests.get(request, timeout=timeout) as req:
         results = req.json()
 
@@ -93,6 +93,7 @@ def return_route_osrm_info(
     route_id_name: str = "route_id",
     vehicle_type_name: str = "profile",
 ) -> dict:
+    logging.info("Total number of stops %i" % assigned_stops.shape[0])
     leg_info = []
     stop_sequence_info = []
     route_summary_info = []
@@ -104,6 +105,7 @@ def return_route_osrm_info(
         logging.warning(
             f"NaN coordinates present in {n_nans_lon} records and will be dropped"
         )
+        logging.warning(assigned_stops.loc[assigned_stops["longitude"].isna()])
         assigned_stops = assigned_stops.dropna(subset=["latitude"]).dropna(
             subset=["longitude"]
         )
@@ -111,6 +113,7 @@ def return_route_osrm_info(
     for route_id in vehicle_id_types:
         logging.info("Processing %s" % route_id)
         route_stops = assigned_stops.loc[assigned_stops[route_id_name] == route_id]
+        logging.info("Number of stops %i" % route_stops.shape[0])
         route_type = route_stops[vehicle_type_name].unique()
         assert len(route_type) == 1
         route_type = route_type[0]
@@ -118,6 +121,8 @@ def return_route_osrm_info(
         leg_info_i, stop_sequence_info_i, route_summary_info_i = generate_trip_info(
             results
         )
+        logging.info("Number of legs %i" % leg_info_i.shape[0])
+        logging.info("Number of stops %i" % stop_sequence_info_i.shape[0])
         leg_info_i[route_id_name] = route_id
         stop_sequence_info_i[route_id_name] = route_id
         route_summary_info_i[route_id_name] = route_id
@@ -127,6 +132,8 @@ def return_route_osrm_info(
     leg_info = pd.concat(leg_info).reset_index(drop=True)
     stop_sequence_info = pd.concat(stop_sequence_info).reset_index(drop=True)
     route_summary_info = pd.concat(route_summary_info).reset_index(drop=True)
+    logging.info("Total number of legs %i" % leg_info.shape[0])
+    logging.info("Total number of stops %i" % stop_sequence_info.shape[0])
     return {
         "travel_leg_info": leg_info,
         "stop_sequence_info": stop_sequence_info,
