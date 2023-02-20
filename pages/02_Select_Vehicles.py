@@ -13,6 +13,7 @@ VEHICLE_VIEW_COLUMNS = [
     "Vehicle id",
     "Type",
     "Capacity (kg)",
+    "Max stops",
     "Depot",
     "Shift start time",
     "Shift end time",

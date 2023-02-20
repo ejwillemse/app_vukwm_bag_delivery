@@ -40,33 +40,6 @@ LAT_LON_QUERIES_ACTIVE = {
 
 MAP_ZOOM = 11
 
-COLUMN_ORDER = [
-    "index",
-    ROUTE_ID,
-    "Trip Id",
-    "peak_hour",
-    "car_hours",
-    "latitude",
-    "longitude",
-    "selected",
-    LAT_LON_ID,
-]
-
-COLUMN_ORDER2 = [
-    "index",
-    ROUTE_ID,
-    "trip_id",
-    "stop_id",
-    "vehicle_profile",
-    "arrival_time",
-    "departure_time",
-    "latitude",
-    "longitude",
-    "selected",
-    "stop_sequence",
-    LAT_LON_ID,
-]
-
 
 def create_lat_lon_id(data):
     return data.assign(
@@ -240,6 +213,7 @@ def return_selection_summary():
                 "Travel distance (km)": ("Travel distance to stops (km)", "sum"),
                 "Travel time (min)": ("Travel duration to stop (minutes)", "sum"),
                 "Service time (min)": ("Service duration (minutes)", "sum"),
+                "Demand (kg)": ("Demand (kg)", "sum"),
             },
         )
         .reset_index()
@@ -265,6 +239,7 @@ def return_selection_summary():
                     "Travel distance (km)": ("Travel distance (km)", "sum"),
                     "Travel time (min)": ("Travel time (min)", "sum"),
                     "Service time (min)": ("Service time (min)", "sum"),
+                    "Demand (kg)": ("Demand (kg)", "sum"),
                 }
             )
         )

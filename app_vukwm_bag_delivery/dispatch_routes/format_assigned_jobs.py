@@ -103,7 +103,7 @@ def get_route_totals():
         **{
             "Vehicle Id": assigned_jobs["Vehicle Id"].fillna("Unassigned")
             + " "
-            + assigned_jobs["Trip Id"].astype(str).str.zfill(2)
+            + assigned_jobs["Trip Id"].astype(int).astype(str).str.zfill(2)
         }
     )
     assigned_jobs_sum = (

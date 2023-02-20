@@ -15,6 +15,7 @@ UNASSIGNED_ROUTE_COLUMN_MAPPING = [
         "old_column": "Average TAT per delivery (min)",
     },
     {"new_column": "capacity", "old_column": "Capacity (kg)"},
+    {"new_column": "max_stops", "old_column": "Max stops"},
     {
         "new_column": "activity_type",
         "old_column": "activity_type",
