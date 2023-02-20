@@ -48,7 +48,7 @@ def add_vehicle_to_vroom(vroom_object, route_df):
                     start=route["location_index"],
                     end=route["location_index"],
                     description=route["route_id"],
-                    capacity=[route["capacity"] * 1000],
+                    capacity=[route["capacity"] * 1000, route["max_stops"]],
                     profile=route["profile"],
                     skills=skills,
                     time_window=vroom.time_window.TimeWindow(
@@ -79,7 +79,7 @@ def add_stop_to_vroom(vroom_object, stop_df):
                     stop["location_index"],
                     location=stop["location_index"],
                     skills=skill,
-                    delivery=[round(stop["demand"] * 1000)],
+                    delivery=[round(stop["demand"] * 1000), 1],
                     service=stop["service_duration__seconds"],
                     time_windows=[
                         vroom.time_window.TimeWindow(
@@ -144,7 +144,7 @@ def add_bicycle_shipment_to_vroom(vroom_object, deliver_stop_df, pickup_stops_df
                     pickup=pickup_stop,
                     delivery=deliver_stop,
                     skills=skill,
-                    amount=[stop["demand"] * 1000],
+                    amount=[stop["demand"] * 1000, 1],
                 )
             ]
         )

@@ -42,6 +42,10 @@ def return_vehicle_grid(df):
         editable=True,
     )
     gb.configure_column(
+        "Max stops",
+        editable=True,
+    )
+    gb.configure_column(
         "Cost (£) per km",
         editable=True,
     )

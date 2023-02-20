@@ -30,6 +30,7 @@ MAPPING = {
     "route_id": "Vehicle Id",
     "vehicle_profile": "Vehicle profile",
     "stop_id": "Site Bk",
+    "demand": "Demand (kg)",
     "stop_sequence": "Stop sequence",
     "job_sequence": "Job sequence",
     "arrival_time": "Arrival time",
@@ -117,9 +118,10 @@ def generate_timeline(df, detailed):
         + "Site: %{customdata[1]}</b><br>"
         + "Site Bk: %{customdata[2]}<br>"
         + "Address: %{customdata[3]}<br>"
-        + "Delivery products: %{customdata[4]}<br>"
-        + "Arrival time: %{customdata[5]}<br>"
-        + "Actvitity type: %{customdata[6]}<br>"
+        + "Demand (kg): %{customdata[4]}<br>"
+        + "Delivery products: %{customdata[5]}<br>"
+        + "Arrival time: %{customdata[6]}<br>"
+        + "Actvitity type: %{customdata[7]}<br>"
     )
 
     custom_data = [
@@ -127,6 +129,7 @@ def generate_timeline(df, detailed):
         "Site Name",
         "Site Bk",
         "Site Address",
+        "Demand (kg)",
         "Product description",
         "Arrival time",
         "Activity type",

@@ -30,7 +30,7 @@ VROOM_ACTIVITY_TYPE_MAPPING = {
     "end": "DEPOT_START_END",
     "job": "DELIVERY",
     "delivery": "DELIVERY",
-    "pickup": "DEPOT_START_END",
+    "pickup": "PICKUP",
 }
 JOB_ACTIVITIES = ["JOB"]
 
@@ -69,17 +69,25 @@ MAPPING = {
 }
 
 
+def add_trip_index(solution_routes):
+    """Add trip index to solution routes"""
+    pickups = solution_routes["activity_type"] == "PICKUP"
+    solution_routes = solution_routes.assign(new_trip=pickups)
+    solution_routes = solution_routes.assign(
+        trip_id=solution_routes.groupby("route_index")["new_trip"].cumsum() + 1
+    )
+    return solution_routes
+
+
 def process_pickups(solution_routes):
+    pickups = solution_routes["type"] == "pickup"
     solution_routes = solution_routes.assign(
         service=solution_routes["service"] + solution_routes["setup"]
     )
     # drop pickup stops without setup costs
-    solution_routes = solution_routes[
-        (solution_routes["setup"] > 0) | (solution_routes["type"] != "pickup")
-    ]
-    solution_routes = solution_routes.assign(
-        new_trip=solution_routes["type"] == "pickup"
-    )
+    solution_routes = solution_routes[(solution_routes["setup"] > 0) | (~pickups)]
+    # add stop id (which will be the vehicle id)
+    solution_routes = solution_routes.assign(new_trip=pickups)
     solution_routes = solution_routes.assign(
         trip_id=solution_routes.groupby("vehicle_id")["new_trip"].cumsum() + 1
     )
@@ -129,7 +137,7 @@ def calc_times(
 def add_location_info(
     assigned_stops: pd.DataFrame,
     locations: pd.DataFrame,
-    location_column_drop=["service_duration__seconds"],
+    location_column_drop=["activity_type", "service_duration__seconds"],
 ) -> pd.DataFrame:
     assigned_stops = assigned_stops.merge(
         locations.drop(columns=location_column_drop), how="left", validate="m:1"
@@ -186,6 +194,21 @@ def format_vroom_solution_routes(
     """Convert solution into correct format"""
     solution_routes = process_pickups(solution_routes)
     assigned_stops = convert_solution_routes(solution_routes)
+    assigned_stops = calc_times(assigned_stops)
+    assigned_stops = add_location_info(assigned_stops, locations)
+    assigned_stops = add_route_info(assigned_stops, unassigned_routes)
+    assigned_stops = add_sequences(assigned_stops)
+    return assigned_stops
+
+
+def partial_format_vroom_solution_routes(
+    solution_routes: pd.DataFrame,
+    locations: pd.DataFrame,
+    unassigned_routes: pd.DataFrame,
+) -> pd.DataFrame:
+    """Convert solution into correct format"""
+    assigned_stops = add_trip_index(solution_routes)
+    assigned_stops = convert_solution_routes(assigned_stops)
     assigned_stops = calc_times(assigned_stops)
     assigned_stops = add_location_info(assigned_stops, locations)
     assigned_stops = add_route_info(assigned_stops, unassigned_routes)
@@ -312,7 +335,9 @@ class DecodeVroomSolution:
             .sum(axis=1)
         )
         self.assigned_stops = self.assigned_stops.assign(
-            demand_cum=self.assigned_stops.groupby(["route_id"])["demand"].cumsum(),
+            demand_cum=self.assigned_stops.groupby(["route_id", "trip_id"])[
+                "demand"
+            ].cumsum(),
             travel_distance_cum__meters=self.assigned_stops.groupby(["route_id"])[
                 "travel_distance_to_stop__meters"
             ].cumsum(),
@@ -361,6 +386,21 @@ class DecodeVroomSolution:
         self.add_matrix_info()
         self.add_duration_capacity_cumsum()
         self.format_assigned_stops(True)
+        return self.assigned_stops
+
+    def extend_solution(self):
+        self.assigned_stops = partial_format_vroom_solution_routes(
+            self.solution_routes, self.locations, self.unassigned_routes
+        )
+        self.assign_service_issues()
+        self.extract_unused_routes()
+        self.extract_unserviced_stops()
+        self.add_matrix_info()
+        self.get_geo_info()
+        self.add_travel_leg()
+        self.add_road_snap_info()
+        self.add_duration_capacity_cumsum()
+        self.format_assigned_stops()
         return self.assigned_stops
 
 
