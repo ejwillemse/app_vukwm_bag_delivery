@@ -99,7 +99,7 @@ def generate_pickup_shipment(pickup_stop_df):
     stop = pickup_stop_df.iloc[0]
     pickup_stop = {
         "location": stop["location_index"],
-        "setup": PICKUP_DEFAULT,
+        "setup": stop["replenish_duration__seconds"],
         "service": 0,
         "time_windows": [
             vroom.time_window.TimeWindow(

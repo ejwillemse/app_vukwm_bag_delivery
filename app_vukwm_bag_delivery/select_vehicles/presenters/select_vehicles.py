@@ -111,6 +111,7 @@ def return_vehicle_grid(df):
         "Average TAT per delivery (min)",
         editable=True,
     )
+    gb.configure_column("Stock replenish duration (min)", editable=True)
 
     gridOptions = gb.build()
 
