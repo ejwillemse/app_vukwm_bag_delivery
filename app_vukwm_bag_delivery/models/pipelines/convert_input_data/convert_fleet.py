@@ -14,6 +14,10 @@ UNASSIGNED_ROUTE_COLUMN_MAPPING = [
         "new_column": "service_duration_default__seconds",
         "old_column": "Average TAT per delivery (min)",
     },
+    {
+        "new_column": "replenish_duration__seconds",
+        "old_column": "Stock replenish duration (min)",
+    },
     {"new_column": "capacity", "old_column": "Capacity (kg)"},
     {"new_column": "max_stops", "old_column": "Max stops"},
     {
@@ -39,6 +43,9 @@ def convert_tat(df):
     df = df.copy()
     df["service_duration_default__seconds"] = (
         df["service_duration_default__seconds"].astype(float) * 60
+    )
+    df["replenish_duration__seconds"] = (
+        df["replenish_duration__seconds"].astype(float) * 60
     )
     return df
 
