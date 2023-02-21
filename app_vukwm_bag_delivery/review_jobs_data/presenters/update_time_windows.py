@@ -92,12 +92,11 @@ def update_timewindows_selection():
     ):
         st.session_state.data_02_intermediate["updated_time_windows"] = orig_df
     updated_df = st.session_state.data_02_intermediate["updated_time_windows"]
-
-    updated_df = filter_df_widget(updated_df, key="update_timewindows_selection")
     modify = st.radio(
         "Select specific or all filtered stops for exclusion",
         ["View time-windows", "Update time-windows"],
     )
+    updated_df = filter_df_widget(updated_df, key="update_timewindows_selection")
     if modify == "Update time-windows":
         updated_df = return_timewindow_grid(updated_df)
         updated_df = create_update_key(updated_df)

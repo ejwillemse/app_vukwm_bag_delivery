@@ -155,7 +155,7 @@ def filter_df_widget(
     prefilter=None,
 ):
     if prefilter is None:
-        prefilter = None
+        prefilter = ["Site Name"]
     data_filtered = filter_dataframe(
         data,
         base=base,
