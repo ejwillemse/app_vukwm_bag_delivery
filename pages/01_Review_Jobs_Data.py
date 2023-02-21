@@ -180,11 +180,11 @@ def view_select_removal_stops() -> None:
     data = st.session_state.data_02_intermediate["unassigned_jobs"]
     n_stops_in = data.shape[0]
     data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
-    data = filter_df_widget(data, key="view_select_removal_stops")
     modify = st.radio(
         "Select specific or all filtered stops for exclusion",
         ["All filtered stops", "Specificically selected stops"],
     )
+    data = filter_df_widget(data, key="view_select_removal_stops")
     if modify == "All filtered stops":
         selected_df = data.copy()
         st.session_state.data_02_intermediate[
