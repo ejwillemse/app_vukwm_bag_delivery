@@ -18,6 +18,7 @@ VEHICLE_VIEW_COLUMNS = [
     "Shift start time",
     "Shift end time",
     "Average TAT per delivery (min)",
+    "Stock replenish duration (min)",
     "Dedicated transport zones",
     "Cost (£) per km",
     "Cost (£) per hour",

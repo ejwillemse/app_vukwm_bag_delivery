@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from st_aggrid import AgGrid, ColumnsAutoSizeMode, GridOptionsBuilder, GridUpdateMode
 
 
 def return_selected():
@@ -56,8 +56,7 @@ def select_remove_dataframe(df):
         gridOptions=gridOptions,
         data_return_mode="AS_INPUT",
         update_mode=GridUpdateMode.SELECTION_CHANGED,
-        columns_auto_size_mode="FIT_CONTENTS",
-        fit_columns_on_grid_load=False,
+        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
         theme="streamlit",  # Add theme color to the table
         enable_enterprise_modules=True,
         width="100%",
