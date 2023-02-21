@@ -19,6 +19,13 @@ UNASSIGNED_NAN_COLUMN = (
 )
 AGGREGATION_IDs = ["Site Bk", "completed"]
 
+COLUMN_TYPES = {
+    "Site Bk": str,
+    "Ticket No": str,
+    "Customer Bk": str,
+    # "transport_area_number": str,
+}
+
 
 def add_excel_time_dates(df, excel_df):
     excel_df = excel_df.assign(
@@ -141,5 +148,7 @@ def process_input_data(df, excel_df, bag_weights):
     df = filter_unassigned(df)
     df = extract_transport_number(df)
     df = assign_bicycle_skills(df)
+    for key in COLUMN_TYPES:
+        df[key] = df[key].astype(COLUMN_TYPES[key])
     df = add_order_weight(df, bag_weights)
     return df

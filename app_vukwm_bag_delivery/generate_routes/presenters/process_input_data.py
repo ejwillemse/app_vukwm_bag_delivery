@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
@@ -14,9 +15,20 @@ def add_time_windows(df):
             "save_updated_time_windows"
         ]
         updated = time_windows["Site Bk"].isin(updated_time_windows["Site Bk"])
-        time_windows.loc[
-            updated, ["Delivery open time", "Delivery close time"]
-        ] = updated_time_windows[updated]
+        time_windows_update = (
+            time_windows.loc[updated]
+            .drop(columns=["Delivery open time", "Delivery close time"])
+            .merge(
+                updated_time_windows[
+                    ["Site Bk", "Delivery open time", "Delivery close time"]
+                ],
+                on="Site Bk",
+                validate="1:1",
+            )
+        )
+        time_windows = pd.concat(
+            [time_windows.loc[~updated], time_windows_update]
+        ).sort_values(["Site Name"])
     time_windows = time_windows.assign(
         stop_id=time_windows["Site Bk"].astype(str),
         time_window_start=time_windows["Delivery open time"],
