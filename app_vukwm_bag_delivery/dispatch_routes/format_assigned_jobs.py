@@ -44,6 +44,7 @@ def create_formatted_assigned_jobs():
             assigned_stops[
                 [
                     "route_id",
+                    "trip_id",
                     "vehicle_profile",
                     "job_sequence",
                     "arrival_time",
@@ -53,6 +54,7 @@ def create_formatted_assigned_jobs():
                 columns={
                     "stop_id": "Site Bk",
                     "route_id": "Vehicle Id",
+                    "trip_id": "Trip Id",
                     "vehicle_profile": "Vehicle type",
                     "job_sequence": "Visit sequence",
                     "arrival_time": "Arrival time",
@@ -97,10 +99,16 @@ def create_formatted_assigned_jobs():
 
 def get_route_totals():
     assigned_jobs = st.session_state.data_07_reporting["assigned_jobs_download"]
+    assigned_jobs = assigned_jobs.assign(
+        **{
+            "Vehicle Id": assigned_jobs["Vehicle Id"].fillna("Unassigned")
+            + " "
+            + assigned_jobs["Trip Id"].astype(int).astype(str).str.zfill(2)
+        }
+    )
     assigned_jobs_sum = (
         assigned_jobs.assign(
             **{
-                "Vehicle Id": assigned_jobs["Vehicle Id"].fillna("Unassigned"),
                 "Vehicle type": assigned_jobs["Vehicle type"].fillna(""),
             }
         )
