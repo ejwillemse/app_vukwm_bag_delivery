@@ -60,11 +60,6 @@ STOP_VIEW_COLUMNS_RENAME = {"transport_area_number": "Transport Area"}
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Review Jobs Data",
-        initial_sidebar_state="expanded",
-    )
     st.title("Review delivery jobs")
 
 

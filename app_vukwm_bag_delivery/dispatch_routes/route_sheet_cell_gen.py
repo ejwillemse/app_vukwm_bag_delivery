@@ -232,7 +232,7 @@ def generate_sheet_cells():
         **{
             "Vehicle Id": assigned_jobs["Vehicle Id"]
             + " "
-            + assigned_jobs["Trip Id"].astype(int).astype(str).str.zfill(2)
+            + assigned_jobs["Trip Id"].fillna(0).astype(int).astype(str).str.zfill(2)
         }
     )
     route_ids = assigned_jobs["Vehicle Id"].unique()

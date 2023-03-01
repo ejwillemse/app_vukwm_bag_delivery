@@ -13,7 +13,7 @@ from app_vukwm_bag_delivery.util_views.return_session_status import return_full_
 def set_page_config():
     st.set_page_config(
         layout="wide",
-        page_title="Home",
+        page_title="VUKMWM Bag Delivery",
         initial_sidebar_state="expanded",
     )
 
@@ -83,7 +83,7 @@ def view_instructions():
             """
         ### Contact info
 
-        This app was developed by Waste Labs. Get in touch with us as https://wastelabs.co/"""
+        This app was developed by Waste Labs. Get in touch with us at <https://wastelabs.co/>"""
         )
 
 

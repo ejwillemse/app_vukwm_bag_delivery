@@ -55,9 +55,10 @@ def extract_high_level_summary():
     route_sum = route_summary(assigned_stops)
     route_sum = add_totals(route_sum)
     route_sum = (
-        unit_conversions(route_sum)
-        .rename(columns=SUMMARY_VIEW_MAPPING)[SUMMARY_VIEW_MAPPING.values()]
-        .fillna("")
+        unit_conversions(route_sum).rename(columns=SUMMARY_VIEW_MAPPING)[
+            SUMMARY_VIEW_MAPPING.values()
+        ]
+        # .fillna("")
     )
 
     return route_sum

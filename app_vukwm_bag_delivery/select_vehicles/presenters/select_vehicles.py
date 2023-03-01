@@ -1,9 +1,50 @@
+import logging
+
 import pandas as pd
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
+log = logging.getLogger(__name__)
+
+
+def gen_time_range(min=0, max=25):
+    if max > 24:
+        max = 24
+        add_midnight = True
+    else:
+        add_midnight = False
+    times = []
+    for i in range(min, max):
+        for j in [0, 1]:
+            times.append(f"{str(i).zfill(2)}:{str(30 * j).zfill(2)}:00")
+    if add_midnight is True:
+        times.append("23:59:59")
+    return times
+
+
+VEHICLE_COLUMNS_DATA_TYPE = {
+    "": "bool",
+    "Vehicle id": "string",
+    "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
+    "Capacity (kg)": "int64",
+    "Max stops": "int64",
+    "Depot": pd.CategoricalDtype(categories=["Mandela Way", "Soho"], ordered=True),
+    "Shift start time": pd.CategoricalDtype(categories=gen_time_range(), ordered=True),
+    "Shift end time": pd.CategoricalDtype(categories=gen_time_range(), ordered=True),
+    "Average TAT per delivery (min)": "float64",
+    "Stock replenish duration (min)": "float64",
+    "Dedicated transport zones": "string",
+    "Cost (£) per km": "float64",
+    "Cost (£) per hour": "float64",
+    "lat": "float64",
+    "lon": "float64",
+}
+
 
 def return_vehicle_grid(df):
+    log.warning(
+        "Using `return_vehicle_grid` is deprecated. Please use `return_vehicle_edited` instead."
+    )
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_selection(
         "multiple",
@@ -132,6 +173,15 @@ def return_vehicle_grid(df):
     return selected_df
 
 
-def save_vehicle_selection(df):
+def return_vehicle_edited(df: pd.DataFrame) -> pd.DataFrame:
+    new_columns = [""] + df.columns.tolist()
+    df = df.assign(**{"": False})[new_columns].astype(VEHICLE_COLUMNS_DATA_TYPE)
+    selected_df = st.experimental_data_editor(df, num_rows="dynamic")
+    selected_df = selected_df.rename(columns={"": "Selected"})
+    selected_df = selected_df[selected_df["Selected"] == True].copy()
+    return selected_df
+
+
+def save_vehicle_selection(df: pd.DataFrame) -> None:
     if df.shape[0] > 0:
         st.session_state.data_02_intermediate["unassigned_routes"] = df.copy()
