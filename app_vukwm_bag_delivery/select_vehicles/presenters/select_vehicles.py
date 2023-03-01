@@ -40,6 +40,23 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "lon": "float64",
 }
 
+HARD_CODED_DEPOTS = {
+    "Soho": {"latitude": 51.51358620, "longitude": -0.13748230},
+    "Mandela Way": {"latitude": 51.49175400, "longitude": -0.07962670},
+}
+
+NON_NAN_COLUMNS = [
+    "Vehicle id",
+    "Type",
+    "Capacity (kg)",
+    "Max stops",
+    "Depot",
+    "Shift start time",
+    "Shift end time",
+    "Average TAT per delivery (min)",
+    "Stock replenish duration (min)",
+]
+
 
 def return_vehicle_grid(df):
     log.warning(
@@ -182,6 +199,34 @@ def return_vehicle_edited(df: pd.DataFrame) -> pd.DataFrame:
     return selected_df
 
 
+def validate_vehicle_updates(df):
+    nan_columns = df[NON_NAN_COLUMNS].isna()
+    if nan_columns.any().any():
+        st.error(
+            "Some columns are missing values. See below table for incorrect vehicles:"
+        )
+        st.dataframe(df[nan_columns.any(axis=1)])
+
+    time_incorrect = df["Shift start time"] >= df["Shift end time"]
+    if time_incorrect.any():
+        st.error(
+            "Shift start time must be before shift end time. See below table for incorrect vehicles:"
+        )
+        st.dataframe(df[time_incorrect])
+    incorrect_bicycle_depot = (df["Depot"] != "Soho") & (df["Type"] == "Bicycle")
+    if incorrect_bicycle_depot.any():
+        st.error(
+            "Currently only the Soho depot can be used for bicycle allocations. See below for incorrect bicycles:"
+        )
+        st.dataframe(df[incorrect_bicycle_depot])
+
+    for depot in HARD_CODED_DEPOTS.keys():
+        df.loc[df["Depot"] == depot, "lat"] = HARD_CODED_DEPOTS[depot]["latitude"]
+        df.loc[df["Depot"] == depot, "lon"] = HARD_CODED_DEPOTS[depot]["longitude"]
+    return df
+
+
 def save_vehicle_selection(df: pd.DataFrame) -> None:
     if df.shape[0] > 0:
+        df = validate_vehicle_updates(df)
         st.session_state.data_02_intermediate["unassigned_routes"] = df.copy()
