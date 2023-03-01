@@ -14,8 +14,10 @@ def return_vehicle_default():
     ]
     lon = [-0.07962670, -0.07962670, -0.07962670, -0.13748230, -0.07962670, -0.07962670]
     lat = [51.49175400, 51.49175400, 51.49175400, 51.51358620, 51.49175400, 51.49175400]
-    capacity = [500, 500, 500, 25, 500, 500]
+    capacity = [1000, 1000, 1000, 150, 1000, 1000]
+    max_stops = [40, 40, 40, 50, 40, 40]
     dedicated_transport_zones = [None, None, None, "2", None, None]
+    stock_replenish_duration = [30, 30, 30, 30, 30, 30]
     cost_per_km = [1, 1, 1, 0.5, 1, 1]
     cost_per_h = [10, 10, 10, 10, 10, 10]
     shift_start_time = ["09:00:00"] * 6
@@ -26,12 +28,14 @@ def return_vehicle_default():
         {
             "Vehicle id": vehicle_ids,
             "Type": vehicle_type,
-            "Capacity (#boxes)": capacity,
+            "Capacity (kg)": capacity,
+            "Max stops": max_stops,
             "Depot": depot,
             "Shift start time": shift_start_time,
             "Shift end time": shift_end_time,
             "Average TAT per delivery (min)": ave_duration,
             "Dedicated transport zones": dedicated_transport_zones,
+            "Stock replenish duration (min)": stock_replenish_duration,
             "Cost (£) per km": cost_per_km,
             "Cost (£) per hour": cost_per_h,
             "lat": lat,

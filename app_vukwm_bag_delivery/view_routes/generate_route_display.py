@@ -4,8 +4,10 @@ import streamlit as st
 
 MAPPING = {
     "route_id": "Vehicle Id",
+    "trip_id": "Trip Id",
     "vehicle_profile": "Vehicle profile",
     "stop_id": "Site Bk",
+    "demand": "Demand (kg)",
     "stop_sequence": "Stop sequence",
     "job_sequence": "Job sequence",
     "arrival_time": "Arrival time",
@@ -23,6 +25,7 @@ MAPPING = {
     "time_window_start": "Time window start",
     "time_window_end": "Time window end",
     "service_issue": "Service issues",
+    "demand_cum": "Cumulative demand (kg)",
 }
 VEHICLE_TYPE_MAPPING = {"auto": "Van", "bicycle": "Bicycle"}
 
@@ -70,6 +73,7 @@ def unit_conversions(assigned_stops):
         .round(0)
         .astype(int),
         travel_speed__kmh=(assigned_stops["travel_speed__kmh"]).round(1),
+        trip_id=assigned_stops["trip_id"].fillna(1).astype(int),
     )
     return assigned_stops
 
