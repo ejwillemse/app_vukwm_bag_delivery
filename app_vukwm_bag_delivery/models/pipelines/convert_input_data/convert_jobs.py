@@ -1,10 +1,12 @@
 """
 Convert input data into waste labs data schema
 """
+import logging
 from typing import Tuple
 
 import numpy as np
 import pandas as pd
+import streamlit
 
 FILTER_COLUMNS = "Ticket No"
 AGGREGATION_IDs = ["stop_id"]
@@ -14,7 +16,7 @@ UNASSIGNED_STOPS_COLUMN_MAPPING = [
     {"new_column": "latitude", "old_column": "Site Latitude"},
     {"new_column": "longitude", "old_column": "Site Longitude"},
     {"new_column": "demand", "old_column": "Order Weight (kg)", "default": 0},
-    {"new_column": "skills", "old_column": "transport_area_number", "default": np.nan},
+    {"new_column": "skills", "old_column": "Transport Area", "default": np.nan},
     {
         "new_column": "activity_type",
         "old_column": "activity_type",
