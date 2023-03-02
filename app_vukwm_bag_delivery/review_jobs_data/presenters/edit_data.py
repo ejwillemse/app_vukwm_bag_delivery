@@ -99,11 +99,6 @@ def edit_data():
         st.session_state.data_02_intermediate[
             "removed_unassigned_stops"
         ] = exluded_jobs.copy()
-        st.write(
-            st.session_state.data_02_intermediate[
-                "user_confirmed_removed_unassigned_stops"
-            ]
-        )
         reload_data()
         # st.experimental_rerun()
 
