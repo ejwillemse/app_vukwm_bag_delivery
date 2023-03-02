@@ -3,23 +3,30 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
-from app_vukwm_bag_delivery.review_jobs_data.presenters.edit_data import \
-    edit_data
-from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import \
-    generate_known_unknown
+from app_vukwm_bag_delivery.review_jobs_data.presenters.edit_data import edit_data
+from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import (
+    generate_known_unknown,
+)
 from app_vukwm_bag_delivery.review_jobs_data.presenters.select_remove_stops import (
-    return_selected, select_remove_dataframe)
-from app_vukwm_bag_delivery.review_jobs_data.presenters.update_time_windows import \
-    update_timewindows_selection
-from app_vukwm_bag_delivery.review_jobs_data.views.render_unassigned_stops_map import \
-    return_order_map_html
+    return_selected,
+    select_remove_dataframe,
+)
+from app_vukwm_bag_delivery.review_jobs_data.presenters.update_time_windows import (
+    update_timewindows_selection,
+)
+from app_vukwm_bag_delivery.review_jobs_data.views.render_unassigned_stops_map import (
+    return_order_map_html,
+)
 from app_vukwm_bag_delivery.review_jobs_data.views.summarise_inputs import (
-    calc_route_product_summary, day_summary, product_type_summary,
-    profile_type_summary)
-from app_vukwm_bag_delivery.util_presenters.check_password import \
-    check_password
-from app_vukwm_bag_delivery.util_presenters.filters.filter_dataframe import \
-    filter_df_widget
+    calc_route_product_summary,
+    day_summary,
+    product_type_summary,
+    profile_type_summary,
+)
+from app_vukwm_bag_delivery.util_presenters.check_password import check_password
+from app_vukwm_bag_delivery.util_presenters.filters.filter_dataframe import (
+    filter_df_widget,
+)
 
 STOP_VIEW_COLUMNS = [
     "Ticket No",
@@ -310,13 +317,12 @@ set_page_config()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 
-tab1, tab2, tab3, tab4, = st.tabs(
+tab1, tab2, tab3, tab4 = st.tabs(
     [
         "Instructions",
         "Edit and select data",
         "Delivery Summary",
         "Time windows",
-        "Exclude jobs",
     ]
 )
 
@@ -339,5 +345,5 @@ with tab3:
 
 with tab4:
     confirm_update_timewindows()
-    
+
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)
