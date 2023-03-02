@@ -3,6 +3,7 @@ import streamlit as st
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.select_vehicles.presenters.select_vehicles import (
+    return_vehicle_edited,
     return_vehicle_grid,
     save_vehicle_selection,
 )
@@ -28,11 +29,6 @@ VEHICLE_VIEW_COLUMNS = [
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Select and edit vehicles",
-        initial_sidebar_state="expanded",
-    )
     st.title("Select and edit vehicles")
 
 
@@ -93,10 +89,11 @@ def confirm_selection(selected_df):
 
 def select_vehicles():
     st.write(
-        "The following vehicles are available for routing. Select the ones to be used:"
+        "The following vehicles are available for routing. Edit and select the ones to be used:"
     )
     vehicle_df = get_defaults.return_vehicle_default()
-    selected_df = return_vehicle_grid(vehicle_df)
+    selected_df = return_vehicle_edited(vehicle_df)
+    # selected_df = return_vehicle_grid(vehicle_df)
 
     if selected_df.shape[0] > 0:
         st.write(

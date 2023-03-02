@@ -72,10 +72,12 @@ def extract_transport_number(df):
     This is used to assign bicycle skills.
     """
     return df.assign(
-        transport_area_number=df["Transport Area Code"]
-        .fillna("-1A")
-        .str[:-1]
-        .astype(int)
+        **{
+            "Transport Area": df["Transport Area Code"]
+            .fillna("-1A")
+            .str[:-1]
+            .astype(int)
+        }
     )
 
 
@@ -100,9 +102,7 @@ def add_order_weight(df, bag_weights):
 
 def assign_bicycle_skills(df):
     return df.assign(
-        skills=(df["transport_area_number"] == 2).replace(
-            {True: "bicycle", False: np.nan}
-        )
+        skills=(df["Transport Area"] == 2).replace({True: "bicycle", False: np.nan})
     )
 
 

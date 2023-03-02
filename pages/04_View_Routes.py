@@ -16,11 +16,6 @@ from app_vukwm_bag_delivery.view_routes.generate_route_map import return_map
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="View routes",
-        initial_sidebar_state="expanded",
-    )
     st.title("View routes")
 
 

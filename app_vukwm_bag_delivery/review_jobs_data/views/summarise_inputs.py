@@ -1,4 +1,4 @@
-GROUPING_COLUMN = ["transport_area_number"]
+GROUPING_COLUMN = ["Transport Area"]
 
 
 def calc_route_product_summary(df):
@@ -26,7 +26,6 @@ def calc_route_product_summary(df):
 
     route_product_summary = route_product_summary.rename(
         columns={
-            "transport_area_number": "Transport area",
             "n_stops": "Number of stops",
             "n_products": "Number of products",
             "product_types": "Product types",
@@ -51,7 +50,7 @@ def profile_type_summary(df):
     return (
         df.assign(
             **{
-                "Delivery vehicle type": (df["transport_area_number"] == 2).replace(
+                "Delivery vehicle type": (df["Transport Area"] == 2).replace(
                     {True: "Bicycle", False: "Van or Bicycle"}
                 )
             }

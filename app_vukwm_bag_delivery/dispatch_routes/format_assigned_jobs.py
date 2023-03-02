@@ -101,9 +101,15 @@ def get_route_totals():
     assigned_jobs = st.session_state.data_07_reporting["assigned_jobs_download"]
     assigned_jobs = assigned_jobs.assign(
         **{
+            "Trip Id": assigned_jobs["Trip Id"].fillna(0).astype(int),
+            "Vehicle type": assigned_jobs["Vehicle type"].astype(str),
+        }
+    )
+    assigned_jobs = assigned_jobs.assign(
+        **{
             "Vehicle Id": assigned_jobs["Vehicle Id"].fillna("Unassigned")
             + " "
-            + assigned_jobs["Trip Id"].astype(int).astype(str).str.zfill(2)
+            + assigned_jobs["Trip Id"].astype(int).astype(str).str.zfill(2),
         }
     )
     assigned_jobs_sum = (
