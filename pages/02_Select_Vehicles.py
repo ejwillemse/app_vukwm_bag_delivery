@@ -89,7 +89,7 @@ def confirm_selection(selected_df):
 
 def select_vehicles():
     st.write(
-        "The following vehicles are available for routing. Select the ones to be used:"
+        "The following vehicles are available for routing. Edit and select the ones to be used:"
     )
     vehicle_df = get_defaults.return_vehicle_default()
     selected_df = return_vehicle_edited(vehicle_df)
