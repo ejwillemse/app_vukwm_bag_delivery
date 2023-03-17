@@ -1,5 +1,6 @@
 import streamlit as st
 
+from app_vukwm_bag_delivery.dispatch_routes.excel_download import to_excel
 from app_vukwm_bag_delivery.models.pipelines.process_input_data import (
     download_s3_file,
     raw_input_processing,
@@ -21,6 +22,57 @@ from app_vukwm_bag_delivery.util_views.return_session_status import (
     check_unserviced_stops_in_routes,
     check_unused_routes,
 )
+
+
+@st.cache_data
+def return_all_jobs():
+    path = st.secrets["s3_input_paths"]["geocoded_input"]
+    jobs_file = download_s3_file.return_available_files(
+        st.secrets["bucket"],
+        st.secrets["dev_s3"],
+        path,
+    )
+    return jobs_file
+
+
+def download_selected_file(selected):
+    path = st.secrets["s3_input_paths"]["geocoded_input"]
+    selected_name = selected[selected["Selected"] == True].iloc[0]["filename"]
+    with st.spinner("Preparing file for download..."):
+        df = download_s3_file.return_geo_file(
+            st.secrets["bucket"],
+            st.secrets["dev_s3"],
+            path,
+            path + selected_name,
+        )
+        df_xlsx = to_excel(df)
+    st.download_button(
+        label="Download job list as excel file",
+        data=df_xlsx,
+        file_name=selected_name.replace(".csv", ".xlsx"),
+    )
+
+
+def confirm_select(selected):
+    if selected["Selected"].sum() == 1:
+        pressed = st.button("Download selected file")
+        if pressed:
+            download_selected_file(selected)
+    elif selected["Selected"].sum() > 1:
+        st.warning("Please select only one file to download")
+
+
+def load_jobs_file():
+    path = st.secrets["s3_input_paths"]["geocoded_input"]
+    jobs_file = return_all_jobs()
+    jobs_file_display = jobs_file.assign(
+        filename=jobs_file["filename"].str.replace(path, "", regex=False)
+    ).sort_values(["last_modified"], ascending=False)
+    jobs_file_display = jobs_file_display.assign(Selected=False)[
+        ["Selected"] + jobs_file_display.columns.tolist()
+    ]
+    selected = st.experimental_data_editor(jobs_file_display)
+    confirm_select(selected)
 
 
 def load_raw_data():

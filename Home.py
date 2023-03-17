@@ -100,6 +100,12 @@ if not return_session_status.check_raw_jobs_loaded():
     with st.spinner("Initiating session and loading data..."):
         load_input_data.load_data()
 
+tabs = st.tabs(["View session status", "Upload jobs data", "Download jobs data"])
 
-st.markdown(return_full_status())
-side_bar_progress.update_side_bar(side_bar_status)
+with tabs[0]:
+    st.markdown(return_full_status())
+    side_bar_progress.update_side_bar(side_bar_status)
+
+with tabs[2]:
+    st.markdown("Download the current or previous jobs data file.")
+    files = load_input_data.load_jobs_file()
