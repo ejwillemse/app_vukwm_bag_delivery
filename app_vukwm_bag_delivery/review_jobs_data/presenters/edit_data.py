@@ -82,7 +82,7 @@ def edit_data():
 
     if unknown_locations.shape[0] > 0:
         st.warning(
-            "The following locations are not recognised. Please manually update their latitude and longitude values."
+            "The following locations are not recognised. Please manually update their `Site Latitude` and `Site Longitude` values above."
         )
         st.write(unknown_locations)
 
