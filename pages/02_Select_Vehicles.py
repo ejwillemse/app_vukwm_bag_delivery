@@ -12,6 +12,8 @@ from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 VEHICLE_VIEW_COLUMNS = [
     "Vehicle id",
+    "Driver name",
+    "Driver email",
     "Type",
     "Capacity (kg)",
     "Max stops",

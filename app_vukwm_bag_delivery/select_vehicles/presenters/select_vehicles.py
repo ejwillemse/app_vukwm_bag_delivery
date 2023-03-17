@@ -25,6 +25,8 @@ def gen_time_range(min=0, max=25):
 VEHICLE_COLUMNS_DATA_TYPE = {
     "": "bool",
     "Vehicle id": "string",
+    "Driver name": "string",
+    "Driver email": "string",
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",

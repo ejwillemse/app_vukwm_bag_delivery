@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -18,6 +19,8 @@ def gen_time_range(min=0, max=25):
 
 VEHICLE_COLUMNS_DATA_TYPE = {
     "Vehicle id": "string",
+    "Driver name": "string",
+    "Driver email": "string",
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",
@@ -37,6 +40,8 @@ VEHICLE_COLUMNS_DATA_TYPE = {
 def return_vehicle_default():
     vehicle_ids = ["W01", "W02", "W03", "W04", "W05", "W06"]
     vehicle_type = ["Van", "Van", "Van", "Bicycle", "Van", "Van"]
+    driver_name = [np.nan] * 6
+    driver_email = [np.nan] * 6
     depot = [
         "Mandela Way",
         "Mandela Way",
@@ -60,6 +65,8 @@ def return_vehicle_default():
     vehicle_df = pd.DataFrame(
         {
             "Vehicle id": vehicle_ids,
+            "Driver name": driver_name,
+            "Driver email": driver_email,
             "Type": vehicle_type,
             "Capacity (kg)": capacity,
             "Max stops": max_stops,
@@ -75,4 +82,5 @@ def return_vehicle_default():
             "lon": lon,
         }
     ).astype(VEHICLE_COLUMNS_DATA_TYPE)
+    vehicle_df = vehicle_df.iloc[:4]
     return vehicle_df
