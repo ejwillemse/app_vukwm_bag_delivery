@@ -17,7 +17,7 @@ def calc_route_product_summary(df):
         df.sort_values(["Product Name"])
         .groupby(GROUPING_COLUMN)
         .agg(
-            n_stops=("Ticket No", "count"),
+            n_stops=("Site Bk", "nunique"),
             n_products=("Quantity", "sum"),
             product_types=("Product Name", "unique"),
         )
@@ -39,7 +39,7 @@ def day_summary(df):
         df.groupby(["Required Date"])
         .agg(
             **{
-                "Uncompleted orders": ("Ticket No", "count"),
+                "Uncompleted stops": ("Site Bk", "nunique"),
             }
         )
         .reset_index()
@@ -58,7 +58,7 @@ def profile_type_summary(df):
         .groupby(["Delivery vehicle type"])
         .agg(
             **{
-                "Uncompleted orders": ("Ticket No", "count"),
+                "Uncompleted stops": ("Site Bk", "nunique"),
             }
         )
         .reset_index()
