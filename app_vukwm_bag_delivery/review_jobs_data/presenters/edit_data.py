@@ -76,17 +76,19 @@ def edit_data():
     edited_data = st.experimental_data_editor(
         data[STOP_COLUMN_TYPES.keys()][data.columns]
     )
-    unknown_locations = edited_data.loc[edited_data["Site Latitude"].isna()]
+    unknown_locations = edited_data.loc[
+        edited_data["Site Latitude"].isna() | edited_data["Site Latitude"] == 0
+    ]
 
     if unknown_locations.shape[0] > 0:
         st.warning(
-            "The following locations are not recognised. Please manually update their latitude and longitude values."
+            "The following locations are not recognised. Please manually update their `Site Latitude` and `Site Longitude` values above."
         )
         st.write(unknown_locations)
 
-    save_reload = st.button("Save edits")
+    save_reload = st.button("Save edits and selections")
     st.warning(
-        "All data edits, as well as generated and edited routes will be lost. This includes time-window edits and vehicle attribute edits."
+        "All data edits, as well as generated and edited routes will be lost. This includes time-window edits."
     )
     exluded_jobs = edited_data.loc[~edited_data["Selected"]]
     if save_reload is True:

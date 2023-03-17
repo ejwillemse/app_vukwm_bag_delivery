@@ -46,10 +46,11 @@ def get_latest_bucket_files(my_bucket, prefix: str) -> pd.DataFrame:
     return file_info
 
 
-def download_return_latest_file(my_bucket, file_info, driver):
-    latest_file = file_info.sort_values(["last_modified"], ascending=False).iloc[0][
-        "filename"
-    ]
+def download_return_file(my_bucket, file_info, driver, latest_file=None):
+    if latest_file is None:
+        latest_file = file_info.sort_values(["last_modified"], ascending=False).iloc[0][
+            "filename"
+        ]
     download_file(my_bucket, latest_file, "data/" + latest_file)
     return driver("data/" + latest_file)
 
@@ -58,6 +59,27 @@ def read_json_file(file_name: str):
     """Readd single test file"""
     with open(file_name, mode="r", encoding="utf-8") as file:
         return json.load(file)
+
+
+def return_available_files(
+    bucket,
+    s3_cred,
+    geocoded_prefix_path,
+):
+    my_bucket = get_s3_bucket_session(s3_cred, bucket)
+    return get_latest_bucket_files(my_bucket, geocoded_prefix_path)
+
+
+def return_file(
+    bucket,
+    s3_cred,
+    path,
+    driver,
+    file_name,
+):
+    my_bucket = get_s3_bucket_session(s3_cred, bucket)
+    data = download_return_file(my_bucket, path, driver, file_name)
+    return data
 
 
 def return_routing_files(
@@ -72,28 +94,24 @@ def return_routing_files(
     my_bucket = get_s3_bucket_session(s3_cred, bucket)
 
     excel_files = get_latest_bucket_files(my_bucket, excel_prefix_path)
-    latest_excel_file = download_return_latest_file(
-        my_bucket, excel_files, pd.read_excel
-    )
+    latest_excel_file = download_return_file(my_bucket, excel_files, pd.read_excel)
 
     geo_files = get_latest_bucket_files(my_bucket, geocoded_prefix_path)
-    latest_geo_file = download_return_latest_file(my_bucket, geo_files, pd.read_csv)
+    latest_geo_file = download_return_file(my_bucket, geo_files, pd.read_csv)
 
     unassigned_stops_files = get_latest_bucket_files(
         my_bucket, unassgined_stops_prefix_path
     )
-    latest_unassigned_stops_file = download_return_latest_file(
+    latest_unassigned_stops_file = download_return_file(
         my_bucket, unassigned_stops_files, read_json_file
     )
 
     time_windows_files = get_latest_bucket_files(my_bucket, time_windows_prefix_path)
-    latest_time_windows_file = download_return_latest_file(
+    latest_time_windows_file = download_return_file(
         my_bucket, time_windows_files, pd.read_csv
     )
     weight_files = get_latest_bucket_files(my_bucket, bag_weights_prefix_path)
-    latest_weight_files = download_return_latest_file(
-        my_bucket, weight_files, pd.read_csv
-    )
+    latest_weight_files = download_return_file(my_bucket, weight_files, pd.read_csv)
     return (
         latest_excel_file,
         latest_geo_file,

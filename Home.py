@@ -1,5 +1,7 @@
 import logging
 
+import pandas as pd
+
 logging.basicConfig(format="%(asctime)s - %(message)s", level=logging.INFO)
 import streamlit as st
 
@@ -87,6 +89,11 @@ def view_instructions():
         )
 
 
+def load_existing_input_data(df_upload):
+    with st.spinner("Initiating session and processing existing data..."):
+        load_input_data.upload_data(df_upload)
+
+
 set_page_config()
 
 if not check_password():
@@ -97,9 +104,29 @@ side_bar_status = side_bar_progress.view_sidebar()
 view_instructions()
 
 if not return_session_status.check_raw_jobs_loaded():
-    with st.spinner("Initiating session and loading data..."):
+    with st.spinner("Initiating session and processing uploaded data..."):
         load_input_data.load_data()
 
+tabs = st.tabs(["View session status", "Upload jobs data", "Download jobs data"])
 
-st.markdown(return_full_status())
-side_bar_progress.update_side_bar(side_bar_status)
+with tabs[0]:
+    st.markdown(return_full_status())
+    side_bar_progress.update_side_bar(side_bar_status)
+
+with tabs[1]:
+    st.markdown(
+        "Upload a jobs data file. Note that there are strict formatting requirements. We recommend download an existing file and inspecting it."
+    )
+    df = st.file_uploader("Upload jobs data file")
+    if df is not None:
+        df_upload = pd.read_excel(df)
+        pressed = st.button("Process file for routing")
+        if pressed:
+            load_existing_input_data(df_upload)
+        with st.expander("View uploaded data"):
+            st.write(df_upload)
+
+
+with tabs[2]:
+    st.markdown("Download the current or previous jobs data file.")
+    load_input_data.load_jobs_file()

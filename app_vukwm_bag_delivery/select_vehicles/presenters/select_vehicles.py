@@ -25,6 +25,16 @@ def gen_time_range(min=0, max=25):
 VEHICLE_COLUMNS_DATA_TYPE = {
     "": "bool",
     "Vehicle id": "string",
+    "Driver name": "string",
+    "Driver email": pd.CategoricalDtype(
+        categories=[
+            "wccb.r01@gmail.com",
+            "wccb.r02@gmail.com",
+            "wccb.r03@gmail.com",
+            "wccb.r04@gmail.com",
+        ],
+        ordered=True,
+    ),
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",
@@ -191,11 +201,7 @@ def return_vehicle_grid(df):
 
 
 def return_vehicle_edited(df: pd.DataFrame) -> pd.DataFrame:
-    new_columns = [""] + df.columns.tolist()
-    df = df.assign(**{"": False})[new_columns].astype(VEHICLE_COLUMNS_DATA_TYPE)
-    selected_df = st.experimental_data_editor(df, num_rows="dynamic")
-    selected_df = selected_df.rename(columns={"": "Selected"})
-    selected_df = selected_df[selected_df["Selected"] == True].copy()
+    selected_df = df.loc[df["Selected"] == True].copy()
     return selected_df
 
 

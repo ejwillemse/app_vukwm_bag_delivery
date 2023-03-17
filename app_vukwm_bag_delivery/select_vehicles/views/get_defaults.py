@@ -1,4 +1,6 @@
+import numpy as np
 import pandas as pd
+import streamlit as st
 
 
 def gen_time_range(min=0, max=25):
@@ -17,7 +19,18 @@ def gen_time_range(min=0, max=25):
 
 
 VEHICLE_COLUMNS_DATA_TYPE = {
+    "Selected": "bool",
     "Vehicle id": "string",
+    "Driver name": "string",
+    "Driver email": pd.CategoricalDtype(
+        categories=[
+            "wccb.r01@gmail.com",
+            "wccb.r02@gmail.com",
+            "wccb.r03@gmail.com",
+            "wccb.r04@gmail.com",
+        ],
+        ordered=True,
+    ),
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",
@@ -35,8 +48,20 @@ VEHICLE_COLUMNS_DATA_TYPE = {
 
 
 def return_vehicle_default():
+    if "vehicle_defaults" in st.session_state:
+        return st.session_state["vehicle_defaults"].copy()
+    selected = [False] * 6
     vehicle_ids = ["W01", "W02", "W03", "W04", "W05", "W06"]
     vehicle_type = ["Van", "Van", "Van", "Bicycle", "Van", "Van"]
+    driver_name = [np.nan] * 6
+    driver_email = [
+        "wccb.r01@gmail.com",
+        "wccb.r02@gmail.com",
+        "wccb.r03@gmail.com",
+        "wccb.r04@gmail.com",
+        np.nan,
+        np.nan,
+    ]
     depot = [
         "Mandela Way",
         "Mandela Way",
@@ -59,7 +84,10 @@ def return_vehicle_default():
 
     vehicle_df = pd.DataFrame(
         {
+            "Selected": selected,
             "Vehicle id": vehicle_ids,
+            "Driver name": driver_name,
+            "Driver email": driver_email,
             "Type": vehicle_type,
             "Capacity (kg)": capacity,
             "Max stops": max_stops,
@@ -75,4 +103,5 @@ def return_vehicle_default():
             "lon": lon,
         }
     ).astype(VEHICLE_COLUMNS_DATA_TYPE)
+    vehicle_df = vehicle_df.iloc[:4]
     return vehicle_df
