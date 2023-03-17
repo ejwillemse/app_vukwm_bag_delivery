@@ -68,22 +68,19 @@ def confirm_selection(selected_df):
 
 def save_edits(df):
     st.session_state["vehicle_defaults"] = df.copy()
+    selected_df = return_vehicle_edited(df)
+    save_vehicle_selection(selected_df)
 
 
 def select_vehicles():
     st.write(
-        "The following vehicles are available for routing. Edit and select the ones to be used:"
+        "The following vehicles are available for routing. Edit and select the ones to be used. Edits will be saved for selected and unselected vehicles."
     )
     vehicle_df = get_defaults.return_vehicle_default()
     vehicle_df_edits = st.experimental_data_editor(vehicle_df, num_rows="dynamic")
-    st.button("Save edits", on_click=save_edits, args=(vehicle_df_edits,))
-    selected_df = return_vehicle_edited(vehicle_df_edits)
-    if selected_df.shape[0] > 0:
-        st.write(
-            f"The following {selected_df.shape[0]} vehicles will be used for deliveries:"
-        )
-        st.write(selected_df)
-        confirm_selection(selected_df)
+    st.button(
+        "Save edits and selections", on_click=save_edits, args=(vehicle_df_edits,)
+    )
 
 
 set_page_config()
