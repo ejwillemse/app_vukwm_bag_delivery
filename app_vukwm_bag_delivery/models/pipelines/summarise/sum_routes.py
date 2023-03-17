@@ -2,13 +2,16 @@ import pandas as pd
 
 
 def route_summary(assigned_stops):
+    assigned_stops = assigned_stops.assign(
+        vehicle_profile=assigned_stops["vehicle_profile"].astype("string")
+    )
     return (
         assigned_stops.assign(
             job_flag=assigned_stops["location_type"] == "JOB",
             early=assigned_stops["service_issue"] == "EARLY",
             late=assigned_stops["service_issue"] == "LATE",
         )
-        .groupby(["route_id", "vehicle_profile"])
+        .groupby(["route_id", "trip_id", "vehicle_profile"])
         .agg(
             start_time=("arrival_time", "min"),
             end_time=("departure_time", "max"),

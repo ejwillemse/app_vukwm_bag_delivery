@@ -228,6 +228,13 @@ def generate_sheet_cells():
     product_totals = st.session_state.data_07_reporting[
         "assigned_jobs_download_product_totals"
     ]
+    assigned_jobs = assigned_jobs.assign(
+        **{
+            "Vehicle Id": assigned_jobs["Vehicle Id"]
+            + " "
+            + assigned_jobs["Trip Id"].fillna(0).astype(int).astype(str).str.zfill(2)
+        }
+    )
     route_ids = assigned_jobs["Vehicle Id"].unique()
     sheet_cells = {}
     for route_id in route_ids:

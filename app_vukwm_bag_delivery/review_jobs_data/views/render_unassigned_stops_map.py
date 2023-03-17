@@ -156,8 +156,6 @@ def return_order_config():
 
 def return_order_map_html(df):
     df_map = df.copy()
-    df_map["Transport area"] = "#" + df_map["transport_area_number"].astype(
-        str
-    ).str.zfill(2)
-    m = KeplerGl(data={"orders": df_map}, config=return_order_config())
+    df_map["Transport area"] = "#" + df_map["Transport Area"].astype(str).str.zfill(2)
+    m = KeplerGl(data={"orders": df_map.fillna("")}, config=return_order_config())
     return m._repr_html_(center_map=True, read_only=False)

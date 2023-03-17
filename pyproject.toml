@@ -8,7 +8,7 @@ packages = [{include = "app_vukwm_bag_delivery"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-streamlit = "^1.15.2"
+streamlit = "^1.19.0"
 watchdog = "^2.2.0"
 pylint = "^2.15.8"
 black = "^22.10.0"

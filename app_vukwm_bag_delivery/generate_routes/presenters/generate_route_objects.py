@@ -21,7 +21,6 @@ def generate_vroom_input():
     )
 
     problem_instance = generate_vroom_object.add_stops(
-        problem_instance, unassigned_stops
+        problem_instance, unassigned_stops, unassigned_routes
     )
-
     st.session_state.data_04_model_input["vroom_input"] = problem_instance

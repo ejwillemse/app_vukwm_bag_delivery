@@ -16,11 +16,6 @@ from app_vukwm_bag_delivery.view_routes.generate_route_map import return_map
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="View routes",
-        initial_sidebar_state="expanded",
-    )
     st.title("View routes")
 
 
@@ -180,10 +175,19 @@ def filter_routes():
         st.session_state.view_routes = {"filter_vehicles": selected_vehicles}
 
 
+def view_totals():
+    n_stops_routed = extract_high_level_summary.extract_high_level_summary().iloc[-1][
+        "No. stops"
+    ]
+    n_stops = st.session_state["n_stops"]
+    st.metric("No stops routed", n_stops_routed, int(n_stops_routed - n_stops))
+
+
 set_page_config()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
+view_totals()
 filter_routes()
 display_routes()
 display_gant()

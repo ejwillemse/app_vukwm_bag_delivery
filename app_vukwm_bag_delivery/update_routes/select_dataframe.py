@@ -16,7 +16,7 @@ TABLE_HEIGHT = 500
 def selection_dataframe() -> None:
     logging.info(f"logging::::selecting dataframe")
     data = return_filtered_route_id_data(ROUTE_ID).copy()
-    data = data.loc[data["Activity type"] != "DEPOT_START_END"].copy()
+    data = data.loc[data["Activity type"] == "DELIVERY"].copy()
     data = data.sort_values([ROUTE_ID, "Stop sequence"])
     data = data.assign(temp_index=np.arange(data.shape[0]))
 
