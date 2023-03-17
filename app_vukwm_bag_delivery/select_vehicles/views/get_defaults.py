@@ -20,7 +20,15 @@ def gen_time_range(min=0, max=25):
 VEHICLE_COLUMNS_DATA_TYPE = {
     "Vehicle id": "string",
     "Driver name": "string",
-    "Driver email": "string",
+    "Driver email": pd.CategoricalDtype(
+        categories=[
+            "wccb.r01@gmail.com",
+            "wccb.r02@gmail.com",
+            "wccb.r03@gmail.com",
+            "wccb.r04@gmail.com",
+        ],
+        ordered=True,
+    ),
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",
@@ -41,7 +49,14 @@ def return_vehicle_default():
     vehicle_ids = ["W01", "W02", "W03", "W04", "W05", "W06"]
     vehicle_type = ["Van", "Van", "Van", "Bicycle", "Van", "Van"]
     driver_name = [np.nan] * 6
-    driver_email = [np.nan] * 6
+    driver_email = [
+        "wccb.r01@gmail.com",
+        "wccb.r02@gmail.com",
+        "wccb.r03@gmail.com",
+        "wccb.r04@gmail.com",
+        np.nan,
+        np.nan,
+    ]
     depot = [
         "Mandela Way",
         "Mandela Way",

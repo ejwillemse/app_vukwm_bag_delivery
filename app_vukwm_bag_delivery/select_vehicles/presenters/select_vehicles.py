@@ -26,7 +26,15 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "": "bool",
     "Vehicle id": "string",
     "Driver name": "string",
-    "Driver email": "string",
+    "Driver email": pd.CategoricalDtype(
+        categories=[
+            "wccb.r01@gmail.com",
+            "wccb.r02@gmail.com",
+            "wccb.r03@gmail.com",
+            "wccb.r04@gmail.com",
+        ],
+        ordered=True,
+    ),
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",
