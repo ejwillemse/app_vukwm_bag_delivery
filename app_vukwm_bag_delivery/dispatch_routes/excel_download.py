@@ -73,8 +73,15 @@ def to_excel(df):
     return processed_data
 
 
+def drop_unassigned(df):
+    df = df.loc[df["Vehicle Id"] != "Unassigned"]
+    df = df.loc[~df["Trip Id"].isna()]
+    return df
+
+
 def format_routes():
     assigned_jobs = st.session_state.data_07_reporting["assigned_jobs_download"]
+    assigned_jobs = drop_unassigned(assigned_jobs)
     assigned_jobs = add_driver_info(assigned_jobs)
     assigned_jobs = format_data(assigned_jobs)
     return assigned_jobs

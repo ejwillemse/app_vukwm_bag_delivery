@@ -138,6 +138,14 @@ def dispatch_routes():
     st.warning(
         "This step cannot be undone. Please ensure that all data is correct and that the final routes available under `View Routes` are the final ones to be dispatched."
     )
+    if return_session_status.check_unserviced_stops():
+        st.error(
+            "There are unserviced stops. These jobs will not be dispatched to the drivers. Please make sure that this is correct. Go to `View Routes` for more details."
+        )
+    if return_session_status.check_unserviced_stops_in_routes():
+        st.error(
+            "Some of the routes have jobs that cannot be completed. These jobs will not be dispatched to the drivers. Go to `View Routes` for more details."
+        )
     dispatch_df = download_results()
     st.write(
         "Enter `Dispatch routes` below and press enter to confirm that the routes should be dispatched."
