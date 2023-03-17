@@ -9,6 +9,7 @@ import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.util_views.return_session_status import return_full_status
 
+# force restart
 
 def set_page_config():
     st.set_page_config(
