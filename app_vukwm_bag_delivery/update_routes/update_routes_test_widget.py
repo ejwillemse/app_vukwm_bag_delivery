@@ -53,7 +53,7 @@ def create_lat_lon_id(data):
     )
 
 
-@st.experimental_singleton
+@st.cache_data
 def load_transform_data():
     """Load data and do some basic transformation. The `st.experimental_singleton`
     decorator prevents the data from being continously reloaded.
