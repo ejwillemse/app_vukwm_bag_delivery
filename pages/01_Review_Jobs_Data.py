@@ -327,7 +327,25 @@ tab1, tab2, tab3, tab4 = st.tabs(
 )
 
 with tab1:
+    n_stops = st.session_state.data_02_intermediate["unassigned_jobs_editable"][
+        "Site Bk"
+    ].nunique()
+    area2_stops = (
+        st.session_state.data_02_intermediate["unassigned_jobs_editable"][
+            "Transport Area"
+        ]
+        == 2
+    ).sum()
     view_instructions()
+    st.session_state["n_stops"] = n_stops
+    st.session_state["area2_stops"] = area2_stops
+    cols = st.columns(3)
+    with cols[0]:
+        st.metric("Total number of stops", n_stops)
+    with cols[1]:
+        st.metric("Stops in bicycle area (area 2)", area2_stops)
+    with cols[2]:
+        st.metric("Stops in other areas", n_stops - area2_stops)
     view_stops_map()
 
 with tab2:
