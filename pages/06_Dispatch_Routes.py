@@ -150,10 +150,11 @@ def dispatch_routes():
         )
         if pressed:
             st.success(
-                "Rouets have been dispatched. Actually, if you can kill the app within 3 seconds it won't be dispatched, so last chance..."
+                "Routes have been dispatched. Actually, if you can kill the app within 3 seconds it won't be dispatched, so last chance..."
             )
             st.balloons()
-            time.sleep(3)
+            st.balloons()
+            time.sleep(5)
             st.session_state["jobs_dispatched"] = True
             st.experimental_rerun()
 
