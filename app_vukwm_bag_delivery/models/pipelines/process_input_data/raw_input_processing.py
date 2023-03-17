@@ -141,9 +141,10 @@ def combine_orders(df):
     return orders_grouped
 
 
-def process_input_data(df, excel_df, bag_weights):
+def process_input_data(df, excel_df, bag_weights, excel_date_format=True):
     df = df.copy()
-    df = add_excel_time_dates(df, excel_df)
+    if excel_date_format:
+        df = add_excel_time_dates(df, excel_df)
     df = add_completed_flag(df)
     df = filter_unassigned(df)
     df = extract_transport_number(df)

@@ -70,17 +70,16 @@ def return_available_files(
     return get_latest_bucket_files(my_bucket, geocoded_prefix_path)
 
 
-def return_geo_file(
+def return_file(
     bucket,
     s3_cred,
-    geocoded_prefix_path,
+    path,
+    driver,
     file_name,
 ):
     my_bucket = get_s3_bucket_session(s3_cred, bucket)
-    latest_geo_file = download_return_file(
-        my_bucket, geocoded_prefix_path, pd.read_csv, file_name
-    )
-    return latest_geo_file
+    data = download_return_file(my_bucket, path, driver, file_name)
+    return data
 
 
 def return_routing_files(

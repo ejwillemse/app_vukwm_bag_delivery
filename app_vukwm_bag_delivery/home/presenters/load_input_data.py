@@ -1,3 +1,4 @@
+import pandas as pd
 import streamlit as st
 
 from app_vukwm_bag_delivery.dispatch_routes.excel_download import to_excel
@@ -26,7 +27,7 @@ from app_vukwm_bag_delivery.util_views.return_session_status import (
 
 @st.cache_data
 def return_all_jobs():
-    path = st.secrets["s3_input_paths"]["geocoded_input"]
+    path = st.secrets["s3_input_paths"]["raw_user_input"]
     jobs_file = download_s3_file.return_available_files(
         st.secrets["bucket"],
         st.secrets["dev_s3"],
@@ -36,16 +37,29 @@ def return_all_jobs():
 
 
 def download_selected_file(selected):
-    path = st.secrets["s3_input_paths"]["geocoded_input"]
     selected_name = selected[selected["Selected"] == True].iloc[0]["filename"]
     with st.spinner("Preparing file for download..."):
-        df = download_s3_file.return_geo_file(
+        raw_user_input = st.secrets["s3_input_paths"]["raw_user_input"]
+        df_raw = download_s3_file.return_file(
             st.secrets["bucket"],
             st.secrets["dev_s3"],
-            path,
-            path + selected_name,
+            st.secrets["s3_input_paths"]["raw_user_input"],
+            pd.read_excel,
+            st.secrets["s3_input_paths"]["raw_user_input"] + selected_name,
         )
-        df_xlsx = to_excel(df)
+        selected_name = selected_name.replace(".xlsx", ".csv")
+        df_geo = download_s3_file.return_file(
+            st.secrets["bucket"],
+            st.secrets["dev_s3"],
+            st.secrets["s3_input_paths"]["geocoded_input"],
+            pd.read_csv,
+            st.secrets["s3_input_paths"]["geocoded_input"] + selected_name,
+        )
+        df_raw[["Site Latitude", "Site Longitude"]] = df_geo[
+            ["Site Latitude", "Site Longitude"]
+        ].values
+        df_raw = df_raw.assign(**{"Site Address": df_geo["Site Address"].values})
+        df_xlsx = to_excel(df_raw)
     st.download_button(
         label="Download job list as excel file",
         data=df_xlsx,
@@ -63,7 +77,7 @@ def confirm_select(selected):
 
 
 def load_jobs_file():
-    path = st.secrets["s3_input_paths"]["geocoded_input"]
+    path = st.secrets["s3_input_paths"]["raw_user_input"]
     jobs_file = return_all_jobs()
     jobs_file_display = jobs_file.assign(
         filename=jobs_file["filename"].str.replace(path, "", regex=False)
@@ -100,11 +114,12 @@ def load_raw_data():
     st.session_state.stop_data = geo_data.copy()
 
 
-def convert_intermediate_data():
+def convert_intermediate_data(excel_date_format=True):
     unassigned_jobs = raw_input_processing.process_input_data(
         st.session_state.data_01_raw["unassigned_stops"],
         st.session_state.data_01_raw["raw_input"],
         st.session_state.data_01_raw["bag_weights"],
+        excel_date_format=excel_date_format,
     )
     unassigned_stops = raw_input_processing.combine_orders(unassigned_jobs)
     columns = ["Selected"] + unassigned_jobs.columns.tolist()
@@ -152,6 +167,15 @@ def clear_processed_data():
 def load_data():
     load_raw_data()
     convert_intermediate_data()
+    return_time_window_info()
+
+
+def upload_data(new_data):
+    reload_data()
+    st.session_state.data_01_raw["raw_input"] = new_data.copy()
+    st.session_state.data_01_raw["unassigned_stops"] = new_data.copy()
+    st.session_state.stop_data = new_data.copy()
+    convert_intermediate_data(excel_date_format=False)
     return_time_window_info()
 
 
