@@ -22,11 +22,6 @@ from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Generate routes",
-        initial_sidebar_state="expanded",
-    )
     st.title("Generate routes")
 
 

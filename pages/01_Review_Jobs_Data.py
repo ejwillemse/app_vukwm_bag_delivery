@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.review_jobs_data.presenters.edit_data import edit_data
 from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import (
     generate_known_unknown,
 )
@@ -60,11 +61,6 @@ STOP_VIEW_COLUMNS_RENAME = {"transport_area_number": "Transport Area"}
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Review Jobs Data",
-        initial_sidebar_state="expanded",
-    )
     st.title("Review delivery jobs")
 
 
@@ -94,17 +90,28 @@ def check_previous_steps_completed():
     if (
         "data_02_intermediate" not in st.session_state
         or "unassigned_stops" not in st.session_state.data_02_intermediate
-        or "unassigned_jobs" not in st.session_state.data_02_intermediate
+        or "unassigned_jobs_editable" not in st.session_state.data_02_intermediate
     ):
         st.warning("Job data not loaded during session. Please go back to `Home` page")
         st.stop()  # App won't run anything after this line
+
+
+def edit_select_data():
+    with st.expander("Insutrctions", expanded=True):
+        st.markdown(
+            """
+Edit any data and click save when completed. You can also deselect rows by clicking on the checkbox.
+To search for specific values, press `constrol + F` and type in the search term. On a mac, use `command + F`.
+        """
+        )
+    edit_data()
 
 
 def view_product_summary():
     st.markdown("View stop info per transport area")
     st.write(
         calc_route_product_summary(
-            st.session_state.data_02_intermediate["unassigned_jobs"]
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"]
         )
     )
 
@@ -112,7 +119,7 @@ def view_product_summary():
 def view_all_stops():
     with st.expander("View all stops"):
         data = filter_df_widget(
-            st.session_state.data_02_intermediate["unassigned_jobs"].rename(
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"].rename(
                 columns=STOP_VIEW_COLUMNS_RENAME
             )[STOP_VIEW_COLUMNS]
         )
@@ -121,7 +128,7 @@ def view_all_stops():
 
 def view_stops_map():
     html = return_order_map_html(
-        st.session_state.data_02_intermediate["unassigned_stops"]
+        st.session_state.data_02_intermediate["unassigned_jobs_editable"]
     )
     components.html(html, height=500)
 
@@ -131,7 +138,7 @@ def confirm_removal():
     if pressed:
         if (
             "removed_unassigned_stops" in st.session_state.data_02_intermediate
-            and st.session_state.data_02_intermediate["removed_unassigned_stops"].shape[
+            and st.session_state.data_02_intermediate["unassigned_jobs_editable"].shape[
                 0
             ]
             > 0
@@ -177,7 +184,7 @@ def clear_selection_removal():
 
 def view_select_removal_stops() -> None:
     st.subheader("Exclude jobs from delivery")
-    data = st.session_state.data_02_intermediate["unassigned_jobs"]
+    data = st.session_state.data_02_intermediate["unassigned_jobs_editable"]
     n_stops_in = data.shape[0]
     data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
     modify = st.radio(
@@ -279,20 +286,26 @@ def view_pre_selected_stops() -> None:
 
 def view_day_summary():
     st.markdown("Delivery info per day")
-    st.write(day_summary(st.session_state.data_02_intermediate["unassigned_jobs"]))
+    st.write(
+        day_summary(st.session_state.data_02_intermediate["unassigned_jobs_editable"])
+    )
 
 
 def view_profile_type_summary():
     st.markdown("Delivery info per required delivery vehicle type")
     st.write(
-        profile_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+        profile_type_summary(
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"]
+        )
     )
 
 
 def view_product_type_summary():
     st.markdown("Delivery info per product type")
     st.write(
-        product_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+        product_type_summary(
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"]
+        )
     )
 
 
@@ -305,14 +318,42 @@ side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["Instructions", "Delivery Summary", "Time windows", "Exclude jobs"]
+    [
+        "Instructions",
+        "Edit and select data",
+        "Delivery Summary",
+        "Time windows",
+    ]
 )
 
 with tab1:
+    n_stops = st.session_state.data_02_intermediate["unassigned_jobs_editable"][
+        "Site Bk"
+    ].nunique()
+    area2_stops = (
+        st.session_state.data_02_intermediate["unassigned_jobs_editable"][
+            "Transport Area"
+        ]
+        == 2
+    ).sum()
     view_instructions()
+    st.session_state["n_stops"] = n_stops
+    st.session_state["area2_stops"] = area2_stops
+    cols = st.columns(3)
+    with cols[0]:
+        st.metric("Total number of stops", n_stops)
+    with cols[1]:
+        st.metric("Stops in bicycle area (area 2)", area2_stops)
+    with cols[2]:
+        st.metric("Stops in other areas", n_stops - area2_stops)
     view_stops_map()
 
 with tab2:
+    st.subheader("Edit and select data")
+    edit_select_data()
+
+
+with tab3:
     st.subheader("Delivery summary")
     view_day_summary()
     view_profile_type_summary()
@@ -320,11 +361,7 @@ with tab2:
     view_product_summary()
     view_all_stops()
 
-with tab3:
-    confirm_update_timewindows()
-
 with tab4:
-    view_select_removal_stops()
-    view_pre_selected_stops()
+    confirm_update_timewindows()
 
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)

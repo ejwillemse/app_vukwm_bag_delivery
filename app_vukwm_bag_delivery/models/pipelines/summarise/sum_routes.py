@@ -2,6 +2,9 @@ import pandas as pd
 
 
 def route_summary(assigned_stops):
+    assigned_stops = assigned_stops.assign(
+        vehicle_profile=assigned_stops["vehicle_profile"].astype("string")
+    )
     return (
         assigned_stops.assign(
             job_flag=assigned_stops["location_type"] == "JOB",

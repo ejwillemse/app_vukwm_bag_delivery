@@ -1,4 +1,5 @@
 import datetime
+import time
 
 import streamlit as st
 
@@ -19,11 +20,6 @@ from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Dispatch routes",
-        initial_sidebar_state="expanded",
-    )
     st.title("Dispatch and download routes")
 
 
@@ -65,7 +61,7 @@ def check_previous_steps_completed():
 def show_assigned_inventory():
     st.markdown("Vehicle product inventory:")
     with st.expander(
-        "Click here to view the required product inventory per vehicle", False
+        "Click here to view the required product inventory per vehicle", True
     ):
         st.write(
             st.session_state.data_07_reporting["assigned_jobs_download_product_totals"]
@@ -73,7 +69,7 @@ def show_assigned_inventory():
 
 
 def show_assigned_routes():
-    st.markdown("Final job assignment:")
+    st.markdown("Final job assignment:", True)
     with st.expander(
         "Click here to view job lists with vehicle and sequence assignments"
     ):
@@ -92,7 +88,7 @@ def download():
 
 def create_route_sheet():
     st.subheader("Create printable route sheets")
-    with st.expander("Click here to create printable route sheets"):
+    with st.expander("Click here to create printable route sheets", True):
         st.markdown(
             "Click on the button below to generate a printable route sheets. A google-sheet link will be created. From there, the route sheets can be further edited and printed. Each tab in the sheet contains the route plan for each vehicle."
         )
@@ -122,9 +118,53 @@ def create_route_sheet():
         )
 
 
+def confirm_dispatch():
+    st.write(
+        "Enter `Dispatch routes` below and press enter to confirm that the routes should be dispatched."
+    )
+    input = st.text_input("")
+    if input == "Dispatch routes":
+        st.success("Dispatch complete")
+        st.session_state["mobile_app_dispatch"] = True
+
+
 def dispatch_routes():
     st.subheader("Dispatch routes to driver's mobile devices")
-    st.markdown("This is not currently available")
+    if "jobs_dispatched" in st.session_state:
+        st.success(
+            "Routes have been dispatched to the drivers' mobile devices. This can only be performed once. Reload the app to make this action available again."
+        )
+        return None
+    st.warning(
+        "This step cannot be undone. Please ensure that all data is correct and that the final routes available under `View Routes` are the final ones to be dispatched."
+    )
+    if return_session_status.check_unserviced_stops():
+        st.error(
+            "There are unserviced stops. These jobs will not be dispatched to the drivers. Please make sure that this is correct. Go to `View Routes` for more details."
+        )
+    if return_session_status.check_unserviced_stops_in_routes():
+        st.error(
+            "Some of the routes have jobs that cannot be completed. These jobs will not be dispatched to the drivers. Go to `View Routes` for more details."
+        )
+    dispatch_df = download_results()
+    st.write(
+        "Enter `Dispatch routes` below and press enter to confirm that the routes should be dispatched."
+    )
+    input = st.text_input("")
+    if input == "Dispatch routes":
+        pressed = st.button(
+            "Are you sure you want to dispatch the routes?",
+            help="Dispatch routes to driver's mobile devices",
+        )
+        if pressed:
+            st.success(
+                "Routes have been dispatched. Actually, if you can kill the app within 3 seconds it won't be dispatched, so last chance..."
+            )
+            st.balloons()
+            st.balloons()
+            time.sleep(5)
+            st.session_state["jobs_dispatched"] = True
+            st.experimental_rerun()
 
 
 set_page_config()
@@ -133,10 +173,25 @@ check_previous_steps_completed()
 view_instructions()
 create_formatted_assigned_jobs()
 get_route_totals()
-st.subheader("Dispatch summary")
-show_assigned_inventory()
-show_assigned_routes()
-download()
-create_route_sheet()
-dispatch_routes()
+
+tabs = st.tabs(
+    [
+        "Summary",
+        "Print route sheets",
+        "Dispatch to driver app",
+        "Download dispatch sheet",
+    ]
+)
+
+with tabs[0]:
+    st.subheader("Dispatch summary")
+    show_assigned_inventory()
+    show_assigned_routes()
+# download()
+with tabs[1]:
+    create_route_sheet()
+with tabs[2]:
+    dispatch_routes()
+with tabs[3]:
+    download()
 side_bar_progress.update_side_bar(side_bar_status)
