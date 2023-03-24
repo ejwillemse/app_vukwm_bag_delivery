@@ -78,9 +78,14 @@ def select_vehicles():
     )
     vehicle_df = get_defaults.return_vehicle_default()
     vehicle_df_edits = st.experimental_data_editor(vehicle_df, num_rows="dynamic")
-    st.button(
-        "Save edits and selections", on_click=save_edits, args=(vehicle_df_edits,)
-    )
+    if vehicle_df_edits["Driver email"].duplicated().any():
+        st.warning("There are duplicate driver emails. Please correct.")
+    elif vehicle_df_edits["Driver email"].isna().any():
+        st.warning("Some drivers don't have assigned emails. Please correct this.")
+    else:
+        st.button(
+            "Save edits and selections", on_click=save_edits, args=(vehicle_df_edits,)
+        )
 
 
 set_page_config()

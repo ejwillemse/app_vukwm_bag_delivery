@@ -23,12 +23,7 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "Vehicle id": "string",
     "Driver name": "string",
     "Driver email": pd.CategoricalDtype(
-        categories=[
-            "wccb.r01@veolia.com",
-            "wccb.r02@veolia.com",
-            "wccb.r03@veolia.com",
-            "wccb.r04@veolia.com",
-        ],
+        categories=st.secrets["driver_emails"],
         ordered=True,
     ),
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
@@ -54,11 +49,7 @@ def return_vehicle_default():
     vehicle_ids = ["W01", "W02", "W03", "W04", "W05", "W06"]
     vehicle_type = ["Van", "Van", "Van", "Bicycle", "Van", "Van"]
     driver_name = [np.nan] * 6
-    driver_email = [
-        "wccb.r01@gmail.com",
-        "wccb.r02@gmail.com",
-        "wccb.r03@gmail.com",
-        "wccb.r04@gmail.com",
+    driver_email = st.secrets["driver_emails"] + [
         np.nan,
         np.nan,
     ]
