@@ -24,10 +24,10 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "Driver name": "string",
     "Driver email": pd.CategoricalDtype(
         categories=[
-            "wccb.r01@gmail.com",
-            "wccb.r02@gmail.com",
-            "wccb.r03@gmail.com",
-            "wccb.r04@gmail.com",
+            "wccb.r01@veolia.com",
+            "wccb.r02@veolia.com",
+            "wccb.r03@veolia.com",
+            "wccb.r04@veolia.com",
         ],
         ordered=True,
     ),
