@@ -8,6 +8,7 @@ import streamlit as st
 import app_vukwm_bag_delivery.home.presenters.load_input_data as load_input_data
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.util_views.return_session_status import return_full_status
 
@@ -99,6 +100,8 @@ set_page_config()
 if not check_password():
     st.warning("Please log-in to continue.")
     st.stop()  # App won't run anything after this line
+
+save_session.save_session()
 
 side_bar_status = side_bar_progress.view_sidebar()
 view_instructions()

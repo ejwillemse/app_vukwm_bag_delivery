@@ -19,6 +19,7 @@ from app_vukwm_bag_delivery.dispatch_routes.route_sheet_cell_gen import (
 from app_vukwm_bag_delivery.dispatch_routes.route_sheet_gsheet_generation import (
     write_google_sheet,
 )
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
@@ -175,6 +176,7 @@ def dispatch_routes():
 
 
 set_page_config()
+save_session.save_session()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
