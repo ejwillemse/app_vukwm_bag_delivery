@@ -3,34 +3,16 @@ import streamlit as st
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
 from app_vukwm_bag_delivery.select_vehicles.presenters.select_vehicles import (
+    return_vehicle_edited,
     return_vehicle_grid,
     save_vehicle_selection,
 )
 from app_vukwm_bag_delivery.select_vehicles.views import get_defaults
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
-
-VEHICLE_VIEW_COLUMNS = [
-    "Vehicle id",
-    "Type",
-    "Capacity (#boxes)",
-    "Depot",
-    "Shift start time",
-    "Shift end time",
-    "Average TAT per delivery (min)",
-    "Dedicated transport zones",
-    "Cost (£) per km",
-    "Cost (£) per hour",
-    "lat",
-    "lon",
-]
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Select and edit vehicles",
-        initial_sidebar_state="expanded",
-    )
     st.title("Select and edit vehicles")
 
 
@@ -75,11 +57,7 @@ def view_pre_selected_routes() -> None:
         and st.session_state.data_02_intermediate["unassigned_routes"].shape[0] > 0
     ):
         st.subheader("Vehicles currently selected for routing")
-        st.write(
-            st.session_state.data_02_intermediate["unassigned_routes"][
-                VEHICLE_VIEW_COLUMNS
-            ]
-        )
+        st.write(st.session_state.data_02_intermediate["unassigned_routes"])
         clear_selection_removal()
 
 
@@ -89,22 +67,30 @@ def confirm_selection(selected_df):
         save_vehicle_selection(selected_df)
 
 
+def save_edits(df):
+    st.session_state["vehicle_defaults"] = df.copy()
+    selected_df = return_vehicle_edited(df)
+    save_vehicle_selection(selected_df)
+
+
 def select_vehicles():
     st.write(
-        "The following vehicles are available for routing. Select the ones to be used:"
+        "The following vehicles are available for routing. Edit and select the ones to be used. Edits will be saved for selected and unselected vehicles."
     )
     vehicle_df = get_defaults.return_vehicle_default()
-    selected_df = return_vehicle_grid(vehicle_df)
-
-    if selected_df.shape[0] > 0:
-        st.write(
-            f"The following {selected_df.shape[0]} vehicles will be used for deliveries:"
+    vehicle_df_edits = st.experimental_data_editor(vehicle_df, num_rows="dynamic")
+    if vehicle_df_edits["Driver email"].duplicated().any():
+        st.warning("There are duplicate driver emails. Please correct.")
+    elif vehicle_df_edits["Driver email"].isna().any():
+        st.warning("Some drivers don't have assigned emails. Please correct this.")
+    else:
+        st.button(
+            "Save edits and selections", on_click=save_edits, args=(vehicle_df_edits,)
         )
-        st.write(selected_df[VEHICLE_VIEW_COLUMNS])
-        confirm_selection(selected_df[VEHICLE_VIEW_COLUMNS])
 
 
 set_page_config()
+save_session.save_session()
 st.sidebar.header("Session status")
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()

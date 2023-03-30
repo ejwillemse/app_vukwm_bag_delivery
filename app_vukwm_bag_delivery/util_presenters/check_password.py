@@ -14,6 +14,10 @@ def check_password():
 
     if "password_correct" not in st.session_state:
         # First run, show input for password.
+        st.session_state["username"] = st.text_input(
+            "Please enter a username:",
+            key="enter_username",
+        )
         st.text_input(
             "Please enter the app password to proceed:",
             type="password",
@@ -23,6 +27,10 @@ def check_password():
         return False
     elif not st.session_state["password_correct"]:
         # Password not correct, show input + error.
+        st.session_state["username"] = st.text_input(
+            "Please enter a username:",
+            key="enter_username",
+        )
         st.text_input(
             "Password", type="password", on_change=password_entered, key="password"
         )

@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.review_jobs_data.presenters.edit_data import edit_data
 from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows import (
     generate_known_unknown,
 )
@@ -22,7 +23,11 @@ from app_vukwm_bag_delivery.review_jobs_data.views.summarise_inputs import (
     product_type_summary,
     profile_type_summary,
 )
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
+from app_vukwm_bag_delivery.util_presenters.filters.filter_dataframe import (
+    filter_df_widget,
+)
 
 STOP_VIEW_COLUMNS = [
     "Ticket No",
@@ -32,6 +37,7 @@ STOP_VIEW_COLUMNS = [
     "Transport Area Code",
     "Product Name",
     "Quantity",
+    "Order Weight (kg)",
     "Created Date",
     "Required Date",
     "Notes",
@@ -56,11 +62,6 @@ STOP_VIEW_COLUMNS_RENAME = {"transport_area_number": "Transport Area"}
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Review Jobs Data",
-        initial_sidebar_state="expanded",
-    )
     st.title("Review delivery jobs")
 
 
@@ -90,33 +91,45 @@ def check_previous_steps_completed():
     if (
         "data_02_intermediate" not in st.session_state
         or "unassigned_stops" not in st.session_state.data_02_intermediate
-        or "unassigned_jobs" not in st.session_state.data_02_intermediate
+        or "unassigned_jobs_editable" not in st.session_state.data_02_intermediate
     ):
         st.warning("Job data not loaded during session. Please go back to `Home` page")
         st.stop()  # App won't run anything after this line
+
+
+def edit_select_data():
+    with st.expander("Insutrctions", expanded=True):
+        st.markdown(
+            """
+Edit any data and click save when completed. You can also deselect rows by clicking on the checkbox.
+To search for specific values, press `constrol + F` and type in the search term. On a mac, use `command + F`.
+        """
+        )
+    edit_data()
 
 
 def view_product_summary():
     st.markdown("View stop info per transport area")
     st.write(
         calc_route_product_summary(
-            st.session_state.data_02_intermediate["unassigned_jobs"]
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"]
         )
     )
 
 
 def view_all_stops():
     with st.expander("View all stops"):
-        st.write(
-            st.session_state.data_02_intermediate["unassigned_jobs"].rename(
+        data = filter_df_widget(
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"].rename(
                 columns=STOP_VIEW_COLUMNS_RENAME
             )[STOP_VIEW_COLUMNS]
         )
+        st.write(data)
 
 
 def view_stops_map():
     html = return_order_map_html(
-        st.session_state.data_02_intermediate["unassigned_stops"]
+        st.session_state.data_02_intermediate["unassigned_jobs_editable"]
     )
     components.html(html, height=500)
 
@@ -124,13 +137,37 @@ def view_stops_map():
 def confirm_removal():
     pressed = st.button("Click here to save stop EXCLUSIONS")
     if pressed:
-        if "removed_unassigned_stops" in st.session_state.data_02_intermediate:
+        if (
+            "removed_unassigned_stops" in st.session_state.data_02_intermediate
+            and st.session_state.data_02_intermediate["unassigned_jobs_editable"].shape[
+                0
+            ]
+            > 0
+        ):
+            if (
+                "user_confirmed_removed_unassigned_stops"
+                not in st.session_state.data_02_intermediate
+            ):
+                st.session_state.data_02_intermediate[
+                    "user_confirmed_removed_unassigned_stops"
+                ] = pd.DataFrame()
             st.session_state.data_02_intermediate[
                 "user_confirmed_removed_unassigned_stops"
             ] = (
-                st.session_state.data_02_intermediate["removed_unassigned_stops"]
-                .rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
-                .copy()
+                pd.concat(
+                    [
+                        st.session_state.data_02_intermediate[
+                            "user_confirmed_removed_unassigned_stops"
+                        ],
+                        st.session_state.data_02_intermediate[
+                            "removed_unassigned_stops"
+                        ]
+                        .rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
+                        .copy(),
+                    ]
+                )
+                .drop_duplicates()
+                .reset_index(drop=True)
             )
 
 
@@ -148,17 +185,32 @@ def clear_selection_removal():
 
 def view_select_removal_stops() -> None:
     st.subheader("Exclude jobs from delivery")
-    with st.expander("Select stops to be excluded from routing"):
-        data = st.session_state.data_02_intermediate["unassigned_jobs"]
-        data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
+    data = st.session_state.data_02_intermediate["unassigned_jobs_editable"]
+    n_stops_in = data.shape[0]
+    data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
+    modify = st.radio(
+        "Select specific or all filtered stops for exclusion",
+        ["All filtered stops", "Specificically selected stops"],
+    )
+    data = filter_df_widget(data, key="view_select_removal_stops")
+    if modify == "All filtered stops":
+        selected_df = data.copy()
+        st.session_state.data_02_intermediate[
+            "removed_unassigned_stops"
+        ] = selected_df.copy()
+    else:
         select_remove_dataframe(data)
         selected_df = return_selected()
-        if selected_df.shape[0] > 0:
-            st.write("Currently the following stops will be EXCLUDED for routing.")
-            st.write(selected_df[STOP_VIEW_COLUMNS])
-        else:
-            st.write("Currently all stops will be included for routing.")
-        confirm_removal()
+    if selected_df.shape[0] > 0:
+        st.write("Currently the following stops will be EXCLUDED for routing.")
+        st.write(selected_df[STOP_VIEW_COLUMNS])
+    else:
+        st.write("Currently all stops will be included for routing.")
+    if selected_df.shape[0] > n_stops_in * 0.5:
+        st.warning(
+            f"If you click on save, {int((selected_df.shape[0] / n_stops_in) * 100)} % of the stops will be removed. Please check that this is correct."
+        )
+    confirm_removal()
 
 
 def view_pre_edited_timewindows() -> None:
@@ -194,25 +246,25 @@ def clear_selection():
 def confirm_update_timewindows() -> None:
     st.subheader("Confirm delivery time windows")
     unassigned_stops_tw = st.session_state.data_02_intermediate["unassigned_stops_tw"]
-    with st.expander("View time window gantt chart"):
-        timelines = generate_known_unknown(unassigned_stops_tw)
-        st.markdown("Sites with known open and close times")
-        st.plotly_chart(
-            timelines["known_open"], theme="streamlit", use_container_width=True
+
+    timelines = generate_known_unknown(unassigned_stops_tw)
+    st.markdown("Sites with known open and close times")
+    st.plotly_chart(
+        timelines["known_open"], theme="streamlit", use_container_width=True
+    )
+    st.markdown("Sites with unknown open and close times")
+    st.plotly_chart(
+        timelines["unkown_open"], theme="streamlit", use_container_width=True
+    )
+
+    updated_time_windows = update_timewindows_selection()
+    if updated_time_windows.shape[0] > 0:
+        st.write(
+            f"The following {updated_time_windows.shape[0]} site's delivery time windows have been edited:"
         )
-        st.markdown("Sites with unknown open and close times")
-        st.plotly_chart(
-            timelines["unkown_open"], theme="streamlit", use_container_width=True
-        )
-    with st.expander("Inspect and update time windows"):
-        updated_time_windows = update_timewindows_selection()
-        if updated_time_windows.shape[0] > 0:
-            st.write(
-                f"The following {updated_time_windows.shape[0]} site's delivery time windows have been edited:"
-            )
-            st.write(updated_time_windows)
-            confirm_selection(updated_time_windows)
-            # clear_selection()
+        st.write(updated_time_windows)
+        confirm_selection(updated_time_windows)
+        # clear_selection()
 
 
 def view_pre_selected_stops() -> None:
@@ -235,20 +287,26 @@ def view_pre_selected_stops() -> None:
 
 def view_day_summary():
     st.markdown("Delivery info per day")
-    st.write(day_summary(st.session_state.data_02_intermediate["unassigned_jobs"]))
+    st.write(
+        day_summary(st.session_state.data_02_intermediate["unassigned_jobs_editable"])
+    )
 
 
 def view_profile_type_summary():
     st.markdown("Delivery info per required delivery vehicle type")
     st.write(
-        profile_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+        profile_type_summary(
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"]
+        )
     )
 
 
 def view_product_type_summary():
     st.markdown("Delivery info per product type")
     st.write(
-        product_type_summary(st.session_state.data_02_intermediate["unassigned_jobs"])
+        product_type_summary(
+            st.session_state.data_02_intermediate["unassigned_jobs_editable"]
+        )
     )
 
 
@@ -257,19 +315,57 @@ if not check_password():
     st.stop()  # App won't run anything after this line
 
 set_page_config()
+save_session.save_session()
+
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
-view_instructions()
-view_stops_map()
-st.subheader("Delivery summary")
-with st.expander("Show/hide summaries", False):
+
+tab1, tab2, tab3, tab4 = st.tabs(
+    [
+        "Instructions",
+        "Edit and select data",
+        "Delivery Summary",
+        "Time windows",
+    ]
+)
+
+with tab1:
+    n_stops = st.session_state.data_02_intermediate["unassigned_jobs_editable"][
+        "Site Bk"
+    ].nunique()
+    area2_stops = (
+        st.session_state.data_02_intermediate["unassigned_jobs_editable"][
+            "Transport Area"
+        ]
+        == 2
+    ).sum()
+    view_instructions()
+    st.session_state["n_stops"] = n_stops
+    st.session_state["area2_stops"] = area2_stops
+    cols = st.columns(3)
+    with cols[0]:
+        st.metric("Total number of stops", n_stops)
+    with cols[1]:
+        st.metric("Stops in bicycle area (area 2)", area2_stops)
+    with cols[2]:
+        st.metric("Stops in other areas", n_stops - area2_stops)
+    view_stops_map()
+
+with tab2:
+    st.subheader("Edit and select data")
+    edit_select_data()
+
+
+with tab3:
+    st.subheader("Delivery summary")
     view_day_summary()
     view_profile_type_summary()
     view_product_type_summary()
     view_product_summary()
+    view_all_stops()
 
-view_all_stops()
-confirm_update_timewindows()
-view_select_removal_stops()
-view_pre_selected_stops()
+with tab4:
+    confirm_update_timewindows()
+
+
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)

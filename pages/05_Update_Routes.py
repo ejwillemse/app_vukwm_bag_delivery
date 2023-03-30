@@ -13,27 +13,23 @@ import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_ass
 import app_vukwm_bag_delivery.update_routes.update_routes_test_widget as update_routes_test_widget
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
-from app_vukwm_bag_delivery.util_presenters.check_password import check_password
+from app_vukwm_bag_delivery.util_presenters import \
+    save_session as save_global_session
+from app_vukwm_bag_delivery.util_presenters.check_password import \
+    check_password
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
-    return_all_stops_display,
-    return_assigned_stops_display,
-)
+    return_all_stops_display, return_assigned_stops_display)
 
 # create logger
 
 
 def set_page_config():
-    # st.set_page_config(
-    #     layout="wide",
-    #     page_title="Update routes",
-    #     initial_sidebar_state="expanded",
-    # )
     st.title("Update routes")
 
 
 if not check_password():
     st.warning("Please log-in to continue.")
-    st.stop()  # App won't run anything after this line
+    st.stop()
 
 
 def view_instructions():
@@ -109,6 +105,7 @@ def restart_all():
 
 
 set_page_config()
+save_global_session.save_session()
 check_previous_steps_completed()
 view_instructions()
 process_assigned_stops.initiate_data()
@@ -127,5 +124,3 @@ with st.expander("View route KPIs and changes from manual updates", True):
 
 st.session_state.edit_data = {"original_data": return_all_stops_display()}
 update_routes_test_widget.main()
-# side_bar_status = side_bar_progress.view_sidebar()
-# side_bar_progress.update_side_bar(side_bar_status)

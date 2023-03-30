@@ -1,6 +1,10 @@
 import pandas as pd
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
+from st_aggrid import AgGrid, ColumnsAutoSizeMode, GridOptionsBuilder, GridUpdateMode
+
+from app_vukwm_bag_delivery.util_presenters.filters.filter_dataframe import (
+    filter_df_widget,
+)
 
 INSPECT_ORDER = [
     "Site Bk",
@@ -46,11 +50,11 @@ def return_timewindow_grid(df):
     )
     gridOptions = gb.build()
     grid_response = AgGrid(
-        df,
+        df[INSPECT_ORDER],
         gridOptions=gridOptions,
         data_return_mode="AS_INPUT",
         update_mode=GridUpdateMode.VALUE_CHANGED,
-        columns_auto_size_mode="FIT_CONTENTS",
+        columns_auto_size_mode=ColumnsAutoSizeMode.FIT_CONTENTS,
         fit_columns_on_grid_load=False,
         theme="streamlit",  # Add theme color to the table
         enable_enterprise_modules=True,
@@ -88,9 +92,18 @@ def update_timewindows_selection():
     ):
         st.session_state.data_02_intermediate["updated_time_windows"] = orig_df
     updated_df = st.session_state.data_02_intermediate["updated_time_windows"]
-    updated_df = return_timewindow_grid(updated_df)
-    updated_df = create_update_key(updated_df)
-    show_updated_time_windows = updated_df.loc[
-        ~updated_df["update_key"].isin(orig_df["update_key"])
-    ].drop(columns=["update_key"])
+    modify = st.radio(
+        "Select specific or all filtered stops for exclusion",
+        ["View time-windows", "Update time-windows"],
+    )
+    updated_df = filter_df_widget(updated_df, key="update_timewindows_selection")
+    if modify == "Update time-windows":
+        updated_df = return_timewindow_grid(updated_df)
+        updated_df = create_update_key(updated_df)
+        show_updated_time_windows = updated_df.loc[
+            ~updated_df["update_key"].isin(orig_df["update_key"])
+        ].drop(columns=["update_key"])
+    else:
+        st.write(updated_df)
+        show_updated_time_windows = pd.DataFrame()
     return show_updated_time_windows

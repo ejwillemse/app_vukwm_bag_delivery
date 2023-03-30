@@ -1,6 +1,6 @@
 import pandas as pd
 import streamlit as st
-
+from app_vukwm_bag_delivery.util_presenters import save_session
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
@@ -18,15 +18,11 @@ from app_vukwm_bag_delivery.generate_routes.presenters.process_input_data import
 )
 from app_vukwm_bag_delivery.generate_routes.presenters.solve_vroom_instace import solve
 from app_vukwm_bag_delivery.update_routes import update_routes_test_widget
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
 def set_page_config():
-    st.set_page_config(
-        layout="wide",
-        page_title="Generate routes",
-        initial_sidebar_state="expanded",
-    )
     st.title("Generate routes")
 
 
@@ -186,6 +182,7 @@ def routing():
 
 
 set_page_config()
+save_session.save_session()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
