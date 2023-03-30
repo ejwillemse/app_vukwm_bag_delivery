@@ -13,11 +13,12 @@ import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_ass
 import app_vukwm_bag_delivery.update_routes.update_routes_test_widget as update_routes_test_widget
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
-from app_vukwm_bag_delivery.util_presenters.check_password import check_password
+from app_vukwm_bag_delivery.util_presenters import \
+    save_session as save_global_session
+from app_vukwm_bag_delivery.util_presenters.check_password import \
+    check_password
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
-    return_all_stops_display,
-    return_assigned_stops_display,
-)
+    return_all_stops_display, return_assigned_stops_display)
 
 # create logger
 
@@ -104,6 +105,7 @@ def restart_all():
 
 
 set_page_config()
+save_global_session.save_session()
 check_previous_steps_completed()
 view_instructions()
 process_assigned_stops.initiate_data()
