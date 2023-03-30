@@ -27,12 +27,7 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "Vehicle id": "string",
     "Driver name": "string",
     "Driver email": pd.CategoricalDtype(
-        categories=[
-            "wccb.r01@gmail.com",
-            "wccb.r02@gmail.com",
-            "wccb.r03@gmail.com",
-            "wccb.r04@gmail.com",
-        ],
+        categories=st.secrets["driver_emails"],
         ordered=True,
     ),
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),

@@ -23,12 +23,7 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "Vehicle id": "string",
     "Driver name": "string",
     "Driver email": pd.CategoricalDtype(
-        categories=[
-            "wccb.r01@gmail.com",
-            "wccb.r02@gmail.com",
-            "wccb.r03@gmail.com",
-            "wccb.r04@gmail.com",
-        ],
+        categories=st.secrets["driver_emails"],
         ordered=True,
     ),
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
@@ -54,11 +49,7 @@ def return_vehicle_default():
     vehicle_ids = ["W01", "W02", "W03", "W04", "W05", "W06"]
     vehicle_type = ["Van", "Van", "Van", "Bicycle", "Van", "Van"]
     driver_name = [np.nan] * 6
-    driver_email = [
-        "wccb.r01@gmail.com",
-        "wccb.r02@gmail.com",
-        "wccb.r03@gmail.com",
-        "wccb.r04@gmail.com",
+    driver_email = st.secrets["driver_emails"] + [
         np.nan,
         np.nan,
     ]
@@ -73,7 +64,7 @@ def return_vehicle_default():
     lon = [-0.07962670, -0.07962670, -0.07962670, -0.13748230, -0.07962670, -0.07962670]
     lat = [51.49175400, 51.49175400, 51.49175400, 51.51358620, 51.49175400, 51.49175400]
     capacity = [1000, 1000, 1000, 150, 1000, 1000]
-    max_stops = [40, 40, 40, 50, 40, 40]
+    max_stops = [50, 50, 50, 50, 50, 50]
     dedicated_transport_zones = [None, None, None, "2", None, None]
     stock_replenish_duration = [30, 30, 30, 30, 30, 30]
     cost_per_km = [1, 1, 1, 0.5, 1, 1]

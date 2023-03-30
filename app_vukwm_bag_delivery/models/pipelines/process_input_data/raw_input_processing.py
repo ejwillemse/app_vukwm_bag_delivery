@@ -27,20 +27,24 @@ COLUMN_TYPES = {
 }
 
 
-def add_excel_time_dates(df, excel_df):
+def add_excel_time_dates(df, excel_df, excel_date_format=True):
+    if excel_date_format is True:
+        format = "%d/%m/%Y"
+    else:
+        format = None
     excel_df = excel_df.assign(
         **{
             "Created Date": pd.to_datetime(
-                excel_df["Created Date"], format="%d/%m/%Y"
+                excel_df["Created Date"], format=format
             ).dt.strftime(OUTPUT_DATE_FORMAT),
             "Required Date": pd.to_datetime(
-                excel_df["Required Date"], format="%d/%m/%Y"
+                excel_df["Required Date"], format=format
             ).dt.strftime(OUTPUT_DATE_FORMAT),
             "Scheduled Date": pd.to_datetime(
-                excel_df["Scheduled Date"], format="%d/%m/%Y"
+                excel_df["Scheduled Date"], format=format
             ).dt.strftime(OUTPUT_DATE_FORMAT),
             "Completed Date": pd.to_datetime(
-                excel_df["Completed Date"], format="%d/%m/%Y"
+                excel_df["Completed Date"], format=format
             ).dt.strftime(OUTPUT_DATE_FORMAT),
         }
     )
@@ -143,8 +147,7 @@ def combine_orders(df):
 
 def process_input_data(df, excel_df, bag_weights, excel_date_format=True):
     df = df.copy()
-    if excel_date_format:
-        df = add_excel_time_dates(df, excel_df)
+    df = add_excel_time_dates(df, excel_df, excel_date_format)
     df = add_completed_flag(df)
     df = filter_unassigned(df)
     df = extract_transport_number(df)
