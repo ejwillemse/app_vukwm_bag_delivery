@@ -23,6 +23,7 @@ from app_vukwm_bag_delivery.review_jobs_data.views.summarise_inputs import (
     product_type_summary,
     profile_type_summary,
 )
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.util_presenters.filters.filter_dataframe import (
     filter_df_widget,
@@ -314,6 +315,8 @@ if not check_password():
     st.stop()  # App won't run anything after this line
 
 set_page_config()
+save_session.save_session()
+
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 
@@ -363,5 +366,6 @@ with tab3:
 
 with tab4:
     confirm_update_timewindows()
+
 
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)

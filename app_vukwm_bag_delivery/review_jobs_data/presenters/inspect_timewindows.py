@@ -8,8 +8,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 import app_vukwm_bag_delivery.models.pipelines.process_input_data.add_time_window_info as add_time_window_info
 
-OPEN_DEFAULT = "09:00:00"
-CLOSE_DEFAULT = "16:00:00"
+OPEN_DEFAULT = "08:00:00"
+CLOSE_DEFAULT = "17:00:00"
 OPEN_MAX = "15:00:00"
 
 INSPECT_ORDER = [
@@ -162,4 +162,8 @@ def return_time_window_info():
     unassigned_stops_tw = unassigned_stops_tw.sort_values(
         ["Notes", "Site Name"], key=lambda col: col.fillna("").str.lower()
     )[INSPECT_ORDER]
+    if st.secrets["ignore_time_windows"] is True:
+        unassigned_stops_tw = unassigned_stops_tw.assign(
+            **{"Delivery open time": OPEN_DEFAULT, "Delivery close time": CLOSE_DEFAULT}
+        )
     st.session_state.data_02_intermediate["unassigned_stops_tw"] = unassigned_stops_tw

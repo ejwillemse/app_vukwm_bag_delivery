@@ -6,6 +6,7 @@ import streamlit.components.v1 as components
 import app_vukwm_bag_delivery.generate_routes.presenters.extract_high_level_summary as extract_high_level_summary
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
     return_all_stops_display,
@@ -184,6 +185,7 @@ def view_totals():
 
 
 set_page_config()
+save_session.save_session()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
