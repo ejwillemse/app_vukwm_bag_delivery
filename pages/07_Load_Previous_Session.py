@@ -55,6 +55,8 @@ def get_session_files():
 
 
 def generate_session_file_data_frame(files, today, limit_today):
+    if files is None or len(files) == 0:
+        return None
     files_split = [f.replace(".pickle", "").split("__") for f in files]
     timestamp = [f[0].replace("session_", "").split("_") for f in files_split]
     date = [f[0] for f in timestamp]
