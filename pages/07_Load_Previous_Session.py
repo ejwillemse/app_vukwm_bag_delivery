@@ -33,7 +33,7 @@ def return_s3_files():
     if files.shape[0] > 0:
         files = [x.replace(path, "") for x in files["filename"].values]
     else:
-        files = None
+        files = []
     return files
 
 
@@ -44,7 +44,7 @@ def get_session_files():
         files = return_local_files()
     else:
         files = return_s3_files()
-    if len(files) == 0:
+    if files is None or len(files) == 0:
         return (
             None,
             None,
