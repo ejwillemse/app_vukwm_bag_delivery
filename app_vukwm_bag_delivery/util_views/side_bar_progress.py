@@ -12,3 +12,4 @@ def view_sidebar():
 
 def update_side_bar(status_text):
     status_text.markdown(return_short_status())
+

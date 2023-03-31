@@ -14,7 +14,7 @@ def check_intermediate_unassigned_jobs_loaded():
     return (
         "data_02_intermediate" in st.session_state
         and "unassigned_stops" in st.session_state.data_02_intermediate
-        and "unassigned_jobs" in st.session_state.data_02_intermediate
+        and "unassigned_jobs_editable" in st.session_state.data_02_intermediate
     )
 
 

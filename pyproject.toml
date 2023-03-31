@@ -8,7 +8,7 @@ packages = [{include = "app_vukwm_bag_delivery"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-streamlit = "^1.15.2"
+streamlit = "^1.19.0"
 watchdog = "^2.2.0"
 pylint = "^2.15.8"
 black = "^22.10.0"
@@ -20,8 +20,6 @@ XlsxWriter = "^3.0.3"
 geopandas = "^0.12.1"
 streamlit-aggrid = "^0.3.3"
 hygese = "^0.0.0.8"
-boto3 = "^1.26.34"
-boto = "^2.49.0"
 jupyterlab = "^3.5.2"
 matplotlib = "^3.6.2"
 plotly = "^5.11.0"
@@ -32,6 +30,8 @@ pyvroom = "^0.0.14"
 gspread = "^5.7.2"
 google-api-python-client = "^2.72.0"
 streamlit-plotly-mapboxevents = "^0.0.4"
+boto3 = "^1.26.98"
+boto = "^2.49.0"
 
 
 [build-system]

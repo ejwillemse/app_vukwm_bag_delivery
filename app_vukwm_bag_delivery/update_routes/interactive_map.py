@@ -50,6 +50,7 @@ def build_map() -> go.Figure:
     ) -> go.Figure:
         """Generate main scatter plot"""
         logging.info("logging::::generating scatter plot")
+        df = df.assign(**{"Vehicle profile": df["Vehicle profile"].astype("string")})
         df = df.loc[df["Activity type"] == "DELIVERY"].sort_values([ROUTE_ID])
         df.loc[df["Service issues"] == "UNSERVICED", "Stop sequence"] = np.nan
         fig = px.scatter_mapbox(
