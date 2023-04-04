@@ -36,7 +36,7 @@ def view_instructions():
         On the left of the screen is a side-bar. The top of the side-bar can be used to navigate through different pages on the app. There are seven pages in total. Just click on the down-arrow in the side-bar to view all the pages.
         The bottom of the side-bar contains the status of the current session. There are certain steps that have to be completed to generate and dispatch routes. The status of the steps are shown on the left.
 
-        If you are using the app from a small screen, the side-bar will autohide and appear, so you may have to click on it to make it show.
+        If you are using the app from a small screen, the side-bar will auto-hide and appear, so you may have to click on it to make it show.
 
         On the top-right of the app is a settings options. A useful feature is `Record a screencast`. If you notice a bug, feel free to take and send us a screen-recording.
         
@@ -49,7 +49,7 @@ def view_instructions():
 
         * **Step 1 Loading data (required):** The latest undelivered orders are automatically loaded when logging into the application. The status of all steps, including the data loading can be viewed from this page, i.e. the `Home page`.
         * **Step 2 Review Jobs Data (optional):** From this page you review the jobs data, as well s deselect jobs that should not be routed. This page also allows you to view and change the time-windows of customers.
-        * **Step 3 Select Vehicles (required):** Select the vehicles that are available for routing. You can also edit key values for each vehcile, such as the shift start-times.
+        * **Step 3 Select Vehicles (required):** Select the vehicles that are available for routing. You can also edit key values for each vehicle, such as the shift start-times.
         * **Step 4 Generate Routes (required):** Generate routes and view their high-level KPIs. The page will also show you issues with the routing, such as unused vehicles, or jobs that could not be allocated to routes.
         * **Step 5 View Routes (optional):** View the routes in more detail as well as their KPIs.
         * **Step 6 Update Routes (optional):** Manually edit routes by reassigning jobs between vehicles. The impact of the edits on KPIs are immediately calculated.
@@ -69,14 +69,14 @@ def view_instructions():
 
         The following are know issues:
 
-        1. Filtering some tables results in records dissapearing, even when removing the filter. 
-           * Workaround: to get all the records back, go to antoher page, and then back to the current one.
+        1. Filtering some tables results in records disappearing, even when removing the filter. 
+           * Workaround: to get all the records back, go to another page, and then back to the current one.
         2. The Update Routes page refreshes all the time.
            * Workaround: unfortunately, only patience. This is an experimental feature, hence why this happens.
         3. The map in Update Routes page jumps around when panning and zooming.
            * Workaround: unfortunately, only patience. This is an experimental feature, hence why this happens. It does go back to actual viewpoint afte it jumps.
 
-        ### Video walkthroug
+        ### Video walkthrough
 
         The following video shows a quick walk-through of the basic app usage:
         """
@@ -126,6 +126,7 @@ with tabs[1]:
         pressed = st.button("Process file for routing")
         if pressed:
             load_existing_input_data(df_upload)
+            save_session.upload_to_session_bucket("autosave - jobs data uploaded")
         with st.expander("View uploaded data"):
             st.write(df_upload)
 

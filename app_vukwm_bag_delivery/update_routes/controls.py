@@ -6,6 +6,7 @@ import streamlit as st
 import app_vukwm_bag_delivery.update_routes.create_routing_objects as create_routing_objects
 import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_assigned_data
 from app_vukwm_bag_delivery.update_routes import update_routes_test_widget
+from app_vukwm_bag_delivery.util_presenters import save_session
 
 ROUTE_ID = "Vehicle Id"
 
@@ -34,6 +35,9 @@ def update_selected_points(new_route_id):
         ] = new_route_id
         create_routing_objects.reroute()
         st.session_state.data = None
+        save_session.upload_to_session_bucket(
+            f"autosave - stops moved to route {new_route_id}"
+        )
         st.experimental_rerun()
     else:
         st.warning(f"No points were selected...")
@@ -71,6 +75,7 @@ def activate_side_bar():
             st.session_state.data = None
             st.session_state.edit_routes = None
             update_routes_test_widget.initialize_state(clear_all=True)
+            save_session.upload_to_session_bucket("autosave - route edits saved")
             st.experimental_rerun()
         clicked2 = st.button("Restart")
         if clicked2:
