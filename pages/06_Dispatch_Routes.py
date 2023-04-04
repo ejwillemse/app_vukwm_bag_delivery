@@ -105,6 +105,7 @@ def create_route_sheet():
                 generate_sheet_cells()
             with st.spinner("Saving routes to google-sheets"):
                 write_google_sheet()
+            save_session.upload_to_session_bucket("autosave - route sheets generated")
         if return_session_status.check_route_sheets_generated():
             latest = st.session_state.data_07_reporting["route_sheet_urls"][-1]
             all = st.session_state.data_07_reporting["route_sheet_urls"]
@@ -153,11 +154,20 @@ def dispatch_routes():
         st.error(
             "Some of the routes have jobs that cannot be completed. These jobs will not be dispatched to the drivers. Go to `View Routes` for more details."
         )
+
+    st.write(
+        "**Before proceeding, please confirm that each round's ProntoForm inbox has been cleared of all existing forms before dispatching:**"
+    )
+    confirmed = st.checkbox(
+        "I confirm that each round's ProntoForm inbox has been cleared of all existing forms."
+    )
+    if not confirmed:
+        return None
     st.write(
         "Enter `Dispatch routes` below and press enter to confirm that the routes should be dispatched."
     )
-    input = st.text_input("")
-    if input == "Dispatch routes":
+    prompt_input = st.text_input("")
+    if prompt_input == "Dispatch routes":
         pressed = st.button(
             "Are you sure you want to dispatch the routes?",
             help="Dispatch routes to driver's mobile devices",
@@ -172,6 +182,9 @@ def dispatch_routes():
             st.success("Dispatch is starting, you can still kill it...")
             upload_to_dispatch_bucket()
             st.session_state["jobs_dispatched"] = True
+            save_session.upload_to_session_bucket(
+                "autosave - results dispatched to driver app"
+            )
             st.experimental_rerun()
 
 
