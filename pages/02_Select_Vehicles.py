@@ -36,8 +36,8 @@ def view_instructions():
         st.markdown("### Selecting and editing vehicles")
         st.markdown(
             """
-        Multiple transport zones can be assigned to a vehicle by entering the area numbers, seperated with a commma. 
-        Areas not specified in the in the dedicated tranpsort zones can be allocated to any vehicle. 
+        Multiple transport zones can be assigned to a vehicle by entering the area numbers, separated with a comma. 
+        Areas not specified in the in the dedicated transport zones can be allocated to any vehicle. 
         By default W04 is the bicycle and is assigned to zone 2. This can be manually changed.
         """
         )
@@ -71,6 +71,7 @@ def save_edits(df):
     st.session_state["vehicle_defaults"] = df.copy()
     selected_df = return_vehicle_edited(df)
     save_vehicle_selection(selected_df)
+    save_session.upload_to_session_bucket("autosave - vehicles selected")
 
 
 def select_vehicles():
