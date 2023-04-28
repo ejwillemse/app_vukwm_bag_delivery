@@ -202,7 +202,7 @@ def format_add_hoc_data(data, old_data):
             "`Ticket No` already exists, please correct, and re-upload the jobs file."
         )
         st.stop()
-    date = datetime.datetime.now().strftime("%Y-%m-%d") + "00:00:00"
+    date = datetime.datetime.now().strftime("%Y-%m-%d") + " 00:00:00"
     data = data.assign(
         **{
             "Site Bk": [f"ADD HOC {x}" for x in range(len(data))],
