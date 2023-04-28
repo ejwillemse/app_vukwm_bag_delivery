@@ -110,13 +110,37 @@ if not return_session_status.check_raw_jobs_loaded():
     with st.spinner("Initiating session and processing uploaded data..."):
         load_input_data.load_data()
 
-tabs = st.tabs(["View session status", "Upload jobs data", "Download jobs data"])
+tabs = st.tabs(
+    [
+        "View session status",
+        "Add additional jobs",
+        "Upload jobs data",
+        "Download jobs data",
+    ]
+)
 
 with tabs[0]:
     st.markdown(return_full_status())
     side_bar_progress.update_side_bar(side_bar_status)
 
 with tabs[1]:
+    st.markdown(
+        "Add additional ad hoc jobs to the existing jobs. The uploaded jobs should be in an Excel file and follow [this template](https://docs.google.com/spreadsheets/d/1nFPjCAyShUFlN0wy2BxVTjJLJEvO0aQquFI7VEPEbsU/edit#gid=0). All green columns are required."
+    )
+    df = st.file_uploader("Upload and add ad-hoc jobs")
+    if df is not None:
+        df_upload = pd.read_excel(df)
+        pressed = st.button("Add jobs")
+        if pressed:
+            load_input_data.add_input_data(df_upload)
+            save_session.upload_to_session_bucket("autosave - additional jobs added")
+            st.success("New jobs successfully added.")
+            st.session_state["new_jobs_added"] = True
+        with st.expander("View uploaded data"):
+            st.write(df_upload)
+
+
+with tabs[2]:
     st.markdown(
         "Upload a jobs data file. Note that there are strict formatting requirements. We recommend download an existing file and inspecting it."
     )
@@ -131,6 +155,6 @@ with tabs[1]:
             st.write(df_upload)
 
 
-with tabs[2]:
+with tabs[3]:
     st.markdown("Download the current or previous jobs data file.")
     load_input_data.load_jobs_file()

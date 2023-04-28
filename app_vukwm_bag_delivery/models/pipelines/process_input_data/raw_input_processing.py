@@ -145,6 +145,20 @@ def combine_orders(df):
     return orders_grouped
 
 
+def convert_unknown_weights(data):
+    data = data.assign(
+        **{
+            "weight_merge_key": data["weight_merge_key"].fillna("N/A"),
+            "Product Alias": data["Product Alias"].fillna("N/A"),
+            "Batches per box": data["Batches per box"].fillna(0),
+            "Weight per box (kg)": data["Weight per box (kg)"].fillna(0),
+            "Weight per batch (kg)": data["Weight per batch (kg)"].fillna(0),
+            "Order Weight (kg)": data["Quantity"].fillna(0),
+        }
+    )
+    return data
+
+
 def process_input_data(df, excel_df, bag_weights, excel_date_format=True):
     df = df.copy()
     df = add_excel_time_dates(df, excel_df, excel_date_format)
@@ -155,4 +169,5 @@ def process_input_data(df, excel_df, bag_weights, excel_date_format=True):
     for key in COLUMN_TYPES:
         df[key] = df[key].astype(COLUMN_TYPES[key])
     df = add_order_weight(df, bag_weights)
+    df = convert_unknown_weights(df)
     return df
