@@ -2,6 +2,7 @@
 Retrieve and return OSRM table info. See https://project-osrm.org/docs/v5.24.0/api/#table-service
 """
 
+import logging
 from typing import Dict, Union
 
 import numpy as np
@@ -64,6 +65,9 @@ def get_time_dist_matrix(
     table_end_point = f"{endpoint}/table/v1/driving/"
     url = _construct_url_using_coordinates(data, table_end_point)
     api_response = _send_get_request(url)
+    logging.critical(data.loc[data["longitude"].isna()])
+    logging.critical(url)
+    logging.critical(api_response)
     time_matrix = _get_time_matrix(api_response, slow_down)
     distance_matrix = _get_distance_matrix(api_response)
 
