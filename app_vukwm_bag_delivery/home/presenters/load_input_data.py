@@ -1,3 +1,6 @@
+import datetime
+
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -16,6 +19,7 @@ from app_vukwm_bag_delivery.review_jobs_data.presenters.inspect_timewindows impo
 from app_vukwm_bag_delivery.util_views.return_session_status import (
     check_intermediate_unassigned_fleet_loaded,
     check_manual_edits,
+    check_new_jobs_added,
     check_route_generation_completed,
     check_route_sheets_generated,
     check_time_windows_update,
@@ -146,6 +150,8 @@ def reload_intermediate_data():
 
 
 def clear_processed_data():
+    if check_new_jobs_added():
+        del st.session_state["new_jobs_added"]
     if check_intermediate_unassigned_fleet_loaded():
         del st.session_state.data_02_intermediate["unassigned_routes"]
     if check_time_windows_update():
@@ -182,4 +188,69 @@ def upload_data(new_data):
 def reload_data():
     clear_processed_data()
     reload_intermediate_data()
+    return_time_window_info()
+
+
+def format_add_hoc_data(data, old_data):
+    if data["Ticket No"].duplicated().any():
+        st.warning(
+            "`Ticket No` contains duplicates, please correct, and re-upload the jobs file."
+        )
+        st.stop()
+    if data["Ticket No"].isin(old_data["Ticket No"]).any():
+        st.warning(
+            "`Ticket No` already exists, please correct, and re-upload the jobs file."
+        )
+        st.stop()
+    date = datetime.datetime.now().strftime("%Y-%m-%d") + "00:00:00"
+    data = data.assign(
+        **{
+            "Site Bk": [f"ADD HOC {x}" for x in range(len(data))],
+            "Customer Bk": "N/A",
+            "Created Date": date,
+            "Required Date": date,
+            "on hold": np.nan,
+            "Schedule ID": np.nan,
+            "Scheduled Date": np.nan,
+            "Completed Date": np.nan,
+            "Registration No": np.nan,
+        }
+    )
+    return data
+
+
+def add_address(data):
+    data = data.assign(
+        **{
+            "Site Address": data["Site Address1"].fillna("")
+            + " "
+            + data["Site Address2"].fillna("")
+            + " "
+            + data["Site Address3"].fillna("")
+            + " "
+            + data["Site Address4"].fillna("")
+            + " "
+            + data["Site Address5"].fillna("")
+            + " "
+            + data["Site Post Town"].fillna("")
+            + ", "
+            + data["Site Post Code"].fillna(""),
+        }
+    )
+    data = data.assign(**{"Site Address": data["Site Address"].str.upper()})
+    return data
+
+
+def add_input_data(new_data):
+    old_data = st.session_state.data_01_raw["raw_input"]
+    unassigned_stops = st.session_state.data_01_raw["unassigned_stops"]
+    old_data = unassigned_stops[old_data.columns].copy()
+    new_data = format_add_hoc_data(new_data, old_data)
+    new_data = pd.concat([new_data, old_data]).reset_index(drop=True)[old_data.columns]
+    new_data = add_address(new_data)
+    reload_data()
+    st.session_state.data_01_raw["raw_input"] = new_data.copy()
+    st.session_state.data_01_raw["unassigned_stops"] = new_data.copy()
+    st.session_state.stop_data = new_data.copy()
+    convert_intermediate_data(excel_date_format=False)
     return_time_window_info()
