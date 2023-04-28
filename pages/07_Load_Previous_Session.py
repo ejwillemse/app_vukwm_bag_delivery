@@ -40,6 +40,7 @@ def return_s3_files():
 def get_session_files():
     today = datetime.today().strftime("%Y-%m-%d")
     limit_today = st.checkbox(f"Only show saved sessions for today: **{today}**", True)
+    remove_autosave = st.checkbox("Remove autosave files", False)
     if st.secrets["local_dev"] is True:
         files = return_local_files()
     else:
@@ -49,12 +50,13 @@ def get_session_files():
             None,
             None,
             None,
+            None,
         )
     else:
-        return files, today, limit_today
+        return files, today, limit_today, remove_autosave
 
 
-def generate_session_file_data_frame(files, today, limit_today):
+def generate_session_file_data_frame(files, today, limit_today, remove_autosave):
     if files is None or len(files) == 0:
         return None
     files_split = [f.replace(".pickle", "").split("__") for f in files]
@@ -78,6 +80,8 @@ def generate_session_file_data_frame(files, today, limit_today):
     )
     if limit_today:
         file_info = file_info[file_info["Date"] == today].copy()
+    if remove_autosave:
+        file_info = file_info[~file_info["Notes"].str.contains("autosave")].copy()
     if file_info.shape[0] == 0:
         return None
     file_info.iloc[0, 0] = True
@@ -143,8 +147,10 @@ st.title("Load previous session")
 st.write(
     "Select one of the following sessions for loading (note that all the current session info will be over-written):"
 )
-files, today, limit_today = get_session_files()
-session_files = generate_session_file_data_frame(files, today, limit_today)
+files, today, limit_today, remove_autosave = get_session_files()
+session_files = generate_session_file_data_frame(
+    files, today, limit_today, remove_autosave
+)
 if session_files is None:
     st.warning("No previous saved sessions found.")
 else:

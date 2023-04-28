@@ -13,12 +13,12 @@ import app_vukwm_bag_delivery.update_routes.process_assigned_data as process_ass
 import app_vukwm_bag_delivery.update_routes.update_routes_test_widget as update_routes_test_widget
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
-from app_vukwm_bag_delivery.util_presenters import \
-    save_session as save_global_session
-from app_vukwm_bag_delivery.util_presenters.check_password import \
-    check_password
+from app_vukwm_bag_delivery.util_presenters import save_session as save_global_session
+from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.view_routes.generate_route_display import (
-    return_all_stops_display, return_assigned_stops_display)
+    return_all_stops_display,
+    return_assigned_stops_display,
+)
 
 # create logger
 
@@ -48,7 +48,7 @@ def view_instructions():
         st.video(st.secrets["videos"]["video10"])
         st.markdown("### Saving updates")
         st.markdown(
-            "Click on `Save edits` to make the changes permenant. Note that the edits will be lost when the routes are generated from `Generate Routes`. Click on `Restart` to undo all the edits made since the last save."
+            "Click on `Save edits` to make the changes permanent. Note that the edits will be lost when the routes are generated from `Generate Routes`. Click on `Restart` to undo all the edits made since the last save."
         )
 
 
@@ -77,15 +77,6 @@ if "restarts" not in st.session_state:
 
 if "event_clock" not in st.session_state:
     st.session_state["event_clock"] = datetime.datetime.now()
-
-
-def save_session():
-    st.header("Save changes")
-    clicked1 = st.button("Click here to save edits")
-    if clicked1:
-        process_assigned_stops.update_unsused_routes()
-        process_assigned_stops.update_unserviced_stops()
-        process_assigned_stops.update_assigned_stops()
 
 
 def restart_all():

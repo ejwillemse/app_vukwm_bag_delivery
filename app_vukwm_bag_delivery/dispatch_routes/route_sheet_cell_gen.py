@@ -184,9 +184,9 @@ def return_stop_info(assigned_jobs):
             **{
                 "Site Address": stop_info[
                     ["Site Address1", "Site Address2", "Site Address3"]
-                ].apply(
-                    lambda x: ", ".join([y for y in x if y is not pd.np.nan]), axis=1
-                )
+                ]
+                .fillna("N/A")
+                .apply(lambda x: ", ".join([y for y in x if y != "N/A"]), axis=1)
             }
         )
         .drop(columns=["Site Address1", "Site Address2", "Site Address3"])
