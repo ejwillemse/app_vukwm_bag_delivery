@@ -23,6 +23,7 @@ from app_vukwm_bag_delivery.review_jobs_data.views.summarise_inputs import (
     product_type_summary,
     profile_type_summary,
 )
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 from app_vukwm_bag_delivery.util_presenters.filters.filter_dataframe import (
     filter_df_widget,
@@ -75,13 +76,13 @@ def view_instructions():
         st.markdown("### Inspecting and updating time-windows")
         st.markdown(
             """
-        Note: Filtering some tables results in records dissapearing, even when removing the filter. 
-        To get all the records back, go to antoher page, and then back to the current one."""
+        Note: Filtering some tables results in records disappearing, even when removing the filter. 
+        To get all the records back, go to another page, and then back to the current one."""
         )
         st.video(st.secrets["videos"]["video3"])
         st.markdown("### Searching and excluding stops from routing")
         st.markdown(
-            "Also shown are some special filtering and other table commande. Note that this is not available in all tables."
+            "Also shown are some special filtering and other table commands. Note that this is not available in all tables."
         )
         st.video(st.secrets["videos"]["video4"])
 
@@ -97,11 +98,11 @@ def check_previous_steps_completed():
 
 
 def edit_select_data():
-    with st.expander("Insutrctions", expanded=True):
+    with st.expander("Instructions", expanded=True):
         st.markdown(
             """
 Edit any data and click save when completed. You can also deselect rows by clicking on the checkbox.
-To search for specific values, press `constrol + F` and type in the search term. On a mac, use `command + F`.
+To search for specific values, press `control + F` and type in the search term. On a mac, use `command + F`.
         """
         )
     edit_data()
@@ -189,7 +190,7 @@ def view_select_removal_stops() -> None:
     data = data.rename(columns=STOP_VIEW_COLUMNS_RENAME)[STOP_VIEW_COLUMNS]
     modify = st.radio(
         "Select specific or all filtered stops for exclusion",
-        ["All filtered stops", "Specificically selected stops"],
+        ["All filtered stops", "Specifically selected stops"],
     )
     data = filter_df_widget(data, key="view_select_removal_stops")
     if modify == "All filtered stops":
@@ -230,6 +231,7 @@ def confirm_selection(selected_df):
     pressed = st.button("Click here to save time window updates")
     if pressed:
         st.session_state.data_02_intermediate["save_updated_time_windows"] = selected_df
+        save_session.upload_to_session_bucket("autosave - updated time windows")
 
 
 def clear_selection():
@@ -314,6 +316,8 @@ if not check_password():
     st.stop()  # App won't run anything after this line
 
 set_page_config()
+save_session.save_session()
+
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 
@@ -363,5 +367,6 @@ with tab3:
 
 with tab4:
     confirm_update_timewindows()
+
 
 side_bar_status = side_bar_progress.update_side_bar(side_bar_status)

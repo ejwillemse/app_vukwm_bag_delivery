@@ -8,6 +8,7 @@ from app_vukwm_bag_delivery.select_vehicles.presenters.select_vehicles import (
     save_vehicle_selection,
 )
 from app_vukwm_bag_delivery.select_vehicles.views import get_defaults
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
@@ -35,8 +36,8 @@ def view_instructions():
         st.markdown("### Selecting and editing vehicles")
         st.markdown(
             """
-        Multiple transport zones can be assigned to a vehicle by entering the area numbers, seperated with a commma. 
-        Areas not specified in the in the dedicated tranpsort zones can be allocated to any vehicle. 
+        Multiple transport zones can be assigned to a vehicle by entering the area numbers, separated with a comma. 
+        Areas not specified in the in the dedicated transport zones can be allocated to any vehicle. 
         By default W04 is the bicycle and is assigned to zone 2. This can be manually changed.
         """
         )
@@ -70,6 +71,7 @@ def save_edits(df):
     st.session_state["vehicle_defaults"] = df.copy()
     selected_df = return_vehicle_edited(df)
     save_vehicle_selection(selected_df)
+    save_session.upload_to_session_bucket("autosave - vehicles selected")
 
 
 def select_vehicles():
@@ -78,12 +80,18 @@ def select_vehicles():
     )
     vehicle_df = get_defaults.return_vehicle_default()
     vehicle_df_edits = st.experimental_data_editor(vehicle_df, num_rows="dynamic")
-    st.button(
-        "Save edits and selections", on_click=save_edits, args=(vehicle_df_edits,)
-    )
+    if vehicle_df_edits["Driver email"].duplicated().any():
+        st.warning("There are duplicate driver emails. Please correct.")
+    elif vehicle_df_edits["Driver email"].isna().any():
+        st.warning("Some drivers don't have assigned emails. Please correct this.")
+    else:
+        st.button(
+            "Save edits and selections", on_click=save_edits, args=(vehicle_df_edits,)
+        )
 
 
 set_page_config()
+save_session.save_session()
 st.sidebar.header("Session status")
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()

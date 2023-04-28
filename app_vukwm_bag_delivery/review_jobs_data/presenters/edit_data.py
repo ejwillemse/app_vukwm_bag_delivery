@@ -4,6 +4,7 @@ import pandas as pd
 import streamlit as st
 
 from app_vukwm_bag_delivery.home.presenters.load_input_data import reload_data
+from app_vukwm_bag_delivery.util_presenters import save_session
 
 log = logging.getLogger(__name__)
 
@@ -102,7 +103,7 @@ def edit_data():
             "removed_unassigned_stops"
         ] = exluded_jobs.copy()
         reload_data()
-        # st.experimental_rerun()
+        save_session.upload_to_session_bucket("autosave - data deselected or updated")
 
     if exluded_jobs.shape[0] > 0:
         st.markdown(

@@ -5,6 +5,9 @@ import streamlit as st
 
 import app_vukwm_bag_delivery.util_views.return_session_status as return_session_status
 import app_vukwm_bag_delivery.util_views.side_bar_progress as side_bar_progress
+from app_vukwm_bag_delivery.dispatch_routes.dispatch_upload import (
+    upload_to_dispatch_bucket,
+)
 from app_vukwm_bag_delivery.dispatch_routes.excel_download import download_results
 from app_vukwm_bag_delivery.dispatch_routes.format_assigned_jobs import (
     create_formatted_assigned_jobs,
@@ -16,6 +19,7 @@ from app_vukwm_bag_delivery.dispatch_routes.route_sheet_cell_gen import (
 from app_vukwm_bag_delivery.dispatch_routes.route_sheet_gsheet_generation import (
     write_google_sheet,
 )
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
@@ -101,6 +105,7 @@ def create_route_sheet():
                 generate_sheet_cells()
             with st.spinner("Saving routes to google-sheets"):
                 write_google_sheet()
+            save_session.upload_to_session_bucket("autosave - route sheets generated")
         if return_session_status.check_route_sheets_generated():
             latest = st.session_state.data_07_reporting["route_sheet_urls"][-1]
             all = st.session_state.data_07_reporting["route_sheet_urls"]
@@ -130,9 +135,12 @@ def confirm_dispatch():
 
 def dispatch_routes():
     st.subheader("Dispatch routes to driver's mobile devices")
-    if "jobs_dispatched" in st.session_state:
+    if (
+        "jobs_dispatched" in st.session_state
+        and st.session_state["jobs_dispatched"] is True
+    ):
         st.success(
-            "Routes have been dispatched to the drivers' mobile devices. This can only be performed once. Reload the app to make this action available again."
+            "Routes have been dispatched to the drivers' mobile devices. This can only be performed once."
         )
         return None
     st.warning(
@@ -146,12 +154,20 @@ def dispatch_routes():
         st.error(
             "Some of the routes have jobs that cannot be completed. These jobs will not be dispatched to the drivers. Go to `View Routes` for more details."
         )
-    dispatch_df = download_results()
+
+    st.write(
+        "**Before proceeding, please confirm that each round's ProntoForm inbox has been cleared of all existing forms before dispatching:**"
+    )
+    confirmed = st.checkbox(
+        "I confirm that each round's ProntoForm inbox has been cleared of all existing forms."
+    )
+    if not confirmed:
+        return None
     st.write(
         "Enter `Dispatch routes` below and press enter to confirm that the routes should be dispatched."
     )
-    input = st.text_input("")
-    if input == "Dispatch routes":
+    prompt_input = st.text_input("")
+    if prompt_input == "Dispatch routes":
         pressed = st.button(
             "Are you sure you want to dispatch the routes?",
             help="Dispatch routes to driver's mobile devices",
@@ -162,12 +178,18 @@ def dispatch_routes():
             )
             st.balloons()
             st.balloons()
-            time.sleep(5)
+            time.sleep(3)
+            st.success("Dispatch is starting, you can still kill it...")
+            upload_to_dispatch_bucket()
             st.session_state["jobs_dispatched"] = True
+            save_session.upload_to_session_bucket(
+                "autosave - results dispatched to driver app"
+            )
             st.experimental_rerun()
 
 
 set_page_config()
+save_session.save_session()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()

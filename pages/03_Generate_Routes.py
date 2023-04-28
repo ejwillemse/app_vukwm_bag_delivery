@@ -18,6 +18,7 @@ from app_vukwm_bag_delivery.generate_routes.presenters.process_input_data import
 )
 from app_vukwm_bag_delivery.generate_routes.presenters.solve_vroom_instace import solve
 from app_vukwm_bag_delivery.update_routes import update_routes_test_widget
+from app_vukwm_bag_delivery.util_presenters import save_session
 from app_vukwm_bag_delivery.util_presenters.check_password import check_password
 
 
@@ -36,7 +37,7 @@ def view_instructions():
         st.markdown(
             """
         The shift start and end times can be edited by clicking on the cell values in the table.
-        Some basic hints are given as to avoid unsused routes, or when jobs cannot be assigned to any routes. These involve going back and editing the vehicles, or manually adjusting the routes.
+        Some basic hints are given as to avoid unused routes, or when jobs cannot be assigned to any routes. These involve going back and editing the vehicles, or manually adjusting the routes.
         """
         )
         st.video(st.secrets["videos"]["video6"])
@@ -107,12 +108,12 @@ def show_route_sum():
 
             The following changes to can be made to ensure better balanced routes:\n
             1. **Make the shifts start later or end sooner:** go back to the `Select Vehicles` page and reduce the shift durations of the selected vehicles. This will limit the number of jobs that can be assigned to each vehicle. The jobs will then be spread over better over available vehicles.
-            2. **Extend the shift and reducing the fleet:** go back to the `Select Vehicles` page and extend the shift durations of the selected vehicles. This could result in one less vehicle reqiured and a better balance amongst the other vehicles.
+            2. **Extend the shift and reducing the fleet:** go back to the `Select Vehicles` page and extend the shift durations of the selected vehicles. This could result in one less vehicle required and a better balance amongst the other vehicles.
             3. **Manual move jobs to the underutilised vehicle:** go to the `Update Routes` page and manually move some of the jobs to underutilised vehicles. The optimal route per vehicle can still be calculated, ensuring that the routes are efficient.
 
             If there are some routes that have very jobs, it may be possible to increase the shift duration of the other routes to get rid of the short route all together.
 
-            If the vehicles are not fully utilised, it is sometimes better to start the routes later than prescriped. This is due to some sites opening up later in the day. Allowing the vehicles to start later means they avoid having to circle back to sites when they are opened, or waiting at sites to open.
+            If the vehicles are not fully utilised, it is sometimes better to start the routes later than prescribed. This is due to some sites opening up later in the day. Allowing the vehicles to start later means they avoid having to circle back to sites when they are opened, or waiting at sites to open.
             """
         )
 
@@ -147,11 +148,11 @@ def show_unscheduled_stops():
                 Unserviced stops can be caused by a number of factors. So some experimentation may required to find the best remedy. Below are some factors and possible solutions:\n
                  1. **There are not enough resources**: go back to the `Select Vehicles` page and select more vehicles.
                  2. **There is not enough time**: go back to the `Select Vehicles` page and extend the vehicle shifts.
-                 3. **There are not enough vehicles with the required skills**: this ocurs when there are too many bicycle jobs for bicycles to service. In this case, more bicycles can be added, or their shifts extended.
+                 3. **There are not enough vehicles with the required skills**: this occurs when there are too many bicycle jobs for bicycles to service. In this case, more bicycles can be added, or their shifts extended.
                  4. **There are too many jobs with narrow and overlapping time-windows**: this occurs when there are a bunch of jobs at different sites with similar narrow time-windows. In this case, either add more vehicles or adjust the time-windows of the customers.
                  5. **Time windows fall outside shift hours**: some stops have time-windows that fall outside the vehicle shifts. In this case, either adjust the shift duration or the time-windows of the customers.
 
-                 Another option is to go to the `Update Routes` page and manually add the unscheduled stops to vehicles. The indivual routes will still be optimised, with efforts made to ensure the routes are feasible.
+                 Another option is to go to the `Update Routes` page and manually add the unscheduled stops to vehicles. The individual routes will still be optimised, with efforts made to ensure the routes are feasible.
                 """
             )
     else:
@@ -178,9 +179,11 @@ def routing():
         update_routes_test_widget.initialize_state(clear_all=True)
         st.session_state.routes_manually_edits = False
         st.session_state.data_07_reporting["unserviced_in_route_stops"] = pd.DataFrame()
+        save_session.upload_to_session_bucket("autosave - routes generated")
 
 
 set_page_config()
+save_session.save_session()
 side_bar_status = side_bar_progress.view_sidebar()
 check_previous_steps_completed()
 view_instructions()
