@@ -33,7 +33,7 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",
-    "Depot": pd.CategoricalDtype(categories=["Mandela Way", "Soho"], ordered=True),
+    "Depot": pd.CategoricalDtype(categories=["Mandela Way", "Soho", "Farm Street"], ordered=True),
     "Shift start time": pd.CategoricalDtype(categories=gen_time_range(), ordered=True),
     "Shift end time": pd.CategoricalDtype(categories=gen_time_range(), ordered=True),
     "Average TAT per delivery (min)": "float64",
@@ -48,6 +48,7 @@ VEHICLE_COLUMNS_DATA_TYPE = {
 HARD_CODED_DEPOTS = {
     "Soho": {"latitude": 51.51358620, "longitude": -0.13748230},
     "Mandela Way": {"latitude": 51.49175400, "longitude": -0.07962670},
+    "Farm Street": {"latitude": 51.50975907369495, "longitude":  -0.14815635852522954},
 }
 
 NON_NAN_COLUMNS = [
@@ -214,10 +215,10 @@ def validate_vehicle_updates(df):
             "Shift start time must be before shift end time. See below table for incorrect vehicles:"
         )
         st.dataframe(df[time_incorrect])
-    incorrect_bicycle_depot = (df["Depot"] != "Soho") & (df["Type"] == "Bicycle")
+    incorrect_bicycle_depot = (( df["Depot"] != "Soho") & (df["Depot"] != "Farm Street")) & (df["Type"] == "Bicycle")
     if incorrect_bicycle_depot.any():
         st.error(
-            "Currently only the Soho depot can be used for bicycle allocations. See below for incorrect bicycles:"
+            "Currently only the Soho or Farm Street depot can be used for bicycle allocations. See below for incorrect bicycles:"
         )
         st.dataframe(df[incorrect_bicycle_depot])
 
