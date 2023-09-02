@@ -10,6 +10,13 @@ def check_raw_jobs_loaded():
     )
 
 
+def check_new_jobs_added():
+    return (
+        "new_jobs_added" in st.session_state
+        and st.session_state["new_jobs_added"] is True
+    )
+
+
 def check_intermediate_unassigned_jobs_loaded():
     return (
         "data_02_intermediate" in st.session_state
@@ -123,6 +130,14 @@ def return_full_status():
     else:
         routes_generated_tickbox = " :red_circle: Routes still have to be generated for the vehicles. Please go to `Generate Routes` page.\n"
 
+    if check_new_jobs_added():
+        warnings = True
+        new_jobs_added_tickbox = (
+            " :large_orange_diamond: Additional ad-hoc jobs have been manually added.\n"
+        )
+    else:
+        new_jobs_added_tickbox = ""
+
     if check_unused_routes():
         warnings = True
         unused_routes_tickbox = " :large_orange_diamond: Some of the vehicles are not being used. Go to `View Routes` for more details.\n"
@@ -170,6 +185,7 @@ Status of session steps:\n
 {routes_sheet_generated_tickbox}
 {routes_dispatched_tickbox}
 {warning_heading}
+{new_jobs_added_tickbox}
 {data_time_windows_tickbox}
 {data_excluded_tickbox}
 {check_unserviced_stops_tickbox}
@@ -186,6 +202,14 @@ def return_short_status():
         data_loaded_tickbox = " :white_check_mark: Job data imported\n"
     else:
         data_loaded_tickbox = " :red_circle: Job data imported\n"
+
+    if check_new_jobs_added():
+        warnings = True
+        new_jobs_added_tickbox = (
+            " :large_orange_diamond: Additional ad-hoc jobs added\n"
+        )
+    else:
+        new_jobs_added_tickbox = ""
 
     if check_time_windows_update():
         warnings = True
@@ -257,6 +281,7 @@ def return_short_status():
 {routes_sheet_generated_tickbox}
 {routes_dispatched_tickbox}
 {warning_heading}
+{new_jobs_added_tickbox}
 {data_time_windows_tickbox}
 {data_excluded_tickbox}
 {check_unserviced_stops_tickbox}

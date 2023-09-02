@@ -29,7 +29,7 @@ VEHICLE_COLUMNS_DATA_TYPE = {
     "Type": pd.CategoricalDtype(categories=["Van", "Bicycle"], ordered=True),
     "Capacity (kg)": "int64",
     "Max stops": "int64",
-    "Depot": pd.CategoricalDtype(categories=["Mandela Way", "Soho"], ordered=True),
+    "Depot": pd.CategoricalDtype(categories=["Mandela Way", "Soho", "Farm Street"], ordered=True),
     "Shift start time": pd.CategoricalDtype(categories=gen_time_range(), ordered=True),
     "Shift end time": pd.CategoricalDtype(categories=gen_time_range(), ordered=True),
     "Average TAT per delivery (min)": "float64",
@@ -57,15 +57,15 @@ def return_vehicle_default():
         "Mandela Way",
         "Mandela Way",
         "Mandela Way",
-        "Soho",
+        "Farm Street",
         "Mandela Way",
         "Mandela Way",
     ]
-    lon = [-0.07962670, -0.07962670, -0.07962670, -0.13748230, -0.07962670, -0.07962670]
-    lat = [51.49175400, 51.49175400, 51.49175400, 51.51358620, 51.49175400, 51.49175400]
+    lon = [-0.07962670, -0.07962670, -0.07962670, -0.14815635852522954, -0.07962670, -0.07962670]
+    lat = [51.49175400, 51.49175400, 51.49175400, 51.50975907369495, 51.49175400, 51.49175400]
     capacity = [1000, 1000, 1000, 150, 1000, 1000]
     max_stops = [50, 50, 50, 50, 50, 50]
-    dedicated_transport_zones = [None, None, None, "2", None, None]
+    dedicated_transport_zones = [None, None, None, "1,2,3,5", None, None]
     stock_replenish_duration = [30, 30, 30, 30, 30, 30]
     cost_per_km = [1, 1, 1, 0.5, 1, 1]
     cost_per_h = [10, 10, 10, 10, 10, 10]
