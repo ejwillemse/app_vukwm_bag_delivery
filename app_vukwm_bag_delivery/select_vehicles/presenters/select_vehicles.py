@@ -215,10 +215,10 @@ def validate_vehicle_updates(df):
             "Shift start time must be before shift end time. See below table for incorrect vehicles:"
         )
         st.dataframe(df[time_incorrect])
-    incorrect_bicycle_depot = (( df["Depot"] != "Soho") | (df["Depot"] != "Farm Street")) & (df["Type"] == "Bicycle")
+    incorrect_bicycle_depot = (( df["Depot"] != "Soho") & (df["Depot"] != "Farm Street")) & (df["Type"] == "Bicycle")
     if incorrect_bicycle_depot.any():
         st.error(
-            "Currently only the Soho depot can be used for bicycle allocations. See below for incorrect bicycles:"
+            "Currently only the Soho or Farm Street depot can be used for bicycle allocations. See below for incorrect bicycles:"
         )
         st.dataframe(df[incorrect_bicycle_depot])
 
